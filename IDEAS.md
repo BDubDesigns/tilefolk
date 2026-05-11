@@ -1,0 +1,1 @@
+we should only unlock attacking as an option if the user has a weapon (or tool that can be used as a weapon) in their hand, and have an angry thought or statement. We could have their thoughts go through a processor of some kind and if certain words are detected, it unlocks the `attack` option while holding weapons or certain tools.
