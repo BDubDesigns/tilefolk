@@ -1,44 +1,69 @@
 import { useEffect, useState } from 'react';
-import type { HealthResponse } from '@tilefolk/shared';
 
 import './App.css';
-
-type ConnectionState = 'checking' | 'ready' | 'offline';
+import type { World } from '@tilefolk/shared';
 
 export function App() {
-  const [connectionState, setConnectionState] = useState<ConnectionState>('checking');
+  const [world, setWorld] = useState<null | World>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    let isMounted = true;
+    const fetchWorld = async () => {
+      setLoading(true);
 
-    async function checkHealth() {
       try {
-        const response = await fetch('/api/health');
-        const body = (await response.json()) as HealthResponse;
-
-        if (isMounted) {
-          setConnectionState(response.ok && body.status === 'ok' ? 'ready' : 'offline');
+        // clear error state first
+        setError(null);
+        // fetch world from server
+        const response = await fetch('/api/worlds/default');
+        const data = (await response.json()) as World;
+        if (!response.ok) {
+          setError(`An error occurred: ${response.statusText}`);
+        } else {
+          setWorld(data);
         }
-      } catch {
-        if (isMounted) {
-          setConnectionState('offline');
+      } catch (error) {
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError(`An error occurred: ${error}`);
         }
+      } finally {
+        setLoading(false);
       }
-    }
-
-    void checkHealth();
-
-    return () => {
-      isMounted = false;
     };
+    fetchWorld();
   }, []);
+
+  let content;
+
+  if (loading) {
+    content = <p className="loading">Loading...</p>;
+  } else if (error) {
+    content = <p className="error">{error}</p>;
+  } else if (world) {
+    content = (
+      <div className="world">
+        <p>World ID: {world.id}</p>
+        <p>
+          Dimensions: {world.width} x {world.height}
+        </p>
+        <p>NPCs: {world.npcs.length}</p>
+        <p>Items: {world.items.length}</p>
+        <p>Trees: {world.trees.length}</p>
+      </div>
+    );
+  } else {
+    content = null;
+  }
 
   return (
     <main className="appShell">
       <section className="statusPanel" aria-labelledby="app-title">
         <p className="eyebrow">Tilefolk NPC Simulation</p>
         <h1 id="app-title">Simulation Console</h1>
-        <p className="statusLine">API status: {connectionState}</p>
+        <div>{content}</div>
       </section>
     </main>
   );
