@@ -27,7 +27,6 @@ The simulation should feel like a laboratory first and a game second: every NPC 
 Initial terrain types:
 
 - `grass`
-- `tree`
 
 Initial entities:
 
@@ -77,14 +76,15 @@ Each NPC has:
 - `id`
 - `name`
 - `position`
-- `inventory`
+- `memories`
 - `personality`
-- `memory`
 - `currentGoal`, optional
 - `createdAt`
 - `updatedAt`
 
 NPC memory begins as append-only records. Later versions may add summarization, importance scoring, forgetting, trust, and beliefs.
+
+NPC inventory is derived from item location records. It should not be stored as a second source of truth on the NPC.
 
 ## Item Model
 
@@ -92,17 +92,27 @@ Each item has:
 
 - `id`
 - `type`
-- `position`, nullable when held
-- `heldByNpcId`, nullable when on ground
+- `name`
+- `location`
 - `metadata`
 
 Initial item types:
 
 - `axe`
 
+Item location is a discriminated union:
+
+```ts
+type ItemLocation =
+  | { type: "ground"; position: Position }
+  | { type: "inventory"; npcId: NpcId };
+```
+
+The item record is the single source of truth for whether an item is on the ground or held by an NPC.
+
 ## Tree Model
 
-Trees are terrain objects or world objects with health.
+Trees are world objects with health. Tiles remain terrain-only.
 
 Initial tree behavior:
 
@@ -312,7 +322,8 @@ For early versions, prefer simple document schemas. Optimize later only if perfo
 
 ### Milestone 2: Static World
 
-- Generate 50x50 grass/tree world.
+- Generate 50x50 grass world.
+- Spawn trees as separate entities.
 - Render grid in client.
 - Display NPCs and axe.
 - No LLM yet.
