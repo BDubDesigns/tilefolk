@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-
+import { WorldGrid } from './features/world/WorldGrid';
 import './App.css';
 import type { World } from '@tilefolk/shared';
 
@@ -44,14 +44,17 @@ export function App() {
     content = <p className="error">{error}</p>;
   } else if (world) {
     content = (
-      <div className="world">
-        <p>World ID: {world.id}</p>
-        <p>
-          Dimensions: {world.width} x {world.height}
-        </p>
-        <p>NPCs: {world.npcs.length}</p>
-        <p>Items: {world.items.length}</p>
-        <p>Trees: {world.trees.length}</p>
+      <div id="world-container">
+        <div className="world">
+          <p>World ID: {world.id}</p>
+          <p>
+            Dimensions: {world.width} x {world.height}
+          </p>
+          <p>NPCs: {world.npcs.length}</p>
+          <p>Items: {world.items.length}</p>
+          <p>Trees: {world.trees.length}</p>
+        </div>
+        <WorldGrid tiles={world.tiles} npcs={world.npcs} items={world.items} trees={world.trees} />
       </div>
     );
   } else {
@@ -60,7 +63,7 @@ export function App() {
 
   return (
     <main className="appShell">
-      <section className="statusPanel" aria-labelledby="app-title">
+      <section aria-labelledby="app-title">
         <p className="eyebrow">Tilefolk NPC Simulation</p>
         <h1 id="app-title">Simulation Console</h1>
         <div>{content}</div>

@@ -203,6 +203,8 @@ Error shape:
 - Use custom hooks for API calls and simulation controls.
 - Avoid global state until it is clearly needed.
 - Prefer CSS modules, scoped CSS, or a small design system over ad hoc inline styles.
+- Keep dependencies light and intentional. Prefer platform APIs such as `fetch` over adding libraries like Axios unless the project has a concrete need that native APIs do not cover.
+- If a repeated API pattern emerges, build a small local wrapper around `fetch` that matches Tilefolk's needs before reaching for a dependency.
 
 Suggested client structure:
 

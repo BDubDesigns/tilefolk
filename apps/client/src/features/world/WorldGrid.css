@@ -1,0 +1,29 @@
+.world-grid {
+  display: inline-grid;
+  background-color: #222;
+}
+.world-grid-viewport {
+  overflow: auto;
+  max-width: 100%;
+}
+
+.world-board {
+  position: relative; /* allows the world board to be positioned relatively */
+  width: max-content; /* prevents the world board from overflowing the viewport */
+}
+
+.entity-layer {
+  position: absolute;
+  inset: 0; /* prevents the entity layer from overflowing the world board */
+  pointer-events: none; /* prevents the entity layer from intercepting mouse events */
+}
+
+.entity-marker {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  font-size: 14px;
+}
