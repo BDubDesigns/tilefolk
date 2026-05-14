@@ -47,16 +47,16 @@ export const WorldGrid = ({ tiles, npcs, items, trees }: WorldGridProps) => {
         </div>
         <div className="entity-layer">
           {/* wrapper for npc entities */}
-          {npcs.map((npc) => (
+          {npcs.map((npc, index) => (
             <div
               key={npc.id}
-              className="entity-marker"
+              className="entity-marker entity-marker--npc"
               style={{
                 left: `${npc.position.x * cellStride}px`,
                 top: `${npc.position.y * cellStride}px`,
               }}
             >
-              😲
+              {index}
             </div>
           ))}
 
@@ -64,13 +64,13 @@ export const WorldGrid = ({ tiles, npcs, items, trees }: WorldGridProps) => {
           {trees.map((tree) => (
             <div
               key={tree.id}
-              className="entity-marker"
+              className="entity-marker entity-marker--tree"
               style={{
                 left: `${tree.position.x * cellStride}px`,
                 top: `${tree.position.y * cellStride}px`,
               }}
             >
-              🌳
+              T
             </div>
           ))}
 
@@ -83,14 +83,12 @@ export const WorldGrid = ({ tiles, npcs, items, trees }: WorldGridProps) => {
             return (
               <div
                 key={item.id}
-                className="entity-marker"
+                className="entity-marker entity-marker--item"
                 style={{
                   left: `${item.location.position.x * cellStride}px`,
                   top: `${item.location.position.y * cellStride}px`,
                 }}
-              >
-                🧰
-              </div>
+              />
             );
           })}
         </div>

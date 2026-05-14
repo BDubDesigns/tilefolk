@@ -27,3 +27,25 @@
   line-height: 1;
   font-size: 14px;
 }
+
+.entity-marker--npc {
+  border-radius: 999px;
+  background: #2563eb;
+  color: white;
+  font-weight: 700;
+}
+
+.entity-marker--tree {
+  border-radius: 50% 50% 2px 2px;
+  background: #166534;
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  color: brown;
+}
+
+.entity-marker--item {
+  /* border: 2px solid red; */
+  background: yellow;
+  transform: rotate(45deg) scale(0.72);
+  overflow: hidden; /* Clips anything outside the diamond */
+  transform-origin: center; /* Positions the diamond at the center of the marker */
+}
