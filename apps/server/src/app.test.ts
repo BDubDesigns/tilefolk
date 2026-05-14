@@ -34,3 +34,26 @@ describe('createApp', () => {
     expect(response.body.trees).toHaveLength(20);
   });
 });
+
+describe('POST /api/worlds/reset', () => {
+  // we check that the world is actually reset in worldStore.test.ts, so we only test the route here
+  it('returns a generated world', async () => {
+    //   create app
+    const app = createApp();
+    //   call POST /api/worlds/reset
+    const response = await request(app).post('/api/worlds/reset');
+    //   expect status 200
+    expect(response.status).toBe(200);
+    //   expect body.width to be 50
+    expect(response.body.width).toBe(50);
+    //   expect body.height to be 50
+    expect(response.body.height).toBe(50);
+    //   expect body.npcs to have length 4
+    expect(response.body.npcs).toHaveLength(4);
+    //   expect body.items to have length 1
+    expect(response.body.items).toHaveLength(1);
+    //   expect body.trees to have length 20
+    expect(response.body.trees).toHaveLength(20);
+    //
+  });
+});

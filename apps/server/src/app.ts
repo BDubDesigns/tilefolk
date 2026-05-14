@@ -1,7 +1,7 @@
 import cors from 'cors';
 import express from 'express';
 import type { HealthResponse } from '@tilefolk/shared';
-import { createWorld } from './simulation/worldGenerator.js';
+import { getActiveWorld, resetWorld } from './simulation/worldStore.js';
 
 export function createApp() {
   const app = express();
@@ -18,7 +18,14 @@ export function createApp() {
 
   // generate world
   app.get('/api/worlds/default', (_request, response) => {
-    const world = createWorld();
+    const world = getActiveWorld();
+
+    response.json(world);
+  });
+
+  // reset world
+  app.post('/api/worlds/reset', (_request, response) => {
+    const world = resetWorld();
 
     response.json(world);
   });
