@@ -81,6 +81,11 @@ describe('stepWorld', () => {
       world.npcs[0].position.x = world.width - 1;
       // step the world
       const stepResult = stepWorld(world);
+      if (!stepResult.world.npcs[0]) {
+        throw new Error('Failed to step world');
+      }
+      expect(stepResult.world.npcs[0].position.x).toBe(world.width - 1);
+      expect(stepResult.world.npcs[0].position.y).toBe(0);
       expect(stepResult.actionResult.success).toBe(false);
       expect(stepResult.actionResult.message).toBe('NPC_0 is at the edge of the world');
     });
@@ -102,8 +107,91 @@ describe('stepWorld', () => {
       ];
       // step the world
       const stepResult = stepWorld(world);
+      if (!stepResult.world.npcs[0]) {
+        throw new Error('Failed to step world');
+      }
+      expect(stepResult.world.npcs[0].position.x).toBe(0);
+      expect(stepResult.world.npcs[0].position.y).toBe(0);
       expect(stepResult.actionResult.success).toBe(false);
       expect(stepResult.actionResult.message).toBe('NPC_0 collides with a tree');
+    });
+
+    it('fails when the destination contains a ground item', () => {
+      // create a world with an NPC at position (0, 0)
+      const world = createWorldWithNpcAt({ x: 0, y: 0 });
+      // guard against no NPC in the world
+      if (!world.npcs[0]) {
+        throw new Error('No NPCS in world');
+      }
+      // place an item on the ground
+      world.items.push({
+        id: 'item_0',
+        name: 'Bronze Axe',
+        location: { type: 'ground', position: { x: 1, y: 0 } },
+        type: 'axe',
+      });
+
+      // step the world
+      const stepResult = stepWorld(world);
+      if (!stepResult.world.npcs[0]) {
+        throw new Error('Failed to step world');
+      }
+      expect(stepResult.world.npcs[0].position.x).toBe(0);
+      expect(stepResult.world.npcs[0].position.y).toBe(0);
+      expect(stepResult.actionResult.success).toBe(false);
+      expect(stepResult.actionResult.message).toBe('NPC_0 collides with an item');
+    });
+
+    it('fails when the destination contains another NPC', () => {
+      // create a world with an NPC at position (0, 0)
+      const world = createWorldWithNpcAt({ x: 0, y: 0 });
+      // guard against no NPC in the world
+      if (!world.npcs[0]) {
+        throw new Error('No NPCS in world');
+      }
+      // place another NPC on the ground
+      world.npcs.push({
+        id: 'npc_1',
+        name: 'NPC 1',
+        position: { x: 1, y: 0 },
+        memories: [],
+      });
+
+      // step the world
+      const stepResult = stepWorld(world);
+      if (!stepResult.world.npcs[0]) {
+        throw new Error('Failed to step world');
+      }
+      expect(stepResult.world.npcs[0].position.x).toBe(0);
+      expect(stepResult.world.npcs[0].position.y).toBe(0);
+      expect(stepResult.actionResult.success).toBe(false);
+      expect(stepResult.actionResult.message).toBe('NPC_0 collides with another NPC');
+    });
+
+    it('does not block movement when an entity has the same x but a different y', () => {
+      // create a world with an NPC at position (0, 0)
+      const world = createWorldWithNpcAt({ x: 0, y: 0 });
+      // guard against no NPC in the world
+      if (!world.npcs[0]) {
+        throw new Error('No NPCS in world');
+      }
+      // place another NPC on the ground
+      world.npcs.push({
+        id: 'npc_1',
+        name: 'NPC 1',
+        position: { x: 1, y: 1 },
+        memories: [],
+      });
+
+      // step the world
+      const stepResult = stepWorld(world);
+      if (!stepResult.world.npcs[0]) {
+        throw new Error('Failed to step world');
+      }
+      expect(stepResult.world.npcs[0].position.x).toBe(1);
+      expect(stepResult.world.npcs[0].position.y).toBe(0);
+      expect(stepResult.actionResult.success).toBe(true);
+      expect(stepResult.actionResult.message).toBe('Moved NPC_0 east');
     });
   });
 });
