@@ -11,8 +11,6 @@ export type Direction = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
 
 export type TerrainType = 'grass';
 
-export type NpcActionType = 'move' | 'wait' | 'say' | 'inspect' | 'pickup' | 'chopTree';
-
 export type ItemType = 'axe';
 
 // ID Aliases for better type safety and readability
@@ -71,4 +69,30 @@ export type Tree = {
   id: TreeId;
   position: Position;
   hitPoints: number;
+};
+
+export type MoveAction = {
+  type: 'move';
+  npcId: NpcId;
+  direction: Direction;
+};
+
+export type WaitAction = {
+  type: 'wait';
+  npcId: NpcId;
+};
+
+export type NpcAction = MoveAction | WaitAction;
+
+export type NpcActionType = NpcAction['type'];
+
+export type ActionResult = {
+  action: NpcAction;
+  success: boolean;
+  message: string;
+};
+
+export type StepWorldResponse = {
+  world: World;
+  actionResult: ActionResult;
 };
