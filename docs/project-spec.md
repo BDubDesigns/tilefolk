@@ -299,7 +299,7 @@ The client owns:
 
 Persist:
 
-- Worlds
+- Initial world state
 - Tiles or world seed/config
 - NPCs
 - Items
@@ -309,6 +309,35 @@ Persist:
 - LLM requests/responses for debugging
 
 For early versions, prefer simple document schemas. Optimize later only if performance requires it.
+
+### State History Strategy
+
+Tilefolk should not store a complete copy of the entire world after every NPC action as the primary history model.
+
+Preferred model:
+
+1. Store the initial world state for a simulation run.
+2. Append an event for every attempted action.
+3. Include the requested action, validation result, and applied world change in the event.
+4. Derive the current world by replaying events onto the initial world.
+5. Add periodic snapshots later as a performance optimization.
+
+This keeps storage smaller, makes debugging easier, and gives the project a clean replay system. A snapshot is only a cache of derived state; it is not the deepest source of truth.
+
+Example event shape:
+
+```ts
+interface SimulationEvent {
+  id: string;
+  tick: number;
+  actorId: string;
+  action: NpcAction;
+  result: ActionResult;
+  createdAt: string;
+}
+```
+
+LLM-specific events should also preserve the prompt version, model name, raw response, parsed action, and validation result. This makes NPC decisions inspectable without giving the LLM direct authority over world state.
 
 ## Milestones
 
@@ -333,7 +362,7 @@ For early versions, prefer simple document schemas. Optimize later only if perfo
 - Add turn loop.
 - Add movement, pickup, inspect, and chop.
 - Use scripted/random NPC decisions.
-- Add event log.
+- Add event log as the primary simulation history.
 
 ### Milestone 4: One LLM NPC
 

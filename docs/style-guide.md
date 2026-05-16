@@ -129,6 +129,7 @@ Use these terms consistently:
 - Every action attempt should produce a log entry.
 - Invalid actions should be recorded, not silently ignored.
 - Pure simulation functions should not call the database or LLM.
+- Long-term history should be stored as initial state plus events, not full world copies after every tick.
 
 Good module boundaries:
 
@@ -308,6 +309,20 @@ Do not include:
 - Store timestamps in ISO-compatible date values.
 - Store IDs as strings in shared types.
 - Avoid over-normalizing early.
+- Treat snapshots as cached derived state, not the deepest source of truth.
+- Event records should be append-only whenever possible.
+- Event payloads should contain enough information to debug and replay the simulation.
+
+Preferred simulation history model:
+
+```txt
+SimulationRun
+  initialWorld
+  events[]
+  snapshots[] optional later
+```
+
+The current world can be cached for convenience, but it should be possible to rebuild it from the initial world plus the event log.
 
 ## Testing Expectations
 

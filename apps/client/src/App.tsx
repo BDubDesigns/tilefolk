@@ -1,12 +1,42 @@
 import { useEffect, useState } from 'react';
 import { WorldGrid } from './features/world/WorldGrid';
 import './App.css';
-import type { World } from '@tilefolk/shared';
+import type { StepWorldResponse, World, ActionResult } from '@tilefolk/shared';
 
 export function App() {
   const [world, setWorld] = useState<null | World>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [stepLoading, setStepLoading] = useState(false);
+  const [lastActionResult, setLastActionResult] = useState<null | ActionResult>(null);
+
+  const handleStepWorld = async () => {
+    setStepLoading(true);
+
+    try {
+      // fetch world from server
+      const response = await fetch('/api/worlds/default/step', { method: 'POST' });
+      const data = (await response.json()) as StepWorldResponse;
+      // guard against no world
+      if (!response.ok) {
+        setError(`An error occurred: ${response.statusText}`);
+      } else {
+        setError(null);
+        // update world state
+        setWorld(data.world);
+        // update last action result
+        setLastActionResult(data.actionResult);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError(`An error occurred: ${error}`);
+      }
+    } finally {
+      setStepLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchWorld = async () => {
@@ -53,6 +83,17 @@ export function App() {
           <p>NPCs: {world.npcs.length}</p>
           <p>Items: {world.items.length}</p>
           <p>Trees: {world.trees.length}</p>
+        </div>
+        <div>
+          {/* step world button */}
+          <button onClick={handleStepWorld} disabled={stepLoading}>
+            Step World
+          </button>
+          {lastActionResult ? (
+            <p>Last Action Result: {lastActionResult.message}</p>
+          ) : (
+            <p>Last Action Result: No actions yet</p>
+          )}
         </div>
         <WorldGrid tiles={world.tiles} npcs={world.npcs} items={world.items} trees={world.trees} />
       </div>
