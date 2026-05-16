@@ -57,3 +57,22 @@ describe('POST /api/worlds/reset', () => {
     //
   });
 });
+
+describe('POST /api/worlds/default/step', () => {
+  it('steps the active world and returns the updated world plus action result', async () => {
+    //   create app
+    const app = createApp();
+    //   call POST /api/worlds/default/step
+    const response = await request(app).post('/api/worlds/default/step');
+    //   expect status 200
+    expect(response.status).toBe(200);
+    // expect body.world exists
+    expect(response.body.world).toBeDefined();
+    // expect body.actionResult exists
+    expect(response.body.actionResult).toBeDefined();
+    // expect body.actionResult.type to be 'move'
+    expect(response.body.actionResult.action.type).toBe('move');
+    // expect body.actionResult.success to be boolean
+    expect(typeof response.body.actionResult.success).toBe('boolean');
+  });
+});

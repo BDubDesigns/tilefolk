@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getActiveWorld, resetWorld } from './worldStore.js';
+import { getActiveWorld, resetWorld, stepActiveWorld } from './worldStore.js';
 
 describe('getActiveWorld', () => {
   it('returns the same world when called multiple times', () => {
@@ -16,5 +16,18 @@ describe('resetWorld', () => {
     const world2 = resetWorld();
 
     expect(world1).not.toBe(world2);
+  });
+});
+
+describe('stepActiveWorld', () => {
+  it('updates the active world with the stepped world', () => {
+    resetWorld();
+
+    const stepResult = stepActiveWorld();
+    const activeWorldAfterStep = getActiveWorld();
+
+    expect(activeWorldAfterStep).toBe(stepResult.world);
+    expect(stepResult.actionResult.action.type).toBe('move');
+    expect(typeof stepResult.actionResult.success).toBe('boolean');
   });
 });

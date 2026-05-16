@@ -1,7 +1,7 @@
 import cors from 'cors';
 import express from 'express';
 import type { HealthResponse } from '@tilefolk/shared';
-import { getActiveWorld, resetWorld } from './simulation/worldStore.js';
+import { getActiveWorld, resetWorld, stepActiveWorld } from './simulation/worldStore.js';
 
 export function createApp() {
   const app = express();
@@ -30,5 +30,11 @@ export function createApp() {
     response.json(world);
   });
 
+  // step world
+  app.post('/api/worlds/default/step', (_request, response) => {
+    const stepResult = stepActiveWorld();
+
+    response.json(stepResult);
+  });
   return app;
 }
