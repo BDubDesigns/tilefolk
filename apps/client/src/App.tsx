@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { WorldGrid } from './features/world/WorldGrid';
 import './App.css';
 import type { StepWorldResponse, World, ActionResult } from '@tilefolk/shared';
+import { WorldSummary } from './features/world/WorldSummary';
+import { SimulationControls } from './features/simulation/SimulationControls';
 
 export function App() {
   const [world, setWorld] = useState<null | World>(null);
@@ -9,7 +11,32 @@ export function App() {
   const [loading, setLoading] = useState(false);
   const [stepLoading, setStepLoading] = useState(false);
   const [lastActionResult, setLastActionResult] = useState<null | ActionResult>(null);
+  const [resetLoading, setResetLoading] = useState(false);
 
+  const handleResetWorld = async () => {
+    setResetLoading(true);
+
+    try {
+      // hit reset endpoint, which returns a new world
+      const response = await fetch('/api/worlds/reset', { method: 'POST' });
+      const data = (await response.json()) as World;
+      if (!response.ok) {
+        setError(`An error occurred: ${response.statusText}`);
+      } else {
+        setError(null);
+        setWorld(data);
+        setLastActionResult(null);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError(`An error occurred: ${error}`);
+      }
+    } finally {
+      setResetLoading(false);
+    }
+  };
   const handleStepWorld = async () => {
     setStepLoading(true);
 
@@ -75,26 +102,15 @@ export function App() {
   } else if (world) {
     content = (
       <div id="world-container">
-        <div className="world">
-          <p>World ID: {world.id}</p>
-          <p>
-            Dimensions: {world.width} x {world.height}
-          </p>
-          <p>NPCs: {world.npcs.length}</p>
-          <p>Items: {world.items.length}</p>
-          <p>Trees: {world.trees.length}</p>
-        </div>
-        <div>
-          {/* step world button */}
-          <button onClick={handleStepWorld} disabled={stepLoading}>
-            Step World
-          </button>
-          {lastActionResult ? (
-            <p>Last Action Result: {lastActionResult.message}</p>
-          ) : (
-            <p>Last Action Result: No actions yet</p>
-          )}
-        </div>
+        <WorldSummary world={world} />
+
+        <SimulationControls
+          stepLoading={stepLoading}
+          resetLoading={resetLoading}
+          lastActionResult={lastActionResult}
+          onStepWorld={handleStepWorld}
+          onResetWorld={handleResetWorld}
+        />
         <WorldGrid tiles={world.tiles} npcs={world.npcs} items={world.items} trees={world.trees} />
       </div>
     );

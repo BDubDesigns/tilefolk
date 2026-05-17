@@ -1,0 +1,9 @@
+.simulationControls__buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.simulationControls {
+  margin: 16px 0;
+}
