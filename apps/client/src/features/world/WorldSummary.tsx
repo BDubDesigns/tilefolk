@@ -6,7 +6,7 @@ interface WorldSummaryProps {
 
 export const WorldSummary = ({ world }: WorldSummaryProps) => {
   return (
-    <div className="world">
+    <div className="worldSummary">
       <p>World ID: {world.id}</p>
       <p>
         Dimensions: {world.width} x {world.height}
@@ -14,6 +14,7 @@ export const WorldSummary = ({ world }: WorldSummaryProps) => {
       <p>NPCs: {world.npcs.length}</p>
       <p>Items: {world.items.length}</p>
       <p>Trees: {world.trees.length}</p>
+      <p>Turn: {world.turn}</p>
     </div>
   );
 };

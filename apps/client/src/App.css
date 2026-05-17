@@ -49,3 +49,17 @@ h1 {
   color: #43505c;
   font-size: 1rem;
 }
+
+.simulationPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .simulationPanel {
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 24px;
+  }
+}

@@ -20,12 +20,15 @@ export const stepWorld = (world: World): StepWorldResponse => {
     };
   }
 
+  // we know theres an NPC, so we can increment turn safely
+  newWorld.turn += 1;
+
   const destX = npc.position.x + 1;
   const destY = npc.position.y;
 
   if (destX >= newWorld.width || destX < 0 || destY >= newWorld.height || destY < 0) {
     return {
-      world,
+      world: newWorld,
       actionResult: {
         action: { type: 'move', npcId: npc.id, direction: 'e' },
         success: false,
@@ -41,7 +44,7 @@ export const stepWorld = (world: World): StepWorldResponse => {
       item.location.position.y === destY
     ) {
       return {
-        world,
+        world: newWorld,
         actionResult: {
           action: { type: 'move', npcId: npc.id, direction: 'e' },
           success: false,
@@ -54,7 +57,7 @@ export const stepWorld = (world: World): StepWorldResponse => {
   for (const tree of newWorld.trees) {
     if (tree.position.x === destX && tree.position.y === destY) {
       return {
-        world,
+        world: newWorld,
         actionResult: {
           action: { type: 'move', npcId: npc.id, direction: 'e' },
           success: false,
@@ -67,7 +70,7 @@ export const stepWorld = (world: World): StepWorldResponse => {
   for (const thisNpc of newWorld.npcs) {
     if (thisNpc.position.x === destX && thisNpc.position.y === destY && thisNpc.id !== npc.id) {
       return {
-        world,
+        world: newWorld,
         actionResult: {
           action: { type: 'move', npcId: npc.id, direction: 'e' },
           success: false,
@@ -79,7 +82,7 @@ export const stepWorld = (world: World): StepWorldResponse => {
 
   // happy path
   npc.position.x += 1;
-  newWorld.turn += 1;
+
   return {
     world: newWorld,
     actionResult: {

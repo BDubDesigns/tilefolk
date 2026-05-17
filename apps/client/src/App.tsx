@@ -102,15 +102,18 @@ export function App() {
   } else if (world) {
     content = (
       <div id="world-container">
-        <WorldSummary world={world} />
+        <div className="simulationPanel">
+          <WorldSummary world={world} />
 
-        <SimulationControls
-          stepLoading={stepLoading}
-          resetLoading={resetLoading}
-          lastActionResult={lastActionResult}
-          onStepWorld={handleStepWorld}
-          onResetWorld={handleResetWorld}
-        />
+          <SimulationControls
+            stepLoading={stepLoading}
+            resetLoading={resetLoading}
+            lastActionResult={lastActionResult}
+            onStepWorld={handleStepWorld}
+            onResetWorld={handleResetWorld}
+          />
+        </div>
+
         <WorldGrid tiles={world.tiles} npcs={world.npcs} items={world.items} trees={world.trees} />
       </div>
     );
