@@ -158,7 +158,7 @@ const createItems = (numItems: number, positionPool: Position[]): Item[] => {
 };
 
 export function createWorld({
-  id = `world_0`, // only one world to start so we can safely hardcode this. revist if needed.
+  id = `world_0`, // only one world to start so we can safely hardcode this. revisit if needed.
   width = 50,
   height = 50,
   numNpcs = 4,
@@ -186,6 +186,7 @@ export function createWorld({
     npcs,
     items,
     trees,
+    turn: 0,
   };
   return world;
 }

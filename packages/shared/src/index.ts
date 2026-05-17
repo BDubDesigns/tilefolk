@@ -32,6 +32,7 @@ export type World = {
   npcs: Npc[];
   items: Item[];
   trees: Tree[];
+  turn: number;
 };
 
 export type Tile = {

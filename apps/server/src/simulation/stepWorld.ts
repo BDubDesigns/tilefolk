@@ -6,13 +6,14 @@ export const stepWorld = (world: World): StepWorldResponse => {
     ...world,
     npcs: world.npcs.map((npc) => ({ ...npc, position: { ...npc.position } })),
   };
-  const npc = newWorld.npcs[0];
+  const npcIndex = newWorld.turn % newWorld.npcs.length;
+  const npc = newWorld.npcs[npcIndex];
 
   if (!npc) {
     return {
       world,
       actionResult: {
-        action: { type: 'move', npcId: 'npc_0', direction: 'e' },
+        action: { type: 'move', npcId: 'N/A', direction: 'e' },
         success: false,
         message: 'No NPCs to move',
       },
@@ -26,9 +27,9 @@ export const stepWorld = (world: World): StepWorldResponse => {
     return {
       world,
       actionResult: {
-        action: { type: 'move', npcId: 'npc_0', direction: 'e' },
+        action: { type: 'move', npcId: npc.id, direction: 'e' },
         success: false,
-        message: 'NPC_0 is at the edge of the world',
+        message: `${npc.id} is at the edge of the world`,
       },
     };
   }
@@ -42,9 +43,9 @@ export const stepWorld = (world: World): StepWorldResponse => {
       return {
         world,
         actionResult: {
-          action: { type: 'move', npcId: 'npc_0', direction: 'e' },
+          action: { type: 'move', npcId: npc.id, direction: 'e' },
           success: false,
-          message: 'NPC_0 collides with an item',
+          message: `${npc.id} collides with an item`,
         },
       };
     }
@@ -55,9 +56,9 @@ export const stepWorld = (world: World): StepWorldResponse => {
       return {
         world,
         actionResult: {
-          action: { type: 'move', npcId: 'npc_0', direction: 'e' },
+          action: { type: 'move', npcId: npc.id, direction: 'e' },
           success: false,
-          message: 'NPC_0 collides with a tree',
+          message: `${npc.id} collides with a tree`,
         },
       };
     }
@@ -68,9 +69,9 @@ export const stepWorld = (world: World): StepWorldResponse => {
       return {
         world,
         actionResult: {
-          action: { type: 'move', npcId: 'npc_0', direction: 'e' },
+          action: { type: 'move', npcId: npc.id, direction: 'e' },
           success: false,
-          message: 'NPC_0 collides with another NPC',
+          message: `${npc.id} collides with another NPC`,
         },
       };
     }
@@ -78,12 +79,13 @@ export const stepWorld = (world: World): StepWorldResponse => {
 
   // happy path
   npc.position.x += 1;
+  newWorld.turn += 1;
   return {
     world: newWorld,
     actionResult: {
-      action: { type: 'move', npcId: 'npc_0', direction: 'e' },
+      action: { type: 'move', npcId: npc.id, direction: 'e' },
       success: true,
-      message: 'Moved NPC_0 east',
+      message: `${npc.id} moved east`,
     },
   };
 };
