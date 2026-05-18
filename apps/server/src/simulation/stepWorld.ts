@@ -1,5 +1,17 @@
-import type { ActionResult, Npc, World } from '@tilefolk/shared';
+import type { ActionResult, Direction, Npc, Position, World } from '@tilefolk/shared';
+import { directions } from '@tilefolk/shared';
 import type { StepWorldResponse } from '@tilefolk/shared';
+
+const directionDeltas: Record<Direction, Position> = {
+  n: { x: 0, y: -1 },
+  ne: { x: 1, y: -1 },
+  e: { x: 1, y: 0 },
+  se: { x: 1, y: 1 },
+  s: { x: 0, y: 1 },
+  sw: { x: -1, y: 1 },
+  w: { x: -1, y: 0 },
+  nw: { x: -1, y: -1 },
+};
 
 function appendActionEvent(world: World, actionResult: ActionResult, turn: number): void {
   world.events.push({
@@ -18,7 +30,11 @@ function createMoveResult(npc: Npc, success: boolean, message: string): ActionRe
   };
 }
 
-function finishNpcAttempt(world: World, actionResult: ActionResult, turn: number): StepWorldResponse {
+function finishNpcAttempt(
+  world: World,
+  actionResult: ActionResult,
+  turn: number,
+): StepWorldResponse {
   appendActionEvent(world, actionResult, turn);
 
   return {
@@ -101,5 +117,9 @@ export const stepWorld = (world: World): StepWorldResponse => {
   // update npc position
   npc.position.x += 1;
 
-  return finishNpcAttempt(newWorld, createMoveResult(npc, true, `${npc.id} moved east`), actionTurn);
+  return finishNpcAttempt(
+    newWorld,
+    createMoveResult(npc, true, `${npc.id} moved east`),
+    actionTurn,
+  );
 };

@@ -7,7 +7,8 @@ export type Position = {
   y: number;
 };
 
-export type Direction = 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'nw';
+export const directions = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'] as const;
+export type Direction = (typeof directions)[number];
 
 export type TerrainType = 'grass';
 
