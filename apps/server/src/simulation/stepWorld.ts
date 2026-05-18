@@ -64,11 +64,20 @@ export const stepWorld = (world: World): StepWorldResponse => {
   }
 
   const actionTurn = newWorld.turn;
+
+  const direction = directions[actionTurn % directions.length];
+
+  if (!direction) {
+    throw new Error('Failed to choose movement direction');
+  }
+
+  const delta = directionDeltas[direction];
+
   // we know theres an NPC, so we can increment turn safely
   newWorld.turn += 1;
 
-  const destX = npc.position.x + 1;
-  const destY = npc.position.y;
+  const destX = npc.position.x + delta.x;
+  const destY = npc.position.y + delta.y;
 
   if (destX >= newWorld.width || destX < 0 || destY >= newWorld.height || destY < 0) {
     return finishNpcAttempt(
@@ -115,7 +124,8 @@ export const stepWorld = (world: World): StepWorldResponse => {
   // happy path
 
   // update npc position
-  npc.position.x += 1;
+  npc.position.x = destX;
+  npc.position.y = destY;
 
   return finishNpcAttempt(
     newWorld,
