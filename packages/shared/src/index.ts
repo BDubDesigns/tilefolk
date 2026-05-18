@@ -24,6 +24,8 @@ export type TreeId = string;
 
 export type MemoryId = string;
 
+export type WorldEventId = string;
+
 export type World = {
   id: WorldId;
   width: number;
@@ -33,6 +35,7 @@ export type World = {
   items: Item[];
   trees: Tree[];
   turn: number;
+  events: WorldEvent[];
 };
 
 export type Tile = {
@@ -96,4 +99,11 @@ export type ActionResult = {
 export type StepWorldResponse = {
   world: World;
   actionResult: ActionResult;
+};
+
+export type WorldEvent = {
+  id: WorldEventId;
+  turn: number;
+  actorId: NpcId | null;
+  message: string;
 };

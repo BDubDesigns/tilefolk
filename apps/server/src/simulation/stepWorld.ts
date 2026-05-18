@@ -1,9 +1,36 @@
-import type { World } from '@tilefolk/shared';
+import type { ActionResult, Npc, World } from '@tilefolk/shared';
 import type { StepWorldResponse } from '@tilefolk/shared';
+
+function appendActionEvent(world: World, actionResult: ActionResult, turn: number): void {
+  world.events.push({
+    id: `event_${world.events.length}`,
+    turn,
+    actorId: actionResult.action.npcId,
+    message: actionResult.message,
+  });
+}
+
+function createMoveResult(npc: Npc, success: boolean, message: string): ActionResult {
+  return {
+    action: { type: 'move', npcId: npc.id, direction: 'e' },
+    success,
+    message,
+  };
+}
+
+function finishNpcAttempt(world: World, actionResult: ActionResult, turn: number): StepWorldResponse {
+  appendActionEvent(world, actionResult, turn);
+
+  return {
+    world,
+    actionResult,
+  };
+}
 
 export const stepWorld = (world: World): StepWorldResponse => {
   const newWorld = {
     ...world,
+    events: [...world.events],
     npcs: world.npcs.map((npc) => ({ ...npc, position: { ...npc.position } })),
   };
   const npcIndex = newWorld.turn % newWorld.npcs.length;
@@ -20,6 +47,7 @@ export const stepWorld = (world: World): StepWorldResponse => {
     };
   }
 
+  const actionTurn = newWorld.turn;
   // we know theres an NPC, so we can increment turn safely
   newWorld.turn += 1;
 
@@ -27,14 +55,11 @@ export const stepWorld = (world: World): StepWorldResponse => {
   const destY = npc.position.y;
 
   if (destX >= newWorld.width || destX < 0 || destY >= newWorld.height || destY < 0) {
-    return {
-      world: newWorld,
-      actionResult: {
-        action: { type: 'move', npcId: npc.id, direction: 'e' },
-        success: false,
-        message: `${npc.id} is at the edge of the world`,
-      },
-    };
+    return finishNpcAttempt(
+      newWorld,
+      createMoveResult(npc, false, `${npc.id} is at the edge of the world`),
+      actionTurn,
+    );
   }
 
   for (const item of newWorld.items) {
@@ -43,52 +68,38 @@ export const stepWorld = (world: World): StepWorldResponse => {
       item.location.position.x === destX &&
       item.location.position.y === destY
     ) {
-      return {
-        world: newWorld,
-        actionResult: {
-          action: { type: 'move', npcId: npc.id, direction: 'e' },
-          success: false,
-          message: `${npc.id} collides with an item`,
-        },
-      };
+      return finishNpcAttempt(
+        newWorld,
+        createMoveResult(npc, false, `${npc.id} collides with an item`),
+        actionTurn,
+      );
     }
   }
 
   for (const tree of newWorld.trees) {
     if (tree.position.x === destX && tree.position.y === destY) {
-      return {
-        world: newWorld,
-        actionResult: {
-          action: { type: 'move', npcId: npc.id, direction: 'e' },
-          success: false,
-          message: `${npc.id} collides with a tree`,
-        },
-      };
+      return finishNpcAttempt(
+        newWorld,
+        createMoveResult(npc, false, `${npc.id} collides with a tree`),
+        actionTurn,
+      );
     }
   }
 
   for (const thisNpc of newWorld.npcs) {
     if (thisNpc.position.x === destX && thisNpc.position.y === destY && thisNpc.id !== npc.id) {
-      return {
-        world: newWorld,
-        actionResult: {
-          action: { type: 'move', npcId: npc.id, direction: 'e' },
-          success: false,
-          message: `${npc.id} collides with another NPC`,
-        },
-      };
+      return finishNpcAttempt(
+        newWorld,
+        createMoveResult(npc, false, `${npc.id} collides with another NPC`),
+        actionTurn,
+      );
     }
   }
 
   // happy path
+
+  // update npc position
   npc.position.x += 1;
 
-  return {
-    world: newWorld,
-    actionResult: {
-      action: { type: 'move', npcId: npc.id, direction: 'e' },
-      success: true,
-      message: `${npc.id} moved east`,
-    },
-  };
+  return finishNpcAttempt(newWorld, createMoveResult(npc, true, `${npc.id} moved east`), actionTurn);
 };

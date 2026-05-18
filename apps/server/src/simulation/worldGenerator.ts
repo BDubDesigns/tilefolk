@@ -1,4 +1,13 @@
-import type { World, Tile, TileGrid, Position, Npc, Tree, Item } from '@tilefolk/shared';
+import type {
+  World,
+  Tile,
+  TileGrid,
+  Position,
+  Npc,
+  Tree,
+  Item,
+  WorldEvent,
+} from '@tilefolk/shared';
 
 interface CreateWorldOptions {
   id?: string;
@@ -177,6 +186,7 @@ export function createWorld({
   const npcs: Npc[] = createNpcs(numNpcs, positionPool);
   const trees: Tree[] = createTrees(numTrees, positionPool);
   const items: Item[] = createItems(numItems, positionPool);
+  const events: WorldEvent[] = [];
 
   const world: World = {
     id,
@@ -186,6 +196,7 @@ export function createWorld({
     npcs,
     items,
     trees,
+    events,
     turn: 0,
   };
   return world;
