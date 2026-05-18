@@ -4,6 +4,7 @@ import './App.css';
 import type { StepWorldResponse, World, ActionResult } from '@tilefolk/shared';
 import { WorldSummary } from './features/world/WorldSummary';
 import { SimulationControls } from './features/simulation/SimulationControls';
+import { EventLog } from './features/simulation/EventLog';
 
 export function App() {
   const [world, setWorld] = useState<null | World>(null);
@@ -112,6 +113,7 @@ export function App() {
             onStepWorld={handleStepWorld}
             onResetWorld={handleResetWorld}
           />
+          <EventLog events={world.events} />
         </div>
 
         <WorldGrid tiles={world.tiles} npcs={world.npcs} items={world.items} trees={world.trees} />
