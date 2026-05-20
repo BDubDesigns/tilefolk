@@ -86,25 +86,28 @@ export const stepWorld = (world: World): StepWorldResponse => {
     return finishNpcAttempt(newWorld, createWaitResult(npc, `${npc.id} waited`), actionTurn);
   }
 
-  // narrow down to valid actions
-  if (selectedAction.type === 'wait') {
-    return finishNpcAttempt(newWorld, createWaitResult(npc, `${npc.id} waited`), actionTurn);
+  switch (selectedAction.type) {
+    case 'wait':
+      return finishNpcAttempt(newWorld, createWaitResult(npc, `${npc.id} waited`), actionTurn);
+    case 'move': {
+      const direction = selectedAction.direction;
+
+      const delta = directionDeltas[direction];
+
+      const destX = npc.position.x + delta.x;
+      const destY = npc.position.y + delta.y;
+
+      // update npc position
+      npc.position.x = destX;
+      npc.position.y = destY;
+
+      return finishNpcAttempt(
+        newWorld,
+        createMoveResult(npc, direction, true, `${npc.id} moved ${direction}`),
+        actionTurn,
+      );
+    }
+    default:
+      return finishNpcAttempt(newWorld, createWaitResult(npc, `${npc.id} waited`), actionTurn);
   }
-
-  const direction = selectedAction.direction;
-
-  const delta = directionDeltas[direction];
-
-  const destX = npc.position.x + delta.x;
-  const destY = npc.position.y + delta.y;
-
-  // update npc position
-  npc.position.x = destX;
-  npc.position.y = destY;
-
-  return finishNpcAttempt(
-    newWorld,
-    createMoveResult(npc, direction, true, `${npc.id} moved ${direction}`),
-    actionTurn,
-  );
 };
