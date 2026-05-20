@@ -1,7 +1,7 @@
 import type { ActionResult, Direction, Npc, World } from '@tilefolk/shared';
 import { directionDeltas } from './directionDeltas.js';
-import { directions } from '@tilefolk/shared';
 import type { StepWorldResponse } from '@tilefolk/shared';
+import { getValidMovementActions } from './getValidMovementActions.js';
 
 function appendActionEvent(world: World, actionResult: ActionResult, turn: number): void {
   world.events.push({
@@ -10,6 +10,14 @@ function appendActionEvent(world: World, actionResult: ActionResult, turn: numbe
     actorId: actionResult.action.npcId,
     message: actionResult.message,
   });
+}
+
+function createWaitResult(npc: Npc, message: string): ActionResult {
+  return {
+    action: { type: 'wait', npcId: npc.id },
+    success: true,
+    message,
+  };
 }
 
 function createMoveResult(
@@ -58,9 +66,23 @@ export const stepWorld = (world: World): StepWorldResponse => {
     };
   }
 
-  const actionTurn = newWorld.turn;
+  const validMovementActions = getValidMovementActions({
+    world: newWorld,
+    npcId: npc.id,
+  });
 
-  const direction = directions[actionTurn % directions.length];
+  // for now choose the first valid action deterministically
+  const selectedAction = validMovementActions[0];
+
+  const actionTurn = newWorld.turn;
+  newWorld.turn += 1;
+
+  // if no valid actions, wait
+  if (!selectedAction) {
+    return finishNpcAttempt(newWorld, createWaitResult(npc, `${npc.id} waited`), actionTurn);
+  }
+
+  const direction = selectedAction.direction;
 
   if (!direction) {
     throw new Error('Failed to choose movement direction');
@@ -68,53 +90,8 @@ export const stepWorld = (world: World): StepWorldResponse => {
 
   const delta = directionDeltas[direction];
 
-  // we know theres an NPC, so we can increment turn safely
-  newWorld.turn += 1;
-
   const destX = npc.position.x + delta.x;
   const destY = npc.position.y + delta.y;
-
-  if (destX >= newWorld.width || destX < 0 || destY >= newWorld.height || destY < 0) {
-    return finishNpcAttempt(
-      newWorld,
-      createMoveResult(npc, direction, false, `${npc.id} is at the edge of the world`),
-      actionTurn,
-    );
-  }
-
-  for (const item of newWorld.items) {
-    if (
-      item.location.type === 'ground' &&
-      item.location.position.x === destX &&
-      item.location.position.y === destY
-    ) {
-      return finishNpcAttempt(
-        newWorld,
-        createMoveResult(npc, direction, false, `${npc.id} collides with an item`),
-        actionTurn,
-      );
-    }
-  }
-
-  for (const tree of newWorld.trees) {
-    if (tree.position.x === destX && tree.position.y === destY) {
-      return finishNpcAttempt(
-        newWorld,
-        createMoveResult(npc, direction, false, `${npc.id} collides with a tree`),
-        actionTurn,
-      );
-    }
-  }
-
-  for (const thisNpc of newWorld.npcs) {
-    if (thisNpc.position.x === destX && thisNpc.position.y === destY && thisNpc.id !== npc.id) {
-      return finishNpcAttempt(
-        newWorld,
-        createMoveResult(npc, direction, false, `${npc.id} collides with another NPC`),
-        actionTurn,
-      );
-    }
-  }
 
   // happy path
 

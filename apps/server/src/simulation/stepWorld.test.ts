@@ -1,26 +1,21 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { stepWorld } from './stepWorld.js';
 import { createWorld } from './worldGenerator.js';
-import type { World, Position, WorldEvent } from '@tilefolk/shared';
+import type { Position, World, WorldEvent } from '@tilefolk/shared';
 
 function createWorldWithNpcAt(position: Position): World {
-  const world: World = createWorld();
-  // remove the other npcs from the world
+  const world = createWorld();
   world.npcs = world.npcs.filter((npc) => npc.id === 'npc_0');
-
-  const npc = getNpcOrThrow(world, 0);
-  // remove trees
   world.trees = [];
-  // remove items
   world.items = [];
 
-  // safely set the NPC position
+  const npc = getNpcOrThrow(world, 0);
   npc.position.x = position.x;
   npc.position.y = position.y;
+
   return world;
 }
 
-// returns the NPC at the given index or throws an error
 function getNpcOrThrow(world: World, index: number) {
   const npc = world.npcs[index];
 
@@ -31,7 +26,6 @@ function getNpcOrThrow(world: World, index: number) {
   return npc;
 }
 
-// returns the event at the given index or throws an error
 function getEventOrThrow(world: World, index: number): WorldEvent {
   const event = world.events[index];
 
@@ -42,17 +36,35 @@ function getEventOrThrow(world: World, index: number): WorldEvent {
   return event;
 }
 
+function surroundNpcWithTrees(world: World, center: Position): void {
+  world.trees = [
+    { id: 'tree_n', position: { x: center.x, y: center.y - 1 }, hitPoints: 3 },
+    { id: 'tree_ne', position: { x: center.x + 1, y: center.y - 1 }, hitPoints: 3 },
+    { id: 'tree_e', position: { x: center.x + 1, y: center.y }, hitPoints: 3 },
+    { id: 'tree_se', position: { x: center.x + 1, y: center.y + 1 }, hitPoints: 3 },
+    { id: 'tree_s', position: { x: center.x, y: center.y + 1 }, hitPoints: 3 },
+    { id: 'tree_sw', position: { x: center.x - 1, y: center.y + 1 }, hitPoints: 3 },
+    { id: 'tree_w', position: { x: center.x - 1, y: center.y }, hitPoints: 3 },
+    { id: 'tree_nw', position: { x: center.x - 1, y: center.y - 1 }, hitPoints: 3 },
+  ];
+}
+
 describe('stepWorld', () => {
-  describe('successful movement', () => {
-    it('moves npc_0 one tile north', () => {
+  describe('movement application', () => {
+    it('applies the first valid movement action', () => {
       const world = createWorldWithNpcAt({ x: 2, y: 2 });
 
       const stepResult = stepWorld(world);
       const npc = getNpcOrThrow(stepResult.world, 0);
 
       expect(stepResult.actionResult.success).toBe(true);
+      expect(stepResult.actionResult.action.type).toBe('move');
       expect(npc.position.x).toBe(2);
       expect(npc.position.y).toBe(1);
+      if (stepResult.actionResult.action.type !== 'move') {
+        throw new Error('Expected action to be a move action');
+      }
+      expect(stepResult.actionResult.action.direction).toBe('n');
     });
 
     it('does not mutate the original world', () => {
@@ -69,91 +81,43 @@ describe('stepWorld', () => {
       expect(originalNpc.position.y).toBe(2);
     });
 
-    it('does not block movement when another NPC is not on the destination', () => {
+    it('uses the next valid movement action when the first direction is blocked', () => {
       const world = createWorldWithNpcAt({ x: 2, y: 2 });
-      world.npcs.push({
-        id: 'npc_1',
-        name: 'NPC 1',
-        position: { x: 3, y: 1 },
-        memories: [],
-      });
+      world.trees = [{ id: 'tree_0', position: { x: 2, y: 1 }, hitPoints: 3 }];
 
       const stepResult = stepWorld(world);
       const npc = getNpcOrThrow(stepResult.world, 0);
 
-      expect(npc.position.x).toBe(2);
-      expect(npc.position.y).toBe(1);
       expect(stepResult.actionResult.success).toBe(true);
-      expect(stepResult.actionResult.message).toBe('npc_0 moved n');
+      expect(stepResult.actionResult.action.type).toBe('move');
+      expect(npc.position.x).toBe(3);
+      expect(npc.position.y).toBe(1);
+      if (stepResult.actionResult.action.type !== 'move') {
+        throw new Error('Expected action to be a move action');
+      }
+      expect(stepResult.actionResult.action.direction).toBe('ne');
+      expect(stepResult.actionResult.message).toBe('npc_0 moved ne');
     });
   });
 
-  describe('blocked movement', () => {
-    it('fails when the NPC is at the edge of the world', () => {
-      const world = createWorldWithNpcAt({ x: 0, y: 0 });
-
-      const stepResult = stepWorld(world);
-      const steppedNpc = getNpcOrThrow(stepResult.world, 0);
-
-      expect(steppedNpc.position.x).toBe(0);
-      expect(steppedNpc.position.y).toBe(0);
-      expect(stepResult.actionResult.success).toBe(false);
-      expect(stepResult.actionResult.message).toBe('npc_0 is at the edge of the world');
-    });
-
-    it('fails when the NPC collides with a tree', () => {
+  describe('wait fallback', () => {
+    it('waits when the active NPC has no valid movement actions', () => {
       const world = createWorldWithNpcAt({ x: 2, y: 2 });
-      world.trees = [
-        {
-          id: 'tree_0',
-          position: { x: 2, y: 1 },
-          hitPoints: 3,
-        },
-      ];
+      surroundNpcWithTrees(world, { x: 2, y: 2 });
 
       const stepResult = stepWorld(world);
       const npc = getNpcOrThrow(stepResult.world, 0);
+      const event = getEventOrThrow(stepResult.world, 0);
 
+      expect(stepResult.actionResult.success).toBe(true);
+      expect(stepResult.actionResult.action).toEqual({ type: 'wait', npcId: 'npc_0' });
+      expect(stepResult.actionResult.message).toBe('npc_0 waited');
       expect(npc.position.x).toBe(2);
       expect(npc.position.y).toBe(2);
-      expect(stepResult.actionResult.success).toBe(false);
-      expect(stepResult.actionResult.message).toBe('npc_0 collides with a tree');
-    });
-
-    it('fails when the destination contains a ground item', () => {
-      const world = createWorldWithNpcAt({ x: 2, y: 2 });
-      world.items.push({
-        id: 'item_0',
-        name: 'Bronze Axe',
-        location: { type: 'ground', position: { x: 2, y: 1 } },
-        type: 'axe',
-      });
-
-      const stepResult = stepWorld(world);
-      const npc = getNpcOrThrow(stepResult.world, 0);
-
-      expect(npc.position.x).toBe(2);
-      expect(npc.position.y).toBe(2);
-      expect(stepResult.actionResult.success).toBe(false);
-      expect(stepResult.actionResult.message).toBe('npc_0 collides with an item');
-    });
-
-    it('fails when the destination contains another NPC', () => {
-      const world = createWorldWithNpcAt({ x: 2, y: 2 });
-      world.npcs.push({
-        id: 'npc_1',
-        name: 'NPC 1',
-        position: { x: 2, y: 1 },
-        memories: [],
-      });
-
-      const stepResult = stepWorld(world);
-      const npc = getNpcOrThrow(stepResult.world, 0);
-
-      expect(npc.position.x).toBe(2);
-      expect(npc.position.y).toBe(2);
-      expect(stepResult.actionResult.success).toBe(false);
-      expect(stepResult.actionResult.message).toBe('npc_0 collides with another NPC');
+      expect(stepResult.world.turn).toBe(1);
+      expect(event.turn).toBe(0);
+      expect(event.actorId).toBe('npc_0');
+      expect(event.message).toBe('npc_0 waited');
     });
   });
 
@@ -187,21 +151,6 @@ describe('stepWorld', () => {
       expect(world.turn).toBe(0);
     });
 
-    it('increments the world turn after a blocked movement attempt', () => {
-      const world = createWorldWithNpcAt({ x: 2, y: 2 });
-      world.npcs.push({
-        id: 'npc_1',
-        name: 'NPC 1',
-        position: { x: 2, y: 1 },
-        memories: [],
-      });
-
-      const stepResult = stepWorld(world);
-
-      expect(stepResult.actionResult.success).toBe(false);
-      expect(stepResult.world.turn).toBe(1);
-    });
-
     it('uses the world turn to choose which NPC acts', () => {
       const world = createWorld();
       world.trees = [];
@@ -226,8 +175,8 @@ describe('stepWorld', () => {
       if (stepResult.actionResult.action.type !== 'move') {
         throw new Error('Expected action to be a move action');
       }
-      expect(stepResult.actionResult.action.direction).toBe('ne');
-      expect(steppedNpc1.position.x).toBe(5);
+      expect(stepResult.actionResult.action.direction).toBe('n');
+      expect(steppedNpc1.position.x).toBe(4);
       expect(steppedNpc1.position.y).toBe(3);
       expect(stepResult.world.turn).toBe(2);
     });
@@ -273,26 +222,6 @@ describe('stepWorld', () => {
 
       expect(event.turn).toBe(3);
       expect(stepResult.world.turn).toBe(4);
-    });
-
-    it('appends an event after a blocked movement attempt', () => {
-      const world = createWorldWithNpcAt({ x: 2, y: 2 });
-      world.npcs.push({
-        id: 'npc_1',
-        name: 'NPC 1',
-        position: { x: 2, y: 1 },
-        memories: [],
-      });
-
-      const stepResult = stepWorld(world);
-      expect(stepResult.world.events).toHaveLength(1);
-      const event = getEventOrThrow(stepResult.world, 0);
-
-      expect(event.id).toBe('event_0');
-      expect(event.turn).toBe(0);
-      expect(event.actorId).toBe('npc_0');
-      expect(event.message).toBe('npc_0 collides with another NPC');
-      expect(stepResult.actionResult.success).toBe(false);
     });
   });
 });
