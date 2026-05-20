@@ -3,134 +3,85 @@
 ## Current Status
 
 - MERN TypeScript monorepo scaffold is in place.
-- Shared domain types exist for worlds, tiles, NPCs, items, trees, positions, and memories.
-- Server world generator creates a 50x50 grass world with NPCs, trees, and axe items.
-- World generation tests cover dimensions, tile grid shape, terrain, entity counts, bounds, overlap prevention, item shape, and pool exhaustion.
-- Express exposes `GET /api/worlds/default` for the generated world.
-- Express exposes `POST /api/worlds/default/step` for stepping the active in-memory world.
-- React fetches the generated world and displays a basic world summary.
-- React renders the world grid with separate overlay markers for NPCs, trees, and ground items.
-- React has a manual step button that calls the server and replaces client state with the returned world.
-- React displays the latest action result after stepping.
-- Manual browser smoke test succeeded at `http://localhost:5173`.
-- Test, typecheck, and lint scripts are passing.
+- Shared domain types exist for worlds, tiles, NPCs, items, trees, positions, actions, directions, and events.
+- `directions` is the shared source of truth for movement direction values, and `Direction` is derived from it.
+- Server world generation creates a 50x50 grass world with NPCs, trees, axe items, turn tracking, and an empty event log.
+- Express exposes world fetch, reset, and step endpoints.
+- React fetches the active world, renders a grid, shows NPC/tree/item markers, and provides manual step/reset controls.
+- React displays world summary, current turn, latest action result, and the latest 5 world events.
+- `stepWorld` supports turn-based actor selection, deterministic direction selection, turn increments, immutable world updates, and event logging.
+- `getValidMovementActions` returns legal movement actions for an NPC based on bounds and occupied destination tiles.
+- Test, typecheck, and lint scripts are passing at the latest known checkpoint.
 
-## Completed Milestone: Serve The World
+## Completed Milestones
 
-Goal: expose the generated world through the Express API so the React client can fetch it.
+### Serve The World
 
-### Task 1: Add World Route
+- `GET /api/worlds/default` returns the active generated world.
+- `POST /api/worlds/reset` resets the active world.
+- `POST /api/worlds/default/step` advances the active world one turn.
+- Route tests cover the basic endpoint contracts.
 
-Completed route:
+### Render The World
 
-```txt
-GET /api/worlds/default
-```
+- `WorldGrid` renders the tile grid.
+- Entity overlay renders NPCs, trees, and ground items separately from tiles.
+- `WorldSummary` renders world id, dimensions, entity counts, and turn.
+- `SimulationControls` renders step/reset controls and latest action result.
+- `EventLog` renders the latest 5 world events.
 
-Acceptance criteria:
+### Basic Simulation Engine
 
-- Calls `createWorld()`.
-- Returns the generated world as JSON.
-- Does not persist anything yet.
-- Has focused route tests with `supertest`.
+- `stepWorld` chooses the active NPC from `world.turn`.
+- Movement direction is deterministic for now.
+- Successful and blocked movement attempts advance the turn when an NPC exists.
+- Events are appended for attempted NPC actions.
+- Existing world state is copied rather than mutated directly.
 
-### Task 2: Fetch World In Client
+### Valid Movement Action Generation
 
-Completed client behavior:
+- `getValidMovementActions` can answer which movement actions are legal for an NPC.
+- It filters out moves that leave world bounds.
+- It filters out destinations blocked by trees, ground items, and other NPCs.
+- It returns an empty array when the NPC does not exist.
 
-- Client calls the world endpoint.
-- Loading state is visible.
-- Error state is handled.
-- Successful response is stored in component state.
-- Basic world summary is displayed.
+## Current Milestone: Use Valid Actions In `stepWorld`
 
-## Completed Milestone: Render The Static World
+Goal: make `stepWorld` consume generated valid actions instead of duplicating movement legality checks internally.
 
-Goal: render the generated world as an actual grid in the React app.
-
-### Task 1: Create `WorldGrid`
-
-Completed `WorldGrid` component.
-
-Acceptance criteria:
-
-- Renders a 50x50 grid.
-- Uses `tiles[y][x]` consistently.
-- Grass tiles have a simple visual style.
-- Layout remains readable at desktop size.
-- Receives a `World` or `TileGrid` via props.
-- Does not fetch data itself.
-
-### Task 2: Render Entities
-
-Completed entity overlay.
+### Task 1: Wire Valid Movement Actions Into `stepWorld`
 
 Acceptance criteria:
 
-- NPCs are visible.
-- Trees are visible.
-- Ground items are visible.
-- No simulation actions yet.
+- Active NPC is still chosen from `world.turn`.
+- `stepWorld` calls `getValidMovementActions` for the active NPC.
+- If movement actions exist, `stepWorld` chooses one deterministically for now.
+- The chosen action is applied to the copied world.
+- `actionResult.action.direction` matches the chosen action.
+- Event log records the action result.
+- Turn still advances after the NPC acts.
+- Existing tests are updated to test stable behavior rather than stale east-only behavior.
 
-### Task 3: Improve Layout For Debugging
-
-Acceptance criteria:
-
-- World grid and summary can be viewed together.
-- Entity counts remain visible.
-- UI stays focused and tool-like, not decorative.
-
-## Current Milestone: Manual Simulation Controls
-
-Goal: let the client ask the server to advance the active world one action at a time.
-
-### Task 1: Add Step Control In Client
-
-Completed client behavior:
-
-- Step button is rendered near the world summary.
-- Button calls `POST /api/worlds/default/step`.
-- Client replaces its current `world` state with `response.world`.
-- Button is disabled while the step request is in flight.
-- Failed step requests use the existing error path.
-- Client does not calculate movement or mutate simulation state locally.
+### Task 2: Add Wait Fallback
 
 Acceptance criteria:
 
-- Done.
-
-### Task 2: Show Latest Action Result
-
-Completed client behavior:
-
-- Latest returned `actionResult` is stored in client state.
-- A simple debug line displays the latest action message.
-- Empty state displays `No actions yet`.
-
-Acceptance criteria:
-
-- Done for the current debug UI.
-- Later polish can show actor, action type, and success/failure separately instead of only the message.
-
-### Task 3: Add Reset Control
-
-Acceptance criteria:
-
-- Add a reset button that calls the existing reset endpoint.
-- Client replaces its current `world` state with the reset world.
-- Reset clears the latest action result.
+- If an NPC has no valid movement actions, the NPC performs a `wait` action.
+- Waiting advances the turn.
+- Waiting appends an event.
+- Waiting does not move the NPC.
+- Tests cover a boxed-in NPC waiting.
 
 ## After That
 
 Next larger milestones:
 
-- Expand deterministic placeholder actions.
-- Add pickup validation.
-- Add inspect validation.
-- Add chop-tree validation.
-- Add event logs.
-- Render the event log in the client.
-- Add LLM action selection only after deterministic simulation is solid.
+- Introduce a deterministic controller abstraction.
+- Add a player/manual controller path.
+- Add pickup validation and inventory transitions.
+- Add inspect validation and memory creation.
+- Add chop-tree validation for NPCs holding an axe.
+- Add LLM action selection only after deterministic action generation/application is solid.
 
 ## Long-Term State Model
 
@@ -149,6 +100,8 @@ For the current learning version, keeping one active in-memory world is fine. Th
 - Server owns simulation mutation.
 - Client renders state and sends commands.
 - LLMs request actions; the engine validates and applies them.
+- Generate valid actions before choosing an action.
+- Controllers choose from legal actions; they do not invent world state.
 - Persist actions/results as events before considering full world-state history.
 - Prefer small pure helpers for domain logic.
 - Tests should prove behavior, not implementation trivia.

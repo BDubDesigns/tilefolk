@@ -1,4 +1,4 @@
-import type { ActionResult, Npc, World } from '@tilefolk/shared';
+import type { ActionResult, Direction, Npc, World } from '@tilefolk/shared';
 import { directionDeltas } from './directionDeltas.js';
 import { directions } from '@tilefolk/shared';
 import type { StepWorldResponse } from '@tilefolk/shared';
@@ -12,9 +12,14 @@ function appendActionEvent(world: World, actionResult: ActionResult, turn: numbe
   });
 }
 
-function createMoveResult(npc: Npc, success: boolean, message: string): ActionResult {
+function createMoveResult(
+  npc: Npc,
+  direction: Direction,
+  success: boolean,
+  message: string,
+): ActionResult {
   return {
-    action: { type: 'move', npcId: npc.id, direction: 'e' },
+    action: { type: 'move', npcId: npc.id, direction },
     success,
     message,
   };
@@ -72,7 +77,7 @@ export const stepWorld = (world: World): StepWorldResponse => {
   if (destX >= newWorld.width || destX < 0 || destY >= newWorld.height || destY < 0) {
     return finishNpcAttempt(
       newWorld,
-      createMoveResult(npc, false, `${npc.id} is at the edge of the world`),
+      createMoveResult(npc, direction, false, `${npc.id} is at the edge of the world`),
       actionTurn,
     );
   }
@@ -85,7 +90,7 @@ export const stepWorld = (world: World): StepWorldResponse => {
     ) {
       return finishNpcAttempt(
         newWorld,
-        createMoveResult(npc, false, `${npc.id} collides with an item`),
+        createMoveResult(npc, direction, false, `${npc.id} collides with an item`),
         actionTurn,
       );
     }
@@ -95,7 +100,7 @@ export const stepWorld = (world: World): StepWorldResponse => {
     if (tree.position.x === destX && tree.position.y === destY) {
       return finishNpcAttempt(
         newWorld,
-        createMoveResult(npc, false, `${npc.id} collides with a tree`),
+        createMoveResult(npc, direction, false, `${npc.id} collides with a tree`),
         actionTurn,
       );
     }
@@ -105,7 +110,7 @@ export const stepWorld = (world: World): StepWorldResponse => {
     if (thisNpc.position.x === destX && thisNpc.position.y === destY && thisNpc.id !== npc.id) {
       return finishNpcAttempt(
         newWorld,
-        createMoveResult(npc, false, `${npc.id} collides with another NPC`),
+        createMoveResult(npc, direction, false, `${npc.id} collides with another NPC`),
         actionTurn,
       );
     }
@@ -119,7 +124,7 @@ export const stepWorld = (world: World): StepWorldResponse => {
 
   return finishNpcAttempt(
     newWorld,
-    createMoveResult(npc, true, `${npc.id} moved east`),
+    createMoveResult(npc, direction, true, `${npc.id} moved ${direction}`),
     actionTurn,
   );
 };
