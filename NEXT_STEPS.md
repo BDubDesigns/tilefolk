@@ -9,7 +9,7 @@
 - Express exposes world fetch, reset, and step endpoints.
 - React fetches the active world, renders a grid, shows NPC/tree/item markers, and provides manual step/reset controls.
 - React displays world summary, current turn, latest action result, and the latest 5 world events.
-- `stepWorld` supports turn-based actor selection, deterministic direction selection, turn increments, immutable world updates, and event logging.
+- `stepWorld` supports turn-based actor selection, valid-action movement, wait fallback, turn increments, immutable world updates, and event logging.
 - `getValidMovementActions` returns legal movement actions for an NPC based on bounds and occupied destination tiles.
 - Test, typecheck, and lint scripts are passing at the latest known checkpoint.
 
@@ -33,9 +33,11 @@
 ### Basic Simulation Engine
 
 - `stepWorld` chooses the active NPC from `world.turn`.
-- Movement direction is deterministic for now.
-- Successful and blocked movement attempts advance the turn when an NPC exists.
-- Events are appended for attempted NPC actions.
+- `stepWorld` asks `getValidMovementActions` for legal moves instead of duplicating movement legality checks.
+- `stepWorld` applies the first valid movement action deterministically for now.
+- Boxed-in NPCs perform a wait action.
+- Movement and wait actions advance the turn when an NPC exists.
+- Events are appended for NPC actions.
 - Existing world state is copied rather than mutated directly.
 
 ### Valid Movement Action Generation
@@ -45,13 +47,11 @@
 - It filters out destinations blocked by trees, ground items, and other NPCs.
 - It returns an empty array when the NPC does not exist.
 
-## Current Milestone: Use Valid Actions In `stepWorld`
+### Use Valid Actions In `stepWorld`
 
 Goal: make `stepWorld` consume generated valid actions instead of duplicating movement legality checks internally.
 
-### Task 1: Wire Valid Movement Actions Into `stepWorld`
-
-Acceptance criteria:
+Completed behavior:
 
 - Active NPC is still chosen from `world.turn`.
 - `stepWorld` calls `getValidMovementActions` for the active NPC.
@@ -60,17 +60,30 @@ Acceptance criteria:
 - `actionResult.action.direction` matches the chosen action.
 - Event log records the action result.
 - Turn still advances after the NPC acts.
-- Existing tests are updated to test stable behavior rather than stale east-only behavior.
+- Boxed-in NPCs wait instead of failing.
+- Tests were updated to focus on stable behavior instead of stale east-only behavior.
 
-### Task 2: Add Wait Fallback
+## Current Milestone: Extract Deterministic Action Selection
+
+Goal: move the temporary action chooser out of `stepWorld` so controllers can plug in later.
+
+### Task 1: Create Deterministic Selector
 
 Acceptance criteria:
 
-- If an NPC has no valid movement actions, the NPC performs a `wait` action.
-- Waiting advances the turn.
-- Waiting appends an event.
-- Waiting does not move the NPC.
-- Tests cover a boxed-in NPC waiting.
+- Create a selector helper for deterministic action choice.
+- The selector receives legal actions and chooses one predictably.
+- `stepWorld` no longer directly uses `validMovementActions[0]`.
+- Wait fallback remains available when no movement actions exist.
+- Tests prove selector behavior separately from world mutation.
+
+### Task 2: Prepare Controller Boundary
+
+Acceptance criteria:
+
+- The code shape makes it clear where player, deterministic, and LLM controllers will plug in.
+- Controllers choose from legal actions; they do not validate world state themselves.
+- `stepWorld` still owns applying the selected action and recording events.
 
 ## After That
 

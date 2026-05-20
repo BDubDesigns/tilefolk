@@ -2,6 +2,7 @@ import type { ActionResult, Direction, Npc, World } from '@tilefolk/shared';
 import { directionDeltas } from './directionDeltas.js';
 import type { StepWorldResponse } from '@tilefolk/shared';
 import { getValidMovementActions } from './getValidMovementActions.js';
+import { selectDeterministicAction } from './selectDeterministicAction.js';
 
 function appendActionEvent(world: World, actionResult: ActionResult, turn: number): void {
   world.events.push({
@@ -71,8 +72,11 @@ export const stepWorld = (world: World): StepWorldResponse => {
     npcId: npc.id,
   });
 
-  // for now choose the first valid action deterministically
-  const selectedAction = validMovementActions[0];
+  const selectedAction = selectDeterministicAction({
+    world: newWorld,
+    npc,
+    actions: validMovementActions,
+  });
 
   const actionTurn = newWorld.turn;
   newWorld.turn += 1;
@@ -82,18 +86,17 @@ export const stepWorld = (world: World): StepWorldResponse => {
     return finishNpcAttempt(newWorld, createWaitResult(npc, `${npc.id} waited`), actionTurn);
   }
 
-  const direction = selectedAction.direction;
-
-  if (!direction) {
-    throw new Error('Failed to choose movement direction');
+  // narrow down to valid actions
+  if (selectedAction.type === 'wait') {
+    return finishNpcAttempt(newWorld, createWaitResult(npc, `${npc.id} waited`), actionTurn);
   }
+
+  const direction = selectedAction.direction;
 
   const delta = directionDeltas[direction];
 
   const destX = npc.position.x + delta.x;
   const destY = npc.position.y + delta.y;
-
-  // happy path
 
   // update npc position
   npc.position.x = destX;
