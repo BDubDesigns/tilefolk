@@ -13,9 +13,7 @@ export function getValidActions({ world, npcId }: GetValidActionsOptions): NpcAc
     return [];
   }
 
-  // get valid movement actions
   const movementActions = getValidMovementActions({ world, npcId });
-  // add wait action
   const waitAction: NpcAction = { type: 'wait', npcId };
 
   return [...movementActions, waitAction];

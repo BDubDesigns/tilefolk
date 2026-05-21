@@ -1,7 +1,7 @@
 import type { ActionResult, Direction, Npc, World } from '@tilefolk/shared';
 import { directionDeltas } from './directionDeltas.js';
 import type { StepWorldResponse } from '@tilefolk/shared';
-import { getValidMovementActions } from './getValidMovementActions.js';
+import { getValidActions } from './getValidActions.js';
 import { selectDeterministicAction } from './selectDeterministicAction.js';
 
 function appendActionEvent(world: World, actionResult: ActionResult, turn: number): void {
@@ -47,6 +47,10 @@ function finishNpcAttempt(
   };
 }
 
+function assertUnhandledAction(action: never): never {
+  throw new Error(`Unhandled NPC action: ${JSON.stringify(action)}`);
+}
+
 export const stepWorld = (world: World): StepWorldResponse => {
   const newWorld = {
     ...world,
@@ -67,7 +71,7 @@ export const stepWorld = (world: World): StepWorldResponse => {
     };
   }
 
-  const validMovementActions = getValidMovementActions({
+  const validActions = getValidActions({
     world: newWorld,
     npcId: npc.id,
   });
@@ -75,13 +79,12 @@ export const stepWorld = (world: World): StepWorldResponse => {
   const selectedAction = selectDeterministicAction({
     world: newWorld,
     npc,
-    actions: validMovementActions,
+    actions: validActions,
   });
 
   const actionTurn = newWorld.turn;
   newWorld.turn += 1;
 
-  // if no valid actions, wait
   if (!selectedAction) {
     return finishNpcAttempt(newWorld, createWaitResult(npc, `${npc.id} waited`), actionTurn);
   }
@@ -97,7 +100,6 @@ export const stepWorld = (world: World): StepWorldResponse => {
       const destX = npc.position.x + delta.x;
       const destY = npc.position.y + delta.y;
 
-      // update npc position
       npc.position.x = destX;
       npc.position.y = destY;
 
@@ -107,7 +109,7 @@ export const stepWorld = (world: World): StepWorldResponse => {
         actionTurn,
       );
     }
-    default:
-      return finishNpcAttempt(newWorld, createWaitResult(npc, `${npc.id} waited`), actionTurn);
   }
+
+  return assertUnhandledAction(selectedAction);
 };
