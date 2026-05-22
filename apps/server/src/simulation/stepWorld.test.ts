@@ -36,6 +36,16 @@ function getEventOrThrow(world: World, index: number): WorldEvent {
   return event;
 }
 
+function getItemOrThrow(world: World, itemId: string) {
+  const item = world.items.find((item) => item.id === itemId);
+
+  if (!item) {
+    throw new Error(`Expected item with id ${itemId}`);
+  }
+
+  return item;
+}
+
 function surroundNpcWithTrees(world: World, center: Position): void {
   world.trees = [
     { id: 'tree_n', position: { x: center.x, y: center.y - 1 }, hitPoints: 3 },
@@ -118,6 +128,73 @@ describe('stepWorld', () => {
       expect(event.turn).toBe(0);
       expect(event.actorId).toBe('npc_0');
       expect(event.message).toBe('npc_0 waited');
+    });
+  });
+
+  describe('pickup application', () => {
+    it('moves an in-range ground item into the active NPC inventory', () => {
+      const world = createWorldWithNpcAt({ x: 2, y: 2 });
+      world.items = [
+        {
+          id: 'item_0',
+          name: 'Bronze Axe',
+          location: { type: 'ground', position: { x: 3, y: 2 } },
+          type: 'axe',
+        },
+      ];
+
+      const stepResult = stepWorld(world);
+      const item = getItemOrThrow(stepResult.world, 'item_0');
+
+      expect(stepResult.actionResult.success).toBe(true);
+      expect(stepResult.actionResult.action).toEqual({
+        type: 'pickup',
+        npcId: 'npc_0',
+        itemId: 'item_0',
+      });
+      expect(item.location).toEqual({ type: 'inventory', npcId: 'npc_0' });
+    });
+
+    it('does not mutate the original world item location', () => {
+      const world = createWorldWithNpcAt({ x: 2, y: 2 });
+      world.items = [
+        {
+          id: 'item_0',
+          name: 'Bronze Axe',
+          location: { type: 'ground', position: { x: 3, y: 2 } },
+          type: 'axe',
+        },
+      ];
+
+      const stepResult = stepWorld(world);
+      const steppedItem = getItemOrThrow(stepResult.world, 'item_0');
+      const originalItem = getItemOrThrow(world, 'item_0');
+
+      expect(steppedItem.location).toEqual({ type: 'inventory', npcId: 'npc_0' });
+      expect(originalItem.location).toEqual({
+        type: 'ground',
+        position: { x: 3, y: 2 },
+      });
+    });
+
+    it('records a pickup event', () => {
+      const world = createWorldWithNpcAt({ x: 2, y: 2 });
+      world.items = [
+        {
+          id: 'item_0',
+          name: 'Bronze Axe',
+          location: { type: 'ground', position: { x: 3, y: 2 } },
+          type: 'axe',
+        },
+      ];
+
+      const stepResult = stepWorld(world);
+      const event = getEventOrThrow(stepResult.world, 0);
+
+      expect(event.id).toBe('event_0');
+      expect(event.turn).toBe(0);
+      expect(event.actorId).toBe('npc_0');
+      expect(event.message).toBe('npc_0 picked up item_0');
     });
   });
 

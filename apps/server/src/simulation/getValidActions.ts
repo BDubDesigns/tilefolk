@@ -1,5 +1,6 @@
 import type { World, NpcId, NpcAction } from '@tilefolk/shared';
 import { getValidMovementActions } from './getValidMovementActions.js';
+import { getValidPickupActions } from './getValidPickupActions.js';
 
 interface GetValidActionsOptions {
   world: World;
@@ -14,7 +15,8 @@ export function getValidActions({ world, npcId }: GetValidActionsOptions): NpcAc
   }
 
   const movementActions = getValidMovementActions({ world, npcId });
+  const pickupActions = getValidPickupActions({ world, npcId });
   const waitAction: NpcAction = { type: 'wait', npcId };
 
-  return [...movementActions, waitAction];
+  return [...pickupActions, ...movementActions, waitAction];
 }
