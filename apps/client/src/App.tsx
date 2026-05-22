@@ -5,6 +5,7 @@ import type { StepWorldResponse, World, ActionResult } from '@tilefolk/shared';
 import { WorldSummary } from './features/world/WorldSummary';
 import { SimulationControls } from './features/simulation/SimulationControls';
 import { EventLog } from './features/simulation/EventLog';
+import { NpcSummary } from './features/world/NpcSummary';
 
 export function App() {
   const [world, setWorld] = useState<null | World>(null);
@@ -114,6 +115,7 @@ export function App() {
             onResetWorld={handleResetWorld}
           />
           <EventLog events={world.events} />
+          <NpcSummary npcs={world.npcs} items={world.items} />
         </div>
 
         <WorldGrid tiles={world.tiles} npcs={world.npcs} items={world.items} trees={world.trees} />
