@@ -2,7 +2,7 @@ import type { ActionResult, Direction, Npc, World } from '@tilefolk/shared';
 import { directionDeltas } from './directionDeltas.js';
 import type { StepWorldResponse, ItemId } from '@tilefolk/shared';
 import { getValidActions } from './getValidActions.js';
-import { selectDeterministicAction } from './selectDeterministicAction.js';
+import { deterministicController } from './controllers/deterministicController.js';
 
 function appendActionEvent(world: World, actionResult: ActionResult, turn: number): void {
   world.events.push({
@@ -91,7 +91,8 @@ export const stepWorld = (world: World): StepWorldResponse => {
     npcId: npc.id,
   });
 
-  const selectedAction = selectDeterministicAction({
+  // choose the action to take based on the valid actions and the deterministic controller
+  const selectedAction = deterministicController.chooseAction({
     world: newWorld,
     npc,
     actions: validActions,
