@@ -82,12 +82,18 @@ export type MoveAction = {
   direction: Direction;
 };
 
+export type PickupAction = {
+  type: 'pickup';
+  npcId: NpcId;
+  itemId: ItemId;
+};
+
 export type WaitAction = {
   type: 'wait';
   npcId: NpcId;
 };
 
-export type NpcAction = MoveAction | WaitAction;
+export type NpcAction = MoveAction | WaitAction | PickupAction;
 
 export type NpcActionType = NpcAction['type'];
 
