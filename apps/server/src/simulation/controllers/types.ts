@@ -13,5 +13,5 @@ export interface ChooseActionOptions {
 }
 
 export interface ActionController {
-  chooseAction(options: ChooseActionOptions): string | null;
+  chooseAction(options: ChooseActionOptions): Promise<string | null>;
 }

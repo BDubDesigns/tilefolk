@@ -31,8 +31,8 @@ export function createApp() {
   });
 
   // step world
-  app.post('/api/worlds/default/step', (_request, response) => {
-    const stepResult = stepActiveWorld();
+  app.post('/api/worlds/default/step', async (_request, response) => {
+    const stepResult = await stepActiveWorld();
 
     response.json(stepResult);
   });

@@ -4,7 +4,7 @@ import { createWorld } from '../worldGenerator.js';
 import type { ActionOption } from './types.js';
 
 describe('deterministicController', () => {
-  it('returns the first option id when options exist', () => {
+  it('returns the first option id when options exist', async () => {
     const world = createWorld({ numNpcs: 1 });
     const npc = world.npcs[0];
     if (!npc) {
@@ -22,7 +22,7 @@ describe('deterministicController', () => {
         action: { type: 'move', npcId: npc.id, direction: 'n' },
       },
     ];
-    const selectedOptionId = deterministicController.chooseAction({
+    const selectedOptionId = await deterministicController.chooseAction({
       world,
       npc,
       actionOptions,
@@ -30,7 +30,7 @@ describe('deterministicController', () => {
     expect(selectedOptionId).toBe('wait');
   });
 
-  it('returns null when no options exist', () => {
+  it('returns null when no options exist', async () => {
     const world = createWorld({ numNpcs: 1 });
     const npc = world.npcs[0];
 
@@ -38,7 +38,7 @@ describe('deterministicController', () => {
       throw new Error('npc not found');
     }
 
-    const selectedOptionId = deterministicController.chooseAction({
+    const selectedOptionId = await deterministicController.chooseAction({
       world,
       npc,
       actionOptions: [],

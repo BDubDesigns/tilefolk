@@ -20,10 +20,10 @@ describe('resetWorld', () => {
 });
 
 describe('stepActiveWorld', () => {
-  it('updates the active world with the stepped world', () => {
+  it('updates the active world with the stepped world', async () => {
     resetWorld();
 
-    const stepResult = stepActiveWorld();
+    const stepResult = await stepActiveWorld();
     const activeWorldAfterStep = getActiveWorld();
 
     expect(activeWorldAfterStep).toBe(stepResult.world);

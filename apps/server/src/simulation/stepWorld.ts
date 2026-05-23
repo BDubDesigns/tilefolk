@@ -65,7 +65,7 @@ function assertUnhandledAction(action: never): never {
   throw new Error(`Unhandled NPC action: ${JSON.stringify(action)}`);
 }
 
-export const stepWorld = (world: World): StepWorldResponse => {
+export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
   const newWorld = {
     ...world,
     events: [...world.events],
@@ -97,7 +97,7 @@ export const stepWorld = (world: World): StepWorldResponse => {
 
   const actionOptions = getActionOptions(validActions);
 
-  const selectedOptionId = deterministicController.chooseAction({
+  const selectedOptionId = await deterministicController.chooseAction({
     world: newWorld,
     npc,
     actionOptions,

@@ -16,10 +16,10 @@ export function resetWorld(): World {
   return activeWorld;
 }
 
-export function stepActiveWorld(): StepWorldResponse {
+export async function stepActiveWorld(): Promise<StepWorldResponse> {
   activeWorld = getActiveWorld();
 
-  const response = stepWorld(activeWorld);
+  const response = await stepWorld(activeWorld);
 
   activeWorld = response.world;
   return response;

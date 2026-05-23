@@ -61,10 +61,10 @@ function surroundNpcWithTrees(world: World, center: Position): void {
 
 describe('stepWorld', () => {
   describe('movement application', () => {
-    it('applies the first valid movement action', () => {
+    it('applies the first valid movement action', async () => {
       const world = createWorldWithNpcAt({ x: 2, y: 2 });
 
-      const stepResult = stepWorld(world);
+      const stepResult = await stepWorld(world);
       const npc = getNpcOrThrow(stepResult.world, 0);
 
       expect(stepResult.actionResult.success).toBe(true);
@@ -77,10 +77,10 @@ describe('stepWorld', () => {
       expect(stepResult.actionResult.action.direction).toBe('n');
     });
 
-    it('does not mutate the original world', () => {
+    it('does not mutate the original world', async () => {
       const world = createWorldWithNpcAt({ x: 2, y: 2 });
 
-      const stepResult = stepWorld(world);
+      const stepResult = await stepWorld(world);
       const steppedNpc = getNpcOrThrow(stepResult.world, 0);
       const originalNpc = getNpcOrThrow(world, 0);
 
@@ -91,11 +91,11 @@ describe('stepWorld', () => {
       expect(originalNpc.position.y).toBe(2);
     });
 
-    it('uses the next valid movement action when the first direction is blocked', () => {
+    it('uses the next valid movement action when the first direction is blocked', async () => {
       const world = createWorldWithNpcAt({ x: 2, y: 2 });
       world.trees = [{ id: 'tree_0', position: { x: 2, y: 1 }, hitPoints: 3 }];
 
-      const stepResult = stepWorld(world);
+      const stepResult = await stepWorld(world);
       const npc = getNpcOrThrow(stepResult.world, 0);
 
       expect(stepResult.actionResult.success).toBe(true);
@@ -111,11 +111,11 @@ describe('stepWorld', () => {
   });
 
   describe('wait fallback', () => {
-    it('waits when the active NPC has no valid movement actions', () => {
+    it('waits when the active NPC has no valid movement actions', async () => {
       const world = createWorldWithNpcAt({ x: 2, y: 2 });
       surroundNpcWithTrees(world, { x: 2, y: 2 });
 
-      const stepResult = stepWorld(world);
+      const stepResult = await stepWorld(world);
       const npc = getNpcOrThrow(stepResult.world, 0);
       const event = getEventOrThrow(stepResult.world, 0);
 
@@ -132,7 +132,7 @@ describe('stepWorld', () => {
   });
 
   describe('pickup application', () => {
-    it('moves an in-range ground item into the active NPC inventory', () => {
+    it('moves an in-range ground item into the active NPC inventory', async () => {
       const world = createWorldWithNpcAt({ x: 2, y: 2 });
       world.items = [
         {
@@ -143,7 +143,7 @@ describe('stepWorld', () => {
         },
       ];
 
-      const stepResult = stepWorld(world);
+      const stepResult = await stepWorld(world);
       const item = getItemOrThrow(stepResult.world, 'item_0');
 
       expect(stepResult.actionResult.success).toBe(true);
@@ -155,7 +155,7 @@ describe('stepWorld', () => {
       expect(item.location).toEqual({ type: 'inventory', npcId: 'npc_0' });
     });
 
-    it('does not mutate the original world item location', () => {
+    it('does not mutate the original world item location', async () => {
       const world = createWorldWithNpcAt({ x: 2, y: 2 });
       world.items = [
         {
@@ -166,7 +166,7 @@ describe('stepWorld', () => {
         },
       ];
 
-      const stepResult = stepWorld(world);
+      const stepResult = await stepWorld(world);
       const steppedItem = getItemOrThrow(stepResult.world, 'item_0');
       const originalItem = getItemOrThrow(world, 'item_0');
 
@@ -177,7 +177,7 @@ describe('stepWorld', () => {
       });
     });
 
-    it('records a pickup event', () => {
+    it('records a pickup event', async () => {
       const world = createWorldWithNpcAt({ x: 2, y: 2 });
       world.items = [
         {
@@ -188,7 +188,7 @@ describe('stepWorld', () => {
         },
       ];
 
-      const stepResult = stepWorld(world);
+      const stepResult = await stepWorld(world);
       const event = getEventOrThrow(stepResult.world, 0);
 
       expect(event.id).toBe('event_0');
@@ -199,11 +199,11 @@ describe('stepWorld', () => {
   });
 
   describe('missing actors', () => {
-    it('fails when there are no NPCs in the world', () => {
+    it('fails when there are no NPCs in the world', async () => {
       const world = createWorld();
       world.npcs = [];
 
-      const stepResult = stepWorld(world);
+      const stepResult = await stepWorld(world);
 
       expect(stepResult.actionResult.success).toBe(false);
       expect(stepResult.actionResult.message).toBe('No NPCs to move');
@@ -211,24 +211,24 @@ describe('stepWorld', () => {
   });
 
   describe('turn tracking', () => {
-    it('increments the world turn after a successful step', () => {
+    it('increments the world turn after a successful step', async () => {
       const world = createWorldWithNpcAt({ x: 2, y: 2 });
 
-      const stepResult = stepWorld(world);
+      const stepResult = await stepWorld(world);
 
       expect(stepResult.world.turn).toBe(1);
     });
 
-    it('does not mutate the original world turn', () => {
+    it('does not mutate the original world turn', async () => {
       const world = createWorldWithNpcAt({ x: 2, y: 2 });
 
-      const stepResult = stepWorld(world);
+      const stepResult = await stepWorld(world);
 
       expect(stepResult.world.turn).toBe(1);
       expect(world.turn).toBe(0);
     });
 
-    it('uses the world turn to choose which NPC acts', () => {
+    it('uses the world turn to choose which NPC acts', async () => {
       const world = createWorld();
       world.trees = [];
       world.items = [];
@@ -241,7 +241,7 @@ describe('stepWorld', () => {
       npc1.position.x = 4;
       npc1.position.y = 4;
 
-      const stepResult = stepWorld(world);
+      const stepResult = await stepWorld(world);
       const steppedNpc0 = getNpcOrThrow(stepResult.world, 0);
       const steppedNpc1 = getNpcOrThrow(stepResult.world, 1);
 
@@ -260,10 +260,10 @@ describe('stepWorld', () => {
   });
 
   describe('event logging', () => {
-    it('appends an event after a successful movement', () => {
+    it('appends an event after a successful movement', async () => {
       const world = createWorldWithNpcAt({ x: 2, y: 2 });
 
-      const stepResult = stepWorld(world);
+      const stepResult = await stepWorld(world);
       expect(stepResult.world.events).toHaveLength(1);
       const event = getEventOrThrow(stepResult.world, 0);
 
@@ -274,10 +274,10 @@ describe('stepWorld', () => {
       expect(stepResult.actionResult.success).toBe(true);
     });
 
-    it('does not mutate the original world events', () => {
+    it('does not mutate the original world events', async () => {
       const world = createWorldWithNpcAt({ x: 2, y: 2 });
 
-      const stepResult = stepWorld(world);
+      const stepResult = await stepWorld(world);
       expect(stepResult.world.events).toHaveLength(1);
       const event = getEventOrThrow(stepResult.world, 0);
 
@@ -289,11 +289,11 @@ describe('stepWorld', () => {
       expect(world.events).toHaveLength(0);
     });
 
-    it('records the attempted turn on the event', () => {
+    it('records the attempted turn on the event', async () => {
       const world = createWorldWithNpcAt({ x: 2, y: 2 });
       world.turn = 3;
 
-      const stepResult = stepWorld(world);
+      const stepResult = await stepWorld(world);
       expect(stepResult.world.events).toHaveLength(1);
       const event = getEventOrThrow(stepResult.world, 0);
 
@@ -302,3 +302,4 @@ describe('stepWorld', () => {
     });
   });
 });
+

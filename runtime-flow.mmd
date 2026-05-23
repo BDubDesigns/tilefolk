@@ -1,0 +1,122 @@
+flowchart TD
+  %% Tilefolk runtime flow, excluding tests.
+
+  subgraph Client["Client App (React)"]
+    Browser["User in browser"]
+    App["App.tsx<br/>owns world, loading, error,<br/>lastActionResult state"]
+    Controls["SimulationControls<br/>Step World / Reset World"]
+    Summary["WorldSummary<br/>world dimensions, counts, turn"]
+    Events["EventLog<br/>latest world events"]
+    Npcs["NpcSummary<br/>NPC inventory from item locations"]
+    Grid["WorldGrid<br/>tiles + entity overlay"]
+
+    Browser --> App
+    App --> Summary
+    App --> Controls
+    App --> Events
+    App --> Npcs
+    App --> Grid
+  end
+
+  subgraph Server["Server App (Express)"]
+    CreateApp["createApp()"]
+    GetWorld["GET /api/worlds/default"]
+    ResetWorldRoute["POST /api/worlds/reset"]
+    StepRoute["POST /api/worlds/default/step"]
+  end
+
+  subgraph Store["World Store"]
+    ActiveWorld["activeWorld<br/>module-level SSOT for current world"]
+    GetActiveWorld["getActiveWorld()"]
+    ResetWorld["resetWorld()"]
+    StepActiveWorld["stepActiveWorld()<br/>awaits stepWorld()"]
+  end
+
+  subgraph Generation["World Generation"]
+    CreateWorld["createWorld()<br/>creates tiles, NPCs, trees, items,<br/>turn, events"]
+  end
+
+  subgraph Simulation["Simulation Step"]
+    StepWorld["stepWorld(world)<br/>clones mutable branches,<br/>chooses active NPC by turn"]
+    ValidActions["getValidActions()<br/>combines valid pickup, movement, wait"]
+    PickupActions["getValidPickupActions()<br/>nearby ground items"]
+    MoveActions["getValidMovementActions()<br/>in-bounds and unblocked movement"]
+    ActionOptions["getActionOptions()<br/>wrap actions as selectable menu options"]
+    Controller["deterministicController.chooseAction()<br/>returns selected option id"]
+    ResolveOption["Resolve selectedOptionId<br/>against same actionOptions array"]
+    ApplyAction{"selectedAction.type"}
+    ApplyMove["move<br/>update NPC position"]
+    ApplyPickup["pickup<br/>item.location = inventory"]
+    ApplyWait["wait<br/>no position/item change"]
+    Finish["finishNpcAttempt()<br/>append event + return response"]
+  end
+
+  subgraph Shared["Shared Types (@tilefolk/shared)"]
+    WorldType["World"]
+    ActionTypes["NpcAction union<br/>move | pickup | wait"]
+    ResponseType["StepWorldResponse<br/>{ world, actionResult }"]
+  end
+
+  %% Initial load flow
+  App -->|"on mount: fetch world"| GetWorld
+  GetWorld --> GetActiveWorld
+  GetActiveWorld -->|"if missing"| CreateWorld
+  CreateWorld --> ActiveWorld
+  GetActiveWorld -->|"World JSON"| App
+
+  %% Reset flow
+  Controls -->|"Reset World click"| App
+  App -->|"POST reset"| ResetWorldRoute
+  ResetWorldRoute --> ResetWorld
+  ResetWorld --> CreateWorld
+  CreateWorld --> ActiveWorld
+  ResetWorldRoute -->|"World JSON"| App
+  App -->|"setWorld(new world)<br/>clear lastActionResult"| Summary
+  App --> Grid
+  App --> Events
+  App --> Npcs
+
+  %% Step flow
+  Controls -->|"Step World click"| App
+  App -->|"POST step"| StepRoute
+  StepRoute --> StepActiveWorld
+  StepActiveWorld --> GetActiveWorld
+  GetActiveWorld --> ActiveWorld
+  StepActiveWorld -->|"await"| StepWorld
+
+  StepWorld --> ValidActions
+  ValidActions --> PickupActions
+  ValidActions --> MoveActions
+  ValidActions -->|"raw NpcAction[]"| ActionOptions
+  ActionOptions -->|"ActionOption[]<br/>id + description + action"| Controller
+  Controller -->|"selectedOptionId"| ResolveOption
+  ResolveOption -->|"selectedOption.action"| ApplyAction
+
+  ApplyAction -->|"move"| ApplyMove
+  ApplyAction -->|"pickup"| ApplyPickup
+  ApplyAction -->|"wait or invalid option fallback"| ApplyWait
+  ApplyMove --> Finish
+  ApplyPickup --> Finish
+  ApplyWait --> Finish
+
+  Finish -->|"StepWorldResponse"| StepActiveWorld
+  StepActiveWorld -->|"activeWorld = response.world"| ActiveWorld
+  StepActiveWorld --> StepRoute
+  StepRoute -->|"StepWorldResponse JSON"| App
+  App -->|"setWorld(response.world)"| Summary
+  App -->|"setLastActionResult(response.actionResult)"| Controls
+  App --> Events
+  App --> Npcs
+  App --> Grid
+
+  %% Rendering derivations
+  Grid -->|"renders ground items only"| WorldType
+  Npcs -->|"derives inventory from<br/>item.location.type = inventory"| WorldType
+
+  %% Type ownership
+  WorldType -.-> App
+  WorldType -.-> StepWorld
+  ActionTypes -.-> ValidActions
+  ActionTypes -.-> ActionOptions
+  ResponseType -.-> App
+  ResponseType -.-> StepRoute
