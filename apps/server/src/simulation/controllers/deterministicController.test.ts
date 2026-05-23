@@ -1,28 +1,36 @@
 import { deterministicController } from './deterministicController.js';
 import { expect, it, describe } from 'vitest';
 import { createWorld } from '../worldGenerator.js';
-import type { NpcAction } from '@tilefolk/shared';
+import type { ActionOption } from './types.js';
 
 describe('deterministicController', () => {
-  it('returns the first action when actions exist', () => {
+  it('returns the first option id when options exist', () => {
     const world = createWorld({ numNpcs: 1 });
     const npc = world.npcs[0];
     if (!npc) {
       throw new Error('npc not found');
     }
-    const actions: NpcAction[] = [
-      { type: 'wait', npcId: npc.id },
-      { type: 'move', npcId: npc.id, direction: 'n' },
+    const actionOptions: ActionOption[] = [
+      {
+        id: 'wait',
+        description: 'Wait for this turn',
+        action: { type: 'wait', npcId: npc.id },
+      },
+      {
+        id: 'move:n',
+        description: 'Move 1 tile north',
+        action: { type: 'move', npcId: npc.id, direction: 'n' },
+      },
     ];
-    const selectedAction = deterministicController.chooseAction({
+    const selectedOptionId = deterministicController.chooseAction({
       world,
       npc,
-      actions,
+      actionOptions,
     });
-    expect(selectedAction).toEqual(actions[0]);
+    expect(selectedOptionId).toBe('wait');
   });
 
-  it('returns null when no actions exist', () => {
+  it('returns null when no options exist', () => {
     const world = createWorld({ numNpcs: 1 });
     const npc = world.npcs[0];
 
@@ -30,12 +38,12 @@ describe('deterministicController', () => {
       throw new Error('npc not found');
     }
 
-    const selectedAction = deterministicController.chooseAction({
+    const selectedOptionId = deterministicController.chooseAction({
       world,
       npc,
-      actions: [],
+      actionOptions: [],
     });
 
-    expect(selectedAction).toBeNull();
+    expect(selectedOptionId).toBeNull();
   });
 });

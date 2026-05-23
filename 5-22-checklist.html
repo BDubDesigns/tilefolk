@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tilefolk ActionOption Checklist</title>
+    <style>
+      body {
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.5;
+        margin: 0;
+        color: #1f2933;
+        background: #f4f7f2;
+      }
+
+      main {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 32px 20px 56px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 2rem;
+      }
+
+      .intro {
+        margin: 0 0 28px;
+        color: #506052;
+      }
+
+      section {
+        border-top: 1px solid #cbd6c7;
+        padding: 20px 0;
+      }
+
+      label {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        font-weight: 700;
+        font-size: 1.1rem;
+      }
+
+      input[type="checkbox"] {
+        margin-top: 5px;
+        width: 18px;
+        height: 18px;
+      }
+
+      p {
+        margin: 10px 0;
+      }
+
+      code {
+        font-family: "Cascadia Code", "Fira Code", Consolas, monospace;
+        background: #e8eee4;
+        padding: 2px 5px;
+        border-radius: 4px;
+      }
+
+      pre {
+        overflow-x: auto;
+        background: #202923;
+        color: #eef7ef;
+        padding: 14px;
+        border-radius: 8px;
+      }
+
+      pre code {
+        background: transparent;
+        padding: 0;
+      }
+
+      ul {
+        margin-top: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Tilefolk ActionOption Checklist</h1>
+      <p class="intro">
+        Goal: controllers choose an option ID, while the engine keeps ownership of the real
+        server-generated action.
+      </p>
+
+      <section>
+        <label>
+          <input type="checkbox" />
+          <span>Checkpoint 1: Add the ActionOption type</span>
+        </label>
+        <p>Open <code>apps/server/src/simulation/controllers/types.ts</code>.</p>
+        <p>Add a server-only option shape with <code>id</code>, <code>description</code>, and <code>action</code>.</p>
+        <pre><code>export interface ActionOption {
+  id: string;
+  description: string;
+  action: NpcAction;
+}</code></pre>
+        <p>Do not change <code>ChooseActionOptions</code> yet.</p>
+      </section>
+
+      <section>
+        <label>
+          <input type="checkbox" />
+          <span>Checkpoint 2: Create getActionOptions.ts</span>
+        </label>
+        <p>Create <code>apps/server/src/simulation/getActionOptions.ts</code>.</p>
+        <p>Its job: convert raw valid <code>NpcAction[]</code> into selectable <code>ActionOption[]</code>.</p>
+        <ul>
+          <li><code>move</code> becomes <code>move:n</code>, <code>move:ne</code>, etc.</li>
+          <li><code>pickup</code> becomes <code>pickup:item_0</code>.</li>
+          <li><code>wait</code> becomes <code>wait</code>.</li>
+        </ul>
+        <pre><code>// Concept only, write it yourself:
+getActionOptions(actions) =&gt; [
+  { id: "move:n", description: "Move n", action: moveAction },
+  { id: "wait", description: "Wait", action: waitAction },
+]</code></pre>
+      </section>
+
+      <section>
+        <label>
+          <input type="checkbox" />
+          <span>Checkpoint 3: Test getActionOptions</span>
+        </label>
+        <p>Create <code>apps/server/src/simulation/getActionOptions.test.ts</code>.</p>
+        <p>Test these behaviors before wiring anything into <code>stepWorld</code>:</p>
+        <ul>
+          <li>move action becomes option ID <code>move:n</code></li>
+          <li>pickup action becomes option ID <code>pickup:item_0</code></li>
+          <li>wait action becomes option ID <code>wait</code></li>
+          <li>the original action is preserved in <code>option.action</code></li>
+        </ul>
+        <pre><code>npm run test -- --run apps/server/src/simulation/getActionOptions.test.ts</code></pre>
+      </section>
+
+      <section>
+        <label>
+          <input type="checkbox" />
+          <span>Checkpoint 4: Update the controller contract</span>
+        </label>
+        <p>Return to <code>controllers/types.ts</code>.</p>
+        <p>Change the controller input from raw actions to action options.</p>
+        <pre><code>export interface ChooseActionOptions {
+  world: World;
+  npc: Npc;
+  actionOptions: ActionOption[];
+}</code></pre>
+        <p>Change controller return type to <code>string | null</code>.</p>
+      </section>
+
+      <section>
+        <label>
+          <input type="checkbox" />
+          <span>Checkpoint 5: Update deterministicController</span>
+        </label>
+        <p>Open <code>controllers/deterministicController.ts</code>.</p>
+        <p>It should choose the first option and return that option's ID.</p>
+        <pre><code>const firstOption = options.actionOptions[0];
+
+if (firstOption === undefined) {
+  return null;
+}
+
+return firstOption.id;</code></pre>
+        <p>This file should no longer need to import <code>NpcAction</code>.</p>
+      </section>
+
+      <section>
+        <label>
+          <input type="checkbox" />
+          <span>Checkpoint 6: Update controller tests</span>
+        </label>
+        <p>Open <code>controllers/deterministicController.test.ts</code>.</p>
+        <p>Tests should pass <code>actionOptions</code>, not raw <code>actions</code>.</p>
+        <ul>
+          <li>first test expects selected ID, like <code>"wait"</code></li>
+          <li>second test expects <code>null</code></li>
+        </ul>
+      </section>
+
+      <section>
+        <label>
+          <input type="checkbox" />
+          <span>Checkpoint 7: Wire stepWorld last</span>
+        </label>
+        <p>Open <code>apps/server/src/simulation/stepWorld.ts</code>.</p>
+        <p>New flow:</p>
+        <ul>
+          <li>get raw valid actions with <code>getValidActions</code></li>
+          <li>wrap them with <code>getActionOptions</code></li>
+          <li>controller returns selected option ID</li>
+          <li>find matching option by ID</li>
+          <li>fallback to wait if no ID or no matching option</li>
+          <li>apply <code>selectedOption.action</code> with the existing switch</li>
+        </ul>
+      </section>
+
+      <section>
+        <label>
+          <input type="checkbox" />
+          <span>Checkpoint 8: Verify everything</span>
+        </label>
+        <p>Run the full checks.</p>
+        <pre><code>npm run test
+npm run typecheck</code></pre>
+        <p>Movement, pickup, wait, events, and turn tracking should still pass.</p>
+      </section>
+
+      <section>
+        <label>
+          <input type="checkbox" />
+          <span>Checkpoint 9: Commit</span>
+        </label>
+        <p>Commit message idea:</p>
+        <pre><code>git commit -m "Add action options for controller selection"</code></pre>
+        <p>No LLM API calls in this slice.</p>
+      </section>
+    </main>
+  </body>
+</html>

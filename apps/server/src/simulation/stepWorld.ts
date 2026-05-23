@@ -2,6 +2,7 @@ import type { ActionResult, Direction, Npc, World } from '@tilefolk/shared';
 import { directionDeltas } from './directionDeltas.js';
 import type { StepWorldResponse, ItemId } from '@tilefolk/shared';
 import { getValidActions } from './getValidActions.js';
+import { getActionOptions } from './getActionOptions.js';
 import { deterministicController } from './controllers/deterministicController.js';
 
 function appendActionEvent(world: World, actionResult: ActionResult, turn: number): void {
@@ -86,24 +87,28 @@ export const stepWorld = (world: World): StepWorldResponse => {
     };
   }
 
+  const actionTurn = newWorld.turn;
+  newWorld.turn += 1;
+
   const validActions = getValidActions({
     world: newWorld,
     npcId: npc.id,
   });
 
-  // choose the action to take based on the valid actions and the deterministic controller
-  const selectedAction = deterministicController.chooseAction({
+  const actionOptions = getActionOptions(validActions);
+
+  const selectedOptionId = deterministicController.chooseAction({
     world: newWorld,
     npc,
-    actions: validActions,
+    actionOptions,
   });
 
-  const actionTurn = newWorld.turn;
-  newWorld.turn += 1;
-
-  if (!selectedAction) {
+  const selectedOption = actionOptions.find((option) => option.id === selectedOptionId);
+  if (!selectedOption) {
     return finishNpcAttempt(newWorld, createWaitResult(npc, `${npc.id} waited`), actionTurn);
   }
+
+  const selectedAction = selectedOption.action;
 
   switch (selectedAction.type) {
     case 'wait':
