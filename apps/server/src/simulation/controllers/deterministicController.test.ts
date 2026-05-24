@@ -4,7 +4,7 @@ import { createWorld } from '../worldGenerator.js';
 import type { ActionOption } from './types.js';
 
 describe('deterministicController', () => {
-  it('returns the first option id when options exist', async () => {
+  it('returns a decision for the first option when options exist', async () => {
     const world = createWorld({ numNpcs: 1 });
     const npc = world.npcs[0];
     if (!npc) {
