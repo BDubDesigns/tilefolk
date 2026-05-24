@@ -1,0 +1,13 @@
+.eventLogItem {
+  margin-bottom: 12px;
+}
+
+.eventLogItem p {
+  margin: 0;
+}
+
+.eventReason {
+  color: #52635a;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
