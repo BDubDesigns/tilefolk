@@ -22,11 +22,12 @@ describe('deterministicController', () => {
         action: { type: 'move', npcId: npc.id, direction: 'n' },
       },
     ];
-    const selectedOptionId = await deterministicController.chooseAction({
+    const controllerDecision = await deterministicController.chooseAction({
       world,
       npc,
       actionOptions,
     });
+    const selectedOptionId = controllerDecision?.selectedOptionId;
     expect(selectedOptionId).toBe('wait');
   });
 

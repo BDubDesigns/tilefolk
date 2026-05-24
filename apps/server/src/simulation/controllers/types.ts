@@ -6,6 +6,11 @@ export interface ActionOption {
   action: NpcAction;
 }
 
+export interface ControllerDecision {
+  selectedOptionId: string;
+  reason: string;
+}
+
 export interface ChooseActionOptions {
   world: World;
   npc: Npc;
@@ -13,5 +18,5 @@ export interface ChooseActionOptions {
 }
 
 export interface ActionController {
-  chooseAction(options: ChooseActionOptions): Promise<string | null>;
+  chooseAction(options: ChooseActionOptions): Promise<ControllerDecision | null>;
 }

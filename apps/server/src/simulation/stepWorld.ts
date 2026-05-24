@@ -54,7 +54,6 @@ function finishNpcAttempt(
   turn: number,
 ): StepWorldResponse {
   appendActionEvent(world, actionResult, turn);
-
   return {
     world,
     actionResult,
@@ -97,13 +96,19 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
 
   const actionOptions = getActionOptions(validActions);
 
-  const selectedOptionId = await deterministicController.chooseAction({
+  const controllerDecision = await deterministicController.chooseAction({
     world: newWorld,
     npc,
     actionOptions,
   });
 
-  const selectedOption = actionOptions.find((option) => option.id === selectedOptionId);
+  if (!controllerDecision) {
+    return finishNpcAttempt(newWorld, createWaitResult(npc, `${npc.id} waited`), actionTurn);
+  }
+  const selectedOption = actionOptions.find(
+    (option) => option.id === controllerDecision.selectedOptionId,
+  );
+
   if (!selectedOption) {
     return finishNpcAttempt(newWorld, createWaitResult(npc, `${npc.id} waited`), actionTurn);
   }
