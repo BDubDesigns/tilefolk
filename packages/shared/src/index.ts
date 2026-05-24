@@ -113,4 +113,5 @@ export type WorldEvent = {
   turn: number;
   actorId: NpcId | null;
   message: string;
+  controllerReason?: string;
 };

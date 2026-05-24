@@ -5,12 +5,18 @@ import { getValidActions } from './getValidActions.js';
 import { getActionOptions } from './getActionOptions.js';
 import { deterministicController } from './controllers/deterministicController.js';
 
-function appendActionEvent(world: World, actionResult: ActionResult, turn: number): void {
+function appendActionEvent(
+  world: World,
+  actionResult: ActionResult,
+  turn: number,
+  controllerReason?: string,
+): void {
   world.events.push({
     id: `event_${world.events.length}`,
     turn,
     actorId: actionResult.action.npcId,
     message: actionResult.message,
+    ...(controllerReason ? { controllerReason } : {}),
   });
 }
 
@@ -52,8 +58,9 @@ function finishNpcAttempt(
   world: World,
   actionResult: ActionResult,
   turn: number,
+  controllerReason?: string,
 ): StepWorldResponse {
-  appendActionEvent(world, actionResult, turn);
+  appendActionEvent(world, actionResult, turn, controllerReason);
   return {
     world,
     actionResult,
@@ -103,21 +110,36 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
   });
 
   if (!controllerDecision) {
-    return finishNpcAttempt(newWorld, createWaitResult(npc, `${npc.id} waited`), actionTurn);
+    return finishNpcAttempt(
+      newWorld,
+      createWaitResult(npc, `${npc.id} waited`),
+      actionTurn,
+      'Controller did not select an option.',
+    );
   }
   const selectedOption = actionOptions.find(
     (option) => option.id === controllerDecision.selectedOptionId,
   );
 
   if (!selectedOption) {
-    return finishNpcAttempt(newWorld, createWaitResult(npc, `${npc.id} waited`), actionTurn);
+    return finishNpcAttempt(
+      newWorld,
+      createWaitResult(npc, `${npc.id} waited`),
+      actionTurn,
+      'Controller selected an invalid option.',
+    );
   }
 
   const selectedAction = selectedOption.action;
 
   switch (selectedAction.type) {
     case 'wait':
-      return finishNpcAttempt(newWorld, createWaitResult(npc, `${npc.id} waited`), actionTurn);
+      return finishNpcAttempt(
+        newWorld,
+        createWaitResult(npc, `${npc.id} waited`),
+        actionTurn,
+        controllerDecision.reason,
+      );
     case 'move': {
       const direction = selectedAction.direction;
 
@@ -133,6 +155,7 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
         newWorld,
         createMoveResult(npc, direction, true, `${npc.id} moved ${direction}`),
         actionTurn,
+        controllerDecision.reason,
       );
     }
     case 'pickup': {
@@ -145,6 +168,7 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
           newWorld,
           createPickupResult(npc, itemId, true, `${npc.id} picked up ${itemId}`),
           actionTurn,
+          controllerDecision.reason,
         );
       } else {
         return finishNpcAttempt(
@@ -156,6 +180,7 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
             `${npc.id} tried to pickup ${itemId} but it was not found`,
           ),
           actionTurn,
+          controllerDecision.reason,
         );
       }
     }
