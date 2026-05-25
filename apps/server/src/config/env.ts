@@ -24,6 +24,9 @@ const defaultController: 'deterministic' | 'llm' =
 const useSampleControllerAssignments =
   process.env.TILEFOLK_USE_SAMPLE_CONTROLLER_ASSIGNMENTS?.trim() === 'true';
 
+const trimmedAdminToken = process.env.TILEFOLK_ADMIN_TOKEN?.trim();
+const tilefolkAdminToken = trimmedAdminToken ? trimmedAdminToken : null;
+
 export const serverEnv = {
   googleAiApiKey,
   googleAiModel,
@@ -33,4 +36,6 @@ export const serverEnv = {
   isOpenCodeGoConfigured: openCodeGoApiKey !== null && openCodeGoModel !== null,
   defaultController,
   useSampleControllerAssignments,
+  tilefolkAdminToken,
+  isAdminTokenConfigured: tilefolkAdminToken !== null,
 };
