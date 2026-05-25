@@ -115,4 +115,5 @@ export type WorldEvent = {
   message: string;
   controllerReason?: string;
   controllerDurationMs?: number;
+  controllerLabel?: string;
 };

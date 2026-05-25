@@ -22,7 +22,9 @@ export const EventLog = ({ events }: EventLogProps) => {
               <p className="eventReason">Reason: {event.controllerReason}</p>
             )}
             {event.controllerDurationMs !== undefined && (
-              <p className="eventDebug">Controller: {event.controllerDurationMs}ms</p>
+              <p className="eventDebug">
+                Controller: {event.controllerLabel ?? 'unknown'} ({event.controllerDurationMs}ms)
+              </p>
             )}
           </div>
         );
