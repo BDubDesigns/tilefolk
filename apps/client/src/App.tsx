@@ -45,11 +45,11 @@ export function App() {
     try {
       // fetch world from server
       const response = await fetch('/api/worlds/default/step', { method: 'POST' });
-      const data = (await response.json()) as StepWorldResponse;
       // guard against no world
       if (!response.ok) {
         setError(`An error occurred: ${response.statusText}`);
       } else {
+        const data = (await response.json()) as StepWorldResponse;
         setError(null);
         // update world state
         setWorld(data.world);

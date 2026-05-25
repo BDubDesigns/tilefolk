@@ -21,6 +21,9 @@ export const EventLog = ({ events }: EventLogProps) => {
             {event.controllerReason && (
               <p className="eventReason">Reason: {event.controllerReason}</p>
             )}
+            {event.controllerDurationMs !== undefined && (
+              <p className="eventDebug">Controller: {event.controllerDurationMs}ms</p>
+            )}
           </div>
         );
       })}

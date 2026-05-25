@@ -3,13 +3,15 @@ import { directionDeltas } from './directionDeltas.js';
 import type { StepWorldResponse, ItemId } from '@tilefolk/shared';
 import { getValidActions } from './getValidActions.js';
 import { getActionOptions } from './getActionOptions.js';
-import { deterministicController } from './controllers/deterministicController.js';
+// import { deterministicController } from './controllers/deterministicController.js';
+import { llmController } from './controllers/llmController.js';
 
 function appendActionEvent(
   world: World,
   actionResult: ActionResult,
   turn: number,
   controllerReason?: string,
+  controllerDurationMs?: number,
 ): void {
   world.events.push({
     id: `event_${world.events.length}`,
@@ -17,6 +19,7 @@ function appendActionEvent(
     actorId: actionResult.action.npcId,
     message: actionResult.message,
     ...(controllerReason ? { controllerReason } : {}),
+    ...(controllerDurationMs !== undefined ? { controllerDurationMs } : {}),
   });
 }
 
@@ -59,8 +62,9 @@ function finishNpcAttempt(
   actionResult: ActionResult,
   turn: number,
   controllerReason?: string,
+  controllerDurationMs?: number,
 ): StepWorldResponse {
-  appendActionEvent(world, actionResult, turn, controllerReason);
+  appendActionEvent(world, actionResult, turn, controllerReason, controllerDurationMs);
   return {
     world,
     actionResult,
@@ -103,11 +107,13 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
 
   const actionOptions = getActionOptions(validActions);
 
-  const controllerDecision = await deterministicController.chooseAction({
+  const controllerStartedAt = performance.now();
+  const controllerDecision = await llmController.chooseAction({
     world: newWorld,
     npc,
     actionOptions,
   });
+  const controllerDurationMs = Math.round(performance.now() - controllerStartedAt);
 
   if (!controllerDecision) {
     return finishNpcAttempt(
@@ -115,6 +121,7 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
       createWaitResult(npc, `${npc.id} waited`),
       actionTurn,
       'Controller did not select an option.',
+      controllerDurationMs,
     );
   }
   const selectedOption = actionOptions.find(
@@ -127,6 +134,7 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
       createWaitResult(npc, `${npc.id} waited`),
       actionTurn,
       'Controller selected an invalid option.',
+      controllerDurationMs,
     );
   }
 
@@ -139,6 +147,7 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
         createWaitResult(npc, `${npc.id} waited`),
         actionTurn,
         controllerDecision.reason,
+        controllerDurationMs,
       );
     case 'move': {
       const direction = selectedAction.direction;
@@ -156,6 +165,7 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
         createMoveResult(npc, direction, true, `${npc.id} moved ${direction}`),
         actionTurn,
         controllerDecision.reason,
+        controllerDurationMs,
       );
     }
     case 'pickup': {
@@ -169,6 +179,7 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
           createPickupResult(npc, itemId, true, `${npc.id} picked up ${itemId}`),
           actionTurn,
           controllerDecision.reason,
+          controllerDurationMs,
         );
       } else {
         return finishNpcAttempt(
@@ -181,6 +192,7 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
           ),
           actionTurn,
           controllerDecision.reason,
+          controllerDurationMs,
         );
       }
     }

@@ -114,4 +114,5 @@ export type WorldEvent = {
   actorId: NpcId | null;
   message: string;
   controllerReason?: string;
+  controllerDurationMs?: number;
 };

@@ -32,9 +32,14 @@ export function createApp() {
 
   // step world
   app.post('/api/worlds/default/step', async (_request, response) => {
-    const stepResult = await stepActiveWorld();
+    try {
+      const stepResult = await stepActiveWorld();
 
-    response.json(stepResult);
+      response.json(stepResult);
+    } catch (error) {
+      console.error('Failed to step world:', error);
+      response.status(500).json({ error: 'Failed to step world' });
+    }
   });
   return app;
 }

@@ -1,17 +1,16 @@
 import type { ActionController } from './types.js';
+import { requestGoogleAiDecision } from './googleAiDecisionClient.js';
 
 export const llmController: ActionController = {
   async chooseAction(options) {
-    const actionOptions = options.actionOptions;
-    const selectedOption = actionOptions[1];
-
-    if (!selectedOption) {
+    const decision = await requestGoogleAiDecision({
+      recentEvents: options.world.events.slice(-5),
+      npc: options.npc,
+      actionOptions: options.actionOptions,
+    });
+    if (!decision) {
       return null;
     }
-
-    return {
-      selectedOptionId: selectedOption.id,
-      reason: 'LLM controller stub selected the second available option for testing.',
-    };
+    return decision;
   },
 };
