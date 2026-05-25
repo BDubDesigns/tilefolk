@@ -1,7 +1,13 @@
 import request from 'supertest';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { createApp } from './app.js';
+import { serverEnv } from './config/env.js';
+
+function setServerAdminToken(token: string | null): void {
+  serverEnv.tilefolkAdminToken = token;
+  serverEnv.isAdminTokenConfigured = token !== null;
+}
 
 describe('createApp', () => {
   it('returns health status', async () => {
@@ -36,6 +42,10 @@ describe('createApp', () => {
 });
 
 describe('POST /api/worlds/reset', () => {
+  afterEach(() => {
+    setServerAdminToken(null);
+  });
+
   // we check that the world is actually reset in worldStore.test.ts, so we only test the route here
   it('returns a generated world', async () => {
     //   create app
@@ -56,9 +66,35 @@ describe('POST /api/worlds/reset', () => {
     expect(response.body.trees).toHaveLength(20);
     //
   });
+
+  it('rejects requests without an admin token when one is configured', async () => {
+    setServerAdminToken('secret-token');
+    const app = createApp();
+
+    const response = await request(app).post('/api/worlds/reset');
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ error: 'Admin token required or invalid' });
+  });
+
+  it('accepts requests with the configured admin token', async () => {
+    setServerAdminToken('secret-token');
+    const app = createApp();
+
+    const response = await request(app)
+      .post('/api/worlds/reset')
+      .set('x-tilefolk-admin-token', 'secret-token');
+
+    expect(response.status).toBe(200);
+    expect(response.body.width).toBe(50);
+  });
 });
 
 describe('POST /api/worlds/default/step', () => {
+  afterEach(() => {
+    setServerAdminToken(null);
+  });
+
   it('steps the active world and returns the updated world plus action result', async () => {
     //   create app
     const app = createApp();
@@ -74,5 +110,28 @@ describe('POST /api/worlds/default/step', () => {
     expect(response.body.actionResult.action.type).toBe('move');
     // expect body.actionResult.success to be boolean
     expect(typeof response.body.actionResult.success).toBe('boolean');
+  });
+
+  it('rejects requests without an admin token when one is configured', async () => {
+    setServerAdminToken('secret-token');
+    const app = createApp();
+
+    const response = await request(app).post('/api/worlds/default/step');
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ error: 'Admin token required or invalid' });
+  });
+
+  it('accepts requests with the configured admin token', async () => {
+    setServerAdminToken('secret-token');
+    const app = createApp();
+
+    const response = await request(app)
+      .post('/api/worlds/default/step')
+      .set('x-tilefolk-admin-token', 'secret-token');
+
+    expect(response.status).toBe(200);
+    expect(response.body.world).toBeDefined();
+    expect(response.body.actionResult).toBeDefined();
   });
 });

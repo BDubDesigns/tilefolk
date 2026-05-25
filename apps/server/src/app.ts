@@ -2,6 +2,7 @@ import cors from 'cors';
 import express from 'express';
 import type { HealthResponse } from '@tilefolk/shared';
 import { getActiveWorld, resetWorld, stepActiveWorld } from './simulation/worldStore.js';
+import { requireAdminToken } from './auth/requireAdminToken.js';
 
 export function createApp() {
   const app = express();
@@ -24,14 +25,14 @@ export function createApp() {
   });
 
   // reset world
-  app.post('/api/worlds/reset', (_request, response) => {
+  app.post('/api/worlds/reset', requireAdminToken, (_request, response) => {
     const world = resetWorld();
 
     response.json(world);
   });
 
   // step world
-  app.post('/api/worlds/default/step', async (_request, response) => {
+  app.post('/api/worlds/default/step', requireAdminToken, async (_request, response) => {
     try {
       const stepResult = await stepActiveWorld();
 
