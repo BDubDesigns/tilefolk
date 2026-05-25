@@ -3,7 +3,8 @@ import { directionDeltas } from './directionDeltas.js';
 import type { StepWorldResponse, ItemId } from '@tilefolk/shared';
 import { getValidActions } from './getValidActions.js';
 import { getActionOptions } from './getActionOptions.js';
-// import { deterministicController } from './controllers/deterministicController.js';
+import { serverEnv } from '../config/env.js';
+import { deterministicController } from './controllers/deterministicController.js';
 import { llmController } from './controllers/llmController.js';
 
 function appendActionEvent(
@@ -107,8 +108,11 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
 
   const actionOptions = getActionOptions(validActions);
 
+  const controller =
+    serverEnv.defaultController === 'llm' ? llmController : deterministicController;
+
   const controllerStartedAt = performance.now();
-  const controllerDecision = await llmController.chooseAction({
+  const controllerDecision = await controller.chooseAction({
     world: newWorld,
     npc,
     actionOptions,
