@@ -2,9 +2,9 @@
 
 This file is the current working roadmap. Keep it short, update it as slices land, and use it to avoid losing the plot.
 
-## Current Goal
+## Current State
 
-Add OpenRouter as a third LLM decision provider while preserving the existing controller architecture:
+Tilefolk now supports multiple controller providers in the same world:
 
 ```txt
 validActions
@@ -27,45 +27,17 @@ The reason explains.
 
 Controllers still choose option IDs. They do not create actions, mutate the world, or bypass server-owned `ActionOption[]`.
 
-## Slice 1: Finish OpenRouter Provider
+## Slice 1: Commit OpenRouter Provider
 
-Status: in progress.
+Status: code working, checks passed, manual smoke test passed.
 
-1. Add OpenRouter config to server env.
-   - `OPENROUTER_API_KEY`
-   - `OPENROUTER_MODEL`
-   - `isOpenRouterConfigured`
-   - Keep real values only in `apps/server/.env`.
-   - Keep fake/example values in `apps/server/.env.example`.
-
-2. Extend controller assignment types.
-   - Add `openrouter` as an LLM provider.
-   - Assign one sample NPC to OpenRouter for local comparison.
-
-3. Create `openRouterDecisionClient.ts`.
-   - Match the shape of the other decision clients.
-   - Input: `npc`, `recentEvents`, `actionOptions`.
-   - Output: `ControllerDecision | null`.
-   - Return only `{ selectedOptionId, reason }`.
-   - Use low token limits and short prompts to keep latency low.
-
-4. Wire OpenRouter into `resolveControllerDecision`.
-   - Add the import.
-   - Add a switch case for `openrouter`.
-
-5. Run checks.
+1. Re-run checks if anything changed after the smoke test.
    - `npm run typecheck`
-   - relevant tests, or full `npm test` if time allows
-
-6. Manual smoke test.
-   - Step the world until each sample controller acts.
-   - Confirm event log shows controller labels and durations.
-   - Confirm OpenRouter decisions move/wait through normal server-owned actions.
-
-7. Commit.
+   - `npm test`
+2. Commit.
    - Suggested message: `Add OpenRouter decision provider`
 
-## Slice 2: Finish Admin Token Client UX
+## Slice 2: Finish Admin Token Client UX Commit
 
 Status: mostly done.
 
@@ -82,6 +54,8 @@ Status: mostly done.
    - Suggested message: `Add admin token controls for world mutations`
 
 ## Slice 3: Better Controller Configuration
+
+Status: next architecture slice after the current commits are clean.
 
 Current assignment is provider-level:
 

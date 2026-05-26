@@ -80,7 +80,8 @@ Return only JSON with:
         stream: false,
         // OpenAI-compatible providers often support this JSON-mode hint.
         response_format: { type: 'json_object' },
-
+        // Tilefolk only needs a tiny menu choice here, so disable reasoning
+        // to keep latency and completion size low.
         reasoning: { enabled: false },
         max_tokens: 150,
       }),
