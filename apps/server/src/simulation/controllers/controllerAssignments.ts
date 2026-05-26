@@ -1,13 +1,18 @@
 import { serverEnv } from '../../config/env.js';
+export type LlmProvider = 'opencode-go' | 'google-ai' | 'openrouter';
 
 export type ControllerAssignment =
   | { type: 'deterministic' }
-  | { type: 'llm'; provider: 'opencode-go' | 'google-ai' | 'openrouter' };
+  | { type: 'llm'; provider: LlmProvider; model?: string };
 
 const controllerAssignments: Record<string, ControllerAssignment> = {
   npc_0: { type: 'llm', provider: 'opencode-go' },
-  npc_1: { type: 'llm', provider: 'google-ai' },
-  npc_2: { type: 'llm', provider: 'openrouter' },
+  npc_1: { type: 'llm', provider: 'openrouter' },
+  npc_2: {
+    type: 'llm',
+    provider: 'openrouter',
+    model: 'cognitivecomputations/dolphin-mistral-24b-venice-edition:free',
+  },
   npc_3: { type: 'deterministic' },
 };
 

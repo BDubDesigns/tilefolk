@@ -8,6 +8,7 @@ interface RequestOpenCodeGoDecisionOptions {
   npc: Npc;
   recentEvents: WorldEvent[];
   actionOptions: ActionOption[];
+  model?: string;
 }
 
 type OpenCodeGoChatCompletionResponse = {
@@ -25,7 +26,9 @@ export async function requestOpenCodeGoDecision(
 
   const { openCodeGoApiKey, openCodeGoModel } = serverEnv;
 
-  if (!openCodeGoApiKey || !openCodeGoModel) {
+  const model = options.model ?? openCodeGoModel;
+
+  if (!openCodeGoApiKey || !model) {
     return null;
   }
 
@@ -64,7 +67,7 @@ Return only JSON with:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: openCodeGoModel,
+        model,
         messages: [
           {
             role: 'system',

@@ -8,6 +8,7 @@ interface RequestOpenRouterDecisionOptions {
   npc: Npc;
   recentEvents: WorldEvent[];
   actionOptions: ActionOption[];
+  model?: string;
 }
 
 type OpenRouterChatCompletionResponse = {
@@ -25,7 +26,9 @@ export async function requestOpenRouterDecision(
 
   const { openRouterApiKey, openRouterModel } = serverEnv;
 
-  if (!openRouterApiKey || !openRouterModel) {
+  const model = options.model ?? openRouterModel;
+
+  if (!openRouterApiKey || !model) {
     return null;
   }
 
@@ -64,7 +67,7 @@ Return only JSON with:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: openRouterModel,
+        model,
         messages: [
           {
             role: 'system',

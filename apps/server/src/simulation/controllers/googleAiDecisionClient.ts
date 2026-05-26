@@ -9,6 +9,7 @@ interface RequestGoogleAiDecisionOptions {
   npc: Npc;
   recentEvents: WorldEvent[];
   actionOptions: ActionOption[];
+  model?: string;
 }
 
 function getGoogleAiClient(apiKey: string): GoogleGenAI {
@@ -26,7 +27,9 @@ export async function requestGoogleAiDecision(
 
   const { googleAiApiKey, googleAiModel } = serverEnv;
 
-  if (!googleAiApiKey || !googleAiModel) {
+  const model = options.model ?? googleAiModel;
+
+  if (!googleAiApiKey || !model) {
     return null;
   }
 
@@ -61,7 +64,7 @@ export async function requestGoogleAiDecision(
   let response;
   try {
     response = await ai.models.generateContent({
-      model: googleAiModel,
+      model,
       contents: promptText,
       config: {
         responseMimeType: 'application/json',

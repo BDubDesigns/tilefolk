@@ -35,18 +35,21 @@ export async function resolveControllerDecision({
         recentEvents,
         npc,
         actionOptions,
+        model: controllerAssignment.model,
       });
     case 'google-ai':
       return requestGoogleAiDecision({
         recentEvents,
         npc,
         actionOptions,
+        model: controllerAssignment.model,
       });
     case 'openrouter':
       return requestOpenRouterDecision({
         recentEvents,
         npc,
         actionOptions,
+        model: controllerAssignment.model,
       });
     default:
       return null;
