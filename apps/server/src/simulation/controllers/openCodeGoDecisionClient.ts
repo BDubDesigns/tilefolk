@@ -22,13 +22,11 @@ type OpenCodeGoChatCompletionResponse = {
 export async function requestOpenCodeGoDecision(
   options: RequestOpenCodeGoDecisionOptions,
 ): Promise<ControllerDecision | null> {
-  if (options.actionOptions.length === 0 || !serverEnv.isOpenCodeGoConfigured) return null;
-
   const { openCodeGoApiKey, openCodeGoModel } = serverEnv;
 
   const model = options.model ?? openCodeGoModel;
 
-  if (!openCodeGoApiKey || !model) {
+  if (options.actionOptions.length === 0 || !openCodeGoApiKey || !model) {
     return null;
   }
 
@@ -96,7 +94,8 @@ Return only JSON with:
   }
 
   if (!response.ok) {
-    console.error('OpenCode Go decision request returned an error:', response.status);
+    const errorBody = await response.text();
+    console.error('OpenCode Go decision request returned an error:', response.status, errorBody);
     return null;
   }
 

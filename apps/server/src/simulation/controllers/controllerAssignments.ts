@@ -11,7 +11,7 @@ const controllerAssignments: Record<string, ControllerAssignment> = {
   npc_2: {
     type: 'llm',
     provider: 'openrouter',
-    model: 'google/gemma-4-26b-a4b-it:free',
+    model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
   },
   npc_3: { type: 'deterministic' },
 };
@@ -33,5 +33,7 @@ export function getControllerLabel(controllerAssignment: ControllerAssignment): 
     return 'deterministic';
   }
 
-  return controllerAssignment.provider;
+  return controllerAssignment.model
+    ? `${controllerAssignment.provider}: ${controllerAssignment.model}`
+    : controllerAssignment.provider;
 }

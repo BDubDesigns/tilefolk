@@ -23,13 +23,11 @@ function getGoogleAiClient(apiKey: string): GoogleGenAI {
 export async function requestGoogleAiDecision(
   options: RequestGoogleAiDecisionOptions,
 ): Promise<ControllerDecision | null> {
-  if (options.actionOptions.length === 0 || !serverEnv.isGoogleAiConfigured) return null;
-
   const { googleAiApiKey, googleAiModel } = serverEnv;
 
   const model = options.model ?? googleAiModel;
 
-  if (!googleAiApiKey || !model) {
+  if (options.actionOptions.length === 0 || !googleAiApiKey || !model) {
     return null;
   }
 

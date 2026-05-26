@@ -22,13 +22,11 @@ type OpenRouterChatCompletionResponse = {
 export async function requestOpenRouterDecision(
   options: RequestOpenRouterDecisionOptions,
 ): Promise<ControllerDecision | null> {
-  if (options.actionOptions.length === 0 || !serverEnv.isOpenRouterConfigured) return null;
-
   const { openRouterApiKey, openRouterModel } = serverEnv;
 
   const model = options.model ?? openRouterModel;
 
-  if (!openRouterApiKey || !model) {
+  if (options.actionOptions.length === 0 || !openRouterApiKey || !model) {
     return null;
   }
 
@@ -95,7 +93,8 @@ Return only JSON with:
   }
 
   if (!response.ok) {
-    console.error('OpenRouter decision request returned an error:', response.status);
+    const errorBody = await response.text();
+    console.error('OpenRouter decision request returned an error:', response.status, errorBody);
     return null;
   }
 
