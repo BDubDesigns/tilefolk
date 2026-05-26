@@ -11,7 +11,7 @@ const controllerAssignments: Record<string, ControllerAssignment> = {
   npc_2: {
     type: 'llm',
     provider: 'openrouter',
-    model: 'cognitivecomputations/dolphin-mistral-24b-venice-edition:free',
+    model: 'google/gemma-4-26b-a4b-it:free',
   },
   npc_3: { type: 'deterministic' },
 };
