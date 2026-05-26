@@ -1,120 +1,156 @@
 # Tilefolk Next Steps
 
-## Current Status
+This file is the current working roadmap. Keep it short, update it as slices land, and use it to avoid losing the plot.
 
-- MERN TypeScript monorepo scaffold is in place.
-- Shared domain types exist for worlds, tiles, NPCs, items, trees, positions, actions, directions, and events.
-- `directions` is the shared source of truth for movement direction values, and `Direction` is derived from it.
-- Server world generation creates a 50x50 grass world with NPCs, trees, axe items, turn tracking, and an empty event log.
-- Express exposes world fetch, reset, and step endpoints.
-- React fetches the active world, renders a grid, shows NPC/tree/item markers, and provides manual step/reset controls.
-- React displays world summary, current turn, latest action result, and the latest 5 world events.
-- `stepWorld` supports turn-based actor selection, valid-action movement, wait fallback, turn increments, immutable world updates, and event logging.
-- `getValidMovementActions` returns legal movement actions for an NPC based on bounds and occupied destination tiles.
-- Test, typecheck, and lint scripts are passing at the latest known checkpoint.
+## Current Goal
 
-## Completed Milestones
+Add OpenRouter as a third LLM decision provider while preserving the existing controller architecture:
 
-### Serve The World
+```txt
+validActions
+-> actionOptions
+-> controller assignment
+-> controller decision
+-> selectedOptionId
+-> selectedOption.action
+-> apply action
+-> event log
+```
 
-- `GET /api/worlds/default` returns the active generated world.
-- `POST /api/worlds/reset` resets the active world.
-- `POST /api/worlds/default/step` advances the active world one turn.
-- Route tests cover the basic endpoint contracts.
+Core rule:
 
-### Render The World
+```txt
+The controller selects.
+The engine owns.
+The reason explains.
+```
 
-- `WorldGrid` renders the tile grid.
-- Entity overlay renders NPCs, trees, and ground items separately from tiles.
-- `WorldSummary` renders world id, dimensions, entity counts, and turn.
-- `SimulationControls` renders step/reset controls and latest action result.
-- `EventLog` renders the latest 5 world events.
+Controllers still choose option IDs. They do not create actions, mutate the world, or bypass server-owned `ActionOption[]`.
 
-### Basic Simulation Engine
+## Slice 1: Finish OpenRouter Provider
 
-- `stepWorld` chooses the active NPC from `world.turn`.
-- `stepWorld` asks `getValidMovementActions` for legal moves instead of duplicating movement legality checks.
-- `stepWorld` applies the first valid movement action deterministically for now.
-- Boxed-in NPCs perform a wait action.
-- Movement and wait actions advance the turn when an NPC exists.
-- Events are appended for NPC actions.
-- Existing world state is copied rather than mutated directly.
+Status: in progress.
 
-### Valid Movement Action Generation
+1. Add OpenRouter config to server env.
+   - `OPENROUTER_API_KEY`
+   - `OPENROUTER_MODEL`
+   - `isOpenRouterConfigured`
+   - Keep real values only in `apps/server/.env`.
+   - Keep fake/example values in `apps/server/.env.example`.
 
-- `getValidMovementActions` can answer which movement actions are legal for an NPC.
-- It filters out moves that leave world bounds.
-- It filters out destinations blocked by trees, ground items, and other NPCs.
-- It returns an empty array when the NPC does not exist.
+2. Extend controller assignment types.
+   - Add `openrouter` as an LLM provider.
+   - Assign one sample NPC to OpenRouter for local comparison.
 
-### Use Valid Actions In `stepWorld`
+3. Create `openRouterDecisionClient.ts`.
+   - Match the shape of the other decision clients.
+   - Input: `npc`, `recentEvents`, `actionOptions`.
+   - Output: `ControllerDecision | null`.
+   - Return only `{ selectedOptionId, reason }`.
+   - Use low token limits and short prompts to keep latency low.
 
-Goal: make `stepWorld` consume generated valid actions instead of duplicating movement legality checks internally.
+4. Wire OpenRouter into `resolveControllerDecision`.
+   - Add the import.
+   - Add a switch case for `openrouter`.
 
-Completed behavior:
+5. Run checks.
+   - `npm run typecheck`
+   - relevant tests, or full `npm test` if time allows
 
-- Active NPC is still chosen from `world.turn`.
-- `stepWorld` calls `getValidMovementActions` for the active NPC.
-- If movement actions exist, `stepWorld` chooses one deterministically for now.
-- The chosen action is applied to the copied world.
-- `actionResult.action.direction` matches the chosen action.
-- Event log records the action result.
-- Turn still advances after the NPC acts.
-- Boxed-in NPCs wait instead of failing.
-- Tests were updated to focus on stable behavior instead of stale east-only behavior.
+6. Manual smoke test.
+   - Step the world until each sample controller acts.
+   - Confirm event log shows controller labels and durations.
+   - Confirm OpenRouter decisions move/wait through normal server-owned actions.
 
-## Current Milestone: Extract Deterministic Action Selection
+7. Commit.
+   - Suggested message: `Add OpenRouter decision provider`
 
-Goal: move the temporary action chooser out of `stepWorld` so controllers can plug in later.
+## Slice 2: Finish Admin Token Client UX
 
-### Task 1: Create Deterministic Selector
+Status: mostly done.
 
-Acceptance criteria:
+1. Keep public reads working without a token.
+2. Keep Step/Reset protected by `x-tilefolk-admin-token`.
+3. Keep action errors local to the controls, not the whole page.
+4. Manually test:
+   - no token rejects Step/Reset without losing the world view
+   - wrong token shows a friendly control-level error
+   - correct token allows Step/Reset
+   - refresh restores token from `sessionStorage`
+   - clearing input removes token from `sessionStorage`
+5. Commit if not already committed.
+   - Suggested message: `Add admin token controls for world mutations`
 
-- Create a selector helper for deterministic action choice.
-- The selector receives legal actions and chooses one predictably.
-- `stepWorld` no longer directly uses `validMovementActions[0]`.
-- Wait fallback remains available when no movement actions exist.
-- Tests prove selector behavior separately from world mutation.
+## Slice 3: Better Controller Configuration
 
-### Task 2: Prepare Controller Boundary
+Current assignment is provider-level:
 
-Acceptance criteria:
+```txt
+npc_0 -> opencode-go
+npc_1 -> google-ai
+npc_2 -> openrouter
+npc_3 -> deterministic
+```
 
-- The code shape makes it clear where player, deterministic, and LLM controllers will plug in.
-- Controllers choose from legal actions; they do not validate world state themselves.
-- `stepWorld` still owns applying the selected action and recording events.
+Future target is model-aware assignment:
 
-## After That
+```txt
+npc_0 -> provider: opencode-go, model: deepseek-v4-flash
+npc_1 -> provider: google-ai, model: gemma-4-26b-a4b-it
+npc_2 -> provider: openrouter, model: provider/model-name
+npc_3 -> deterministic
+```
 
-Next larger milestones:
+Do this later, after OpenRouter works with one default model.
 
-- Introduce a deterministic controller abstraction.
-- Add a player/manual controller path.
-- Add pickup validation and inventory transitions.
-- Add inspect validation and memory creation.
-- Add chop-tree validation for NPCs holding an axe.
-- Add LLM action selection only after deterministic action generation/application is solid.
+Possible shape:
 
-## Long-Term State Model
+```ts
+type ControllerAssignment =
+  | { type: 'deterministic' }
+  | { type: 'llm'; provider: 'opencode-go' | 'google-ai' | 'openrouter'; model?: string };
+```
 
-Tilefolk should move toward event sourcing lite:
+Reason:
 
-- Save the initial world state once.
-- Append an event for every accepted or rejected action.
-- Derive the current world by replaying events onto the initial world.
-- Add occasional snapshots later so old simulations can load quickly without replaying every event from tick 0.
+- The provider chooses the API/client.
+- The model chooses the specific brain inside that provider.
+- Defaults can still come from env.
+- Per-NPC overrides can come later.
 
-For the current learning version, keeping one active in-memory world is fine. The important architectural direction is that the long-term source of truth should be the initial world plus the event log, not a stored copy of every full world state.
+## Slice 4: Deployment Prep
 
-## Project Rules To Preserve
+Target: Coolify on the existing Hetzner VPS.
 
-- SSOT always: store each fact in one authoritative place.
-- Server owns simulation mutation.
-- Client renders state and sends commands.
-- LLMs request actions; the engine validates and applies them.
-- Generate valid actions before choosing an action.
-- Controllers choose from legal actions; they do not invent world state.
-- Persist actions/results as events before considering full world-state history.
-- Prefer small pure helpers for domain logic.
-- Tests should prove behavior, not implementation trivia.
+1. Confirm production env vars are documented.
+   - `TILEFOLK_ADMIN_TOKEN`
+   - `TILEFOLK_DEFAULT_CONTROLLER`
+   - `TILEFOLK_USE_SAMPLE_CONTROLLER_ASSIGNMENTS`
+   - `OPENCODE_GO_API_KEY`
+   - `OPENCODE_GO_MODEL`
+   - `GOOGLE_AI_API_KEY`
+   - `GOOGLE_AI_MODEL`
+   - `OPENROUTER_API_KEY`
+   - `OPENROUTER_MODEL`
+
+2. Confirm public behavior.
+   - GET world works publicly.
+   - Step/Reset require admin token.
+   - API keys never ship to client.
+
+3. Deploy with Coolify.
+   - Set env vars in Coolify.
+   - Attach subdomain.
+   - Smoke test public read and admin mutations.
+
+## Later Ideas
+
+These are intentionally not part of the current slice.
+
+- UI for changing an NPC controller live.
+- UI for changing an NPC model live.
+- Save controller assignment in world state instead of hardcoded config.
+- Add OpenRouter model experiments and latency comparison.
+- Add NPC personalities, goals, memory, and field-of-view prompts.
+- Add chop tree, wood, seeds, and richer item interactions.
+- Add Mermaid diagrams for new controller/model assignment flow.

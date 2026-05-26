@@ -26,6 +26,10 @@ const useSampleControllerAssignments =
 
 const trimmedAdminToken = process.env.TILEFOLK_ADMIN_TOKEN?.trim();
 const tilefolkAdminToken = trimmedAdminToken ? trimmedAdminToken : null;
+const trimmedOpenRouterApiKey = process.env.OPENROUTER_API_KEY?.trim();
+const openRouterApiKey = trimmedOpenRouterApiKey ? trimmedOpenRouterApiKey : null;
+const trimmedOpenRouterModel = process.env.OPENROUTER_MODEL?.trim();
+const openRouterModel = trimmedOpenRouterModel ? trimmedOpenRouterModel : null;
 
 export const serverEnv = {
   googleAiApiKey,
@@ -34,6 +38,9 @@ export const serverEnv = {
   openCodeGoApiKey,
   openCodeGoModel,
   isOpenCodeGoConfigured: openCodeGoApiKey !== null && openCodeGoModel !== null,
+  openRouterApiKey,
+  openRouterModel,
+  isOpenRouterConfigured: openRouterApiKey !== null && openRouterModel !== null,
   defaultController,
   useSampleControllerAssignments,
   tilefolkAdminToken,

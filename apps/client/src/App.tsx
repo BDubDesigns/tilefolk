@@ -9,31 +9,55 @@ import { NpcSummary } from './features/world/NpcSummary';
 
 export function App() {
   const [world, setWorld] = useState<null | World>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [stepLoading, setStepLoading] = useState(false);
   const [lastActionResult, setLastActionResult] = useState<null | ActionResult>(null);
   const [resetLoading, setResetLoading] = useState(false);
+  const [adminToken, setAdminToken] = useState(() => {
+    return sessionStorage.getItem('adminToken') ?? '';
+  });
+
+  const getAdminHeaders = (): HeadersInit => {
+    if (adminToken) {
+      return { 'x-tilefolk-admin-token': adminToken };
+    }
+    return {};
+  };
+
+  const handleAdminTokenChange = (token: string) => {
+    setAdminToken(token);
+    if (token === '') {
+      sessionStorage.removeItem('adminToken');
+    } else {
+      sessionStorage.setItem('adminToken', token);
+    }
+  };
 
   const handleResetWorld = async () => {
     setResetLoading(true);
 
     try {
       // hit reset endpoint, which returns a new world
-      const response = await fetch('/api/worlds/reset', { method: 'POST' });
-      const data = (await response.json()) as World;
+      const response = await fetch('/api/worlds/reset', {
+        method: 'POST',
+        headers: getAdminHeaders(),
+      });
       if (!response.ok) {
-        setError(`An error occurred: ${response.statusText}`);
+        const errorBody = (await response.json()) as { error?: string };
+        setActionError(errorBody.error ?? `An error occurred: ${response.statusText}`);
       } else {
-        setError(null);
+        const data = (await response.json()) as World;
+        setActionError(null);
         setWorld(data);
         setLastActionResult(null);
       }
     } catch (error) {
       if (error instanceof Error) {
-        setError(error.message);
+        setActionError(error.message);
       } else {
-        setError(`An error occurred: ${error}`);
+        setActionError(`An error occurred: ${error}`);
       }
     } finally {
       setResetLoading(false);
@@ -44,13 +68,17 @@ export function App() {
 
     try {
       // fetch world from server
-      const response = await fetch('/api/worlds/default/step', { method: 'POST' });
+      const response = await fetch('/api/worlds/default/step', {
+        method: 'POST',
+        headers: getAdminHeaders(),
+      });
       // guard against no world
       if (!response.ok) {
-        setError(`An error occurred: ${response.statusText}`);
+        const errorBody = (await response.json()) as { error?: string };
+        setActionError(errorBody.error ?? `An error occurred: ${response.statusText}`);
       } else {
         const data = (await response.json()) as StepWorldResponse;
-        setError(null);
+        setActionError(null);
         // update world state
         setWorld(data.world);
         // update last action result
@@ -58,9 +86,9 @@ export function App() {
       }
     } catch (error) {
       if (error instanceof Error) {
-        setError(error.message);
+        setActionError(error.message);
       } else {
-        setError(`An error occurred: ${error}`);
+        setActionError(`An error occurred: ${error}`);
       }
     } finally {
       setStepLoading(false);
@@ -73,20 +101,20 @@ export function App() {
 
       try {
         // clear error state first
-        setError(null);
+        setLoadError(null);
         // fetch world from server
         const response = await fetch('/api/worlds/default');
         const data = (await response.json()) as World;
         if (!response.ok) {
-          setError(`An error occurred: ${response.statusText}`);
+          setLoadError(`An error occurred: ${response.statusText}`);
         } else {
           setWorld(data);
         }
       } catch (error) {
         if (error instanceof Error) {
-          setError(error.message);
+          setLoadError(error.message);
         } else {
-          setError(`An error occurred: ${error}`);
+          setLoadError(`An error occurred: ${error}`);
         }
       } finally {
         setLoading(false);
@@ -99,8 +127,8 @@ export function App() {
 
   if (loading) {
     content = <p className="loading">Loading...</p>;
-  } else if (error) {
-    content = <p className="error">{error}</p>;
+  } else if (loadError) {
+    content = <p className="error">{loadError}</p>;
   } else if (world) {
     content = (
       <div id="world-container">
@@ -113,6 +141,9 @@ export function App() {
             lastActionResult={lastActionResult}
             onStepWorld={handleStepWorld}
             onResetWorld={handleResetWorld}
+            adminToken={adminToken}
+            onAdminTokenChange={handleAdminTokenChange}
+            actionError={actionError}
           />
           <EventLog events={world.events} />
           <NpcSummary npcs={world.npcs} items={world.items} />

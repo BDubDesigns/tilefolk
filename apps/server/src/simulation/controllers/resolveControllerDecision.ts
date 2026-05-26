@@ -4,6 +4,7 @@ import type { ControllerAssignment } from './controllerAssignments.js';
 import { deterministicController } from './deterministicController.js';
 import { requestGoogleAiDecision } from './googleAiDecisionClient.js';
 import { requestOpenCodeGoDecision } from './openCodeGoDecisionClient.js';
+import { requestOpenRouterDecision } from './openRouterDecisionClient.js';
 
 interface ResolveControllerDecisionOptions {
   world: World;
@@ -41,5 +42,13 @@ export async function resolveControllerDecision({
         npc,
         actionOptions,
       });
+    case 'openrouter':
+      return requestOpenRouterDecision({
+        recentEvents,
+        npc,
+        actionOptions,
+      });
+    default:
+      return null;
   }
 }
