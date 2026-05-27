@@ -1,6 +1,7 @@
 import type { Npc, WorldEvent } from '@tilefolk/shared';
 import type { ActionOption, ControllerDecision } from './types.js';
 import { serverEnv } from '../../config/env.js';
+import type { VisibleWorldContext } from '../getVisibleWorldContext.js';
 
 const OPENCODE_GO_CHAT_COMPLETIONS_URL = 'https://opencode.ai/zen/go/v1/chat/completions';
 
@@ -9,6 +10,7 @@ interface RequestOpenCodeGoDecisionOptions {
   recentEvents: WorldEvent[];
   actionOptions: ActionOption[];
   model?: string;
+  visibleContext: VisibleWorldContext;
 }
 
 type OpenCodeGoChatCompletionResponse = {

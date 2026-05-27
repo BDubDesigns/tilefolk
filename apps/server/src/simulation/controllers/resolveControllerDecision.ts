@@ -5,6 +5,7 @@ import { deterministicController } from './deterministicController.js';
 import { requestGoogleAiDecision } from './googleAiDecisionClient.js';
 import { requestOpenCodeGoDecision } from './openCodeGoDecisionClient.js';
 import { requestOpenRouterDecision } from './openRouterDecisionClient.js';
+import { getVisibleWorldContext } from '../getVisibleWorldContext.js';
 
 interface ResolveControllerDecisionOptions {
   world: World;
@@ -28,6 +29,7 @@ export async function resolveControllerDecision({
   }
 
   const recentEvents = world.events.slice(-5);
+  const visibleContext = getVisibleWorldContext({ world, npc });
 
   switch (controllerAssignment.provider) {
     case 'opencode-go':
@@ -36,6 +38,7 @@ export async function resolveControllerDecision({
         npc,
         actionOptions,
         model: controllerAssignment.model,
+        visibleContext,
       });
     case 'google-ai':
       return requestGoogleAiDecision({
@@ -43,6 +46,7 @@ export async function resolveControllerDecision({
         npc,
         actionOptions,
         model: controllerAssignment.model,
+        visibleContext,
       });
     case 'openrouter':
       return requestOpenRouterDecision({
@@ -50,6 +54,7 @@ export async function resolveControllerDecision({
         npc,
         actionOptions,
         model: controllerAssignment.model,
+        visibleContext,
       });
     default:
       return null;

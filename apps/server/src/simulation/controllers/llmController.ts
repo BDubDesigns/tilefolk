@@ -1,5 +1,6 @@
 import type { ActionController } from './types.js';
 import { requestOpenCodeGoDecision } from './openCodeGoDecisionClient.js';
+import { getVisibleWorldContext } from '../getVisibleWorldContext.js';
 
 export const llmController: ActionController = {
   async chooseAction(options) {
@@ -7,6 +8,10 @@ export const llmController: ActionController = {
       recentEvents: options.world.events.slice(-5),
       npc: options.npc,
       actionOptions: options.actionOptions,
+      visibleContext: getVisibleWorldContext({
+        world: options.world,
+        npc: options.npc,
+      }),
     });
   },
 };

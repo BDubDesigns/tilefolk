@@ -80,6 +80,13 @@ describe('llmController', () => {
       recentEvents: world.events.slice(-5),
       npc,
       actionOptions: [],
+      visibleContext: {
+        radius: 3,
+        center: npc.position,
+        nearbyNpcs: [],
+        nearbyTrees: expect.any(Array),
+        nearbyGroundItems: expect.any(Array),
+      },
     });
   });
 });

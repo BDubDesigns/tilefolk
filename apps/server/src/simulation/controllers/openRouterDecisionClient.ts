@@ -1,6 +1,7 @@
 import type { Npc, WorldEvent } from '@tilefolk/shared';
 import type { ActionOption, ControllerDecision } from './types.js';
 import { serverEnv } from '../../config/env.js';
+import type { VisibleWorldContext } from '../getVisibleWorldContext.js';
 
 const OPENROUTER_CHAT_COMPLETIONS_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
@@ -9,6 +10,7 @@ interface RequestOpenRouterDecisionOptions {
   recentEvents: WorldEvent[];
   actionOptions: ActionOption[];
   model?: string;
+  visibleContext: VisibleWorldContext;
 }
 
 type OpenRouterChatCompletionResponse = {
@@ -18,6 +20,32 @@ type OpenRouterChatCompletionResponse = {
     };
   }>;
 };
+
+function formatVisibleContext(context: VisibleWorldContext): string {
+  const nearbyNpcs = context.nearbyNpcs
+    .map((npc) => `${npc.name} (${npc.position.x}, ${npc.position.y})`)
+    .join('\n');
+  const nearbyTrees = context.nearbyTrees
+    .map((tree) => `${tree.id}: ${tree.hitPoints}hp (${tree.position.x}, ${tree.position.y})`)
+    .join('\n');
+  const nearbyGroundItems = context.nearbyGroundItems
+    .map((item) =>
+      item.location.type === 'ground'
+        ? `${item.name} (${item.location.position.x}, ${item.location.position.y})`
+        : null,
+    )
+    .filter(Boolean)
+    .join('\n');
+
+  return `You can see in a ${context.radius} square radius, including diagonals.
+  Nearby NPCs:
+  ${nearbyNpcs || 'None'}
+  Nearby trees:
+  ${nearbyTrees || 'None'}
+  Nearby ground items:
+  ${nearbyGroundItems || 'None'}
+`;
+}
 
 export async function requestOpenRouterDecision(
   options: RequestOpenRouterDecisionOptions,
@@ -38,11 +66,16 @@ export async function requestOpenRouterDecision(
     .map((option) => `${option.id}: ${option.description}`)
     .join('\n');
 
+  const visibleContext = formatVisibleContext(options.visibleContext);
+
   const promptText = `
 You are choosing the next action for NPC ${options.npc.id}.
 Prefer an active action such as moving or picking up an item when one seems reasonable.
 Choose wait only when no other option is useful.
 Current Location: X:${options.npc.position.x}, Y:${options.npc.position.y}
+
+Visible context:
+${visibleContext}
 
 Recent events:
 ${recentEventLines}

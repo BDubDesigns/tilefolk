@@ -2,6 +2,7 @@ import type { Npc, WorldEvent } from '@tilefolk/shared';
 import type { ActionOption, ControllerDecision } from './types.js';
 import { serverEnv } from '../../config/env.js';
 import { GoogleGenAI } from '@google/genai';
+import type { VisibleWorldContext } from '../getVisibleWorldContext.js';
 
 let googleAiClient: GoogleGenAI | null = null;
 
@@ -10,6 +11,7 @@ interface RequestGoogleAiDecisionOptions {
   recentEvents: WorldEvent[];
   actionOptions: ActionOption[];
   model?: string;
+  visibleContext: VisibleWorldContext;
 }
 
 function getGoogleAiClient(apiKey: string): GoogleGenAI {
