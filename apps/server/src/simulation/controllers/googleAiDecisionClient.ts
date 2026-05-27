@@ -2,7 +2,7 @@ import type { Npc, WorldEvent } from '@tilefolk/shared';
 import type { ActionOption, ControllerDecision } from './types.js';
 import { serverEnv } from '../../config/env.js';
 import { GoogleGenAI } from '@google/genai';
-import type { VisibleWorldContext } from '../getVisibleWorldContext.js';
+import type { VisibleWorldContext } from '@tilefolk/shared';
 import { formatVisibleContext } from './formatVisibleContext.js';
 
 let googleAiClient: GoogleGenAI | null = null;

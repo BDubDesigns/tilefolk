@@ -33,7 +33,13 @@ export function getControllerLabel(controllerAssignment: ControllerAssignment): 
     return 'deterministic';
   }
 
-  return controllerAssignment.model
-    ? `${controllerAssignment.provider}: ${controllerAssignment.model}`
-    : controllerAssignment.provider;
+  const defaultModelByProvider: Record<LlmProvider, string | null> = {
+    'opencode-go': serverEnv.openCodeGoModel,
+    'google-ai': serverEnv.googleAiModel,
+    openrouter: serverEnv.openRouterModel,
+  };
+
+  const model = controllerAssignment.model ?? defaultModelByProvider[controllerAssignment.provider];
+
+  return model ? `${controllerAssignment.provider}: ${model}` : controllerAssignment.provider;
 }

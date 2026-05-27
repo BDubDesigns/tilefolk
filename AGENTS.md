@@ -6,6 +6,7 @@
 - Mermaid diagrams are a major learning aid for this user. When explaining architecture or runtime flow, prefer generating a Mermaid diagram that can be pasted into a Mermaid viewer.
 - Diagrams should help trace a payload from start to finish and should distinguish engine-owned data from controller/model choices.
 - For Tilefolk specifically, reinforce the mantra: "The controller selects. The engine owns."
+- Keep `NEXT_STEPS.md` current after each meaningful Tilefolk milestone so the active roadmap stays aligned with the code.
 
 ## Tilefolk Architecture Preferences
 

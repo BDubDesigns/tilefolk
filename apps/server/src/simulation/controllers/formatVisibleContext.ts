@@ -1,4 +1,4 @@
-import type { VisibleWorldContext } from '../getVisibleWorldContext.js';
+import type { VisibleWorldContext } from '@tilefolk/shared';
 
 export function formatVisibleContext(context: VisibleWorldContext): string {
   const nearbyNpcs = context.nearbyNpcs

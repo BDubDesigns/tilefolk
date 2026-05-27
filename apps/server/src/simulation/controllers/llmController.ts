@@ -1,6 +1,6 @@
 import type { ActionController } from './types.js';
 import { requestOpenCodeGoDecision } from './openCodeGoDecisionClient.js';
-import { getVisibleWorldContext } from '../getVisibleWorldContext.js';
+import { getVisibleWorldContext } from '@tilefolk/shared';
 
 export const llmController: ActionController = {
   async chooseAction(options) {

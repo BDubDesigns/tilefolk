@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { World } from '@tilefolk/shared';
-import { getVisibleWorldContext } from './getVisibleWorldContext.js';
+import { getVisibleWorldContext, type World } from './index.js';
 
 const createTestWorld = (): World => ({
   id: 'world_test',

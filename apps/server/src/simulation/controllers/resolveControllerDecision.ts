@@ -5,7 +5,7 @@ import { deterministicController } from './deterministicController.js';
 import { requestGoogleAiDecision } from './googleAiDecisionClient.js';
 import { requestOpenCodeGoDecision } from './openCodeGoDecisionClient.js';
 import { requestOpenRouterDecision } from './openRouterDecisionClient.js';
-import { getVisibleWorldContext } from '../getVisibleWorldContext.js';
+import { getVisibleWorldContext } from '@tilefolk/shared';
 
 interface ResolveControllerDecisionOptions {
   world: World;
