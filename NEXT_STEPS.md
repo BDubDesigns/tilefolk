@@ -4,7 +4,7 @@ This file is the current working roadmap. Keep it short, update it as slices lan
 
 ## Current State
 
-Tilefolk now supports multiple controller providers in the same world:
+Tilefolk has the core LLM-controller architecture working:
 
 ```txt
 validActions
@@ -25,72 +25,98 @@ The engine owns.
 The reason explains.
 ```
 
-Controllers still choose option IDs. They do not create actions, mutate the world, or bypass server-owned `ActionOption[]`.
+Controllers choose option IDs from server-generated legal actions. They do not create actions, mutate the world, or bypass `ActionOption[]`.
 
-## Slice 1: Commit OpenRouter Provider
+Completed recently:
 
-Status: code working, checks passed, manual smoke test passed.
+- Multiple controllers can run in the same world.
+- Providers include deterministic, OpenCode Go, Google AI, and OpenRouter.
+- LLM assignments support per-NPC model overrides.
+- Provider error logging includes response bodies for easier debugging.
+- OpenRouter visible context is wired into prompts.
+- `getVisibleWorldContext` derives nearby NPCs, trees, and ground items.
+- Event log shows controller provider/model, reason, and duration.
 
-1. Re-run checks if anything changed after the smoke test.
+## Current Decision Point
+
+OpenRouter now has eyes. The next question is whether to:
+
+1. Give every LLM provider the same visible-context prompt.
+2. Extract shared prompt formatting first so providers do not drift.
+3. Show visible context in the UI for debugging.
+4. Move toward deployment prep.
+
+Recommended next slice:
+
+```txt
+Extract shared visible-context prompt formatting, then use it in OpenRouter, OpenCode Go, and Google AI.
+```
+
+Reason: every LLM provider should see the same world summary before we tune individual model behavior.
+
+## Slice 1: Shared Visible Context Prompt Formatter
+
+Goal: avoid duplicating visible-context text across provider clients.
+
+1. Create a server-side prompt helper near the controller/prompt code.
+   - Possible file: `apps/server/src/simulation/controllers/formatVisibleContextPrompt.ts`
+
+2. Move OpenRouter's visible-context formatting into that helper.
+
+3. The helper should accept `VisibleWorldContext`.
+
+4. It should output compact prompt text:
+   - visible radius
+   - nearby NPCs or `None`
+   - nearby trees or `None`
+   - nearby ground items or `None`
+
+5. Use the helper in:
+   - OpenRouter
+   - OpenCode Go
+   - Google AI
+
+6. Run checks.
    - `npm run typecheck`
    - `npm test`
-2. Commit.
-   - Suggested message: `Add OpenRouter decision provider`
 
-## Slice 2: Finish Admin Token Client UX Commit
+7. Smoke test at least OpenRouter and OpenCode Go.
 
-Status: mostly done.
-
-1. Keep public reads working without a token.
-2. Keep Step/Reset protected by `x-tilefolk-admin-token`.
-3. Keep action errors local to the controls, not the whole page.
-4. Manually test:
-   - no token rejects Step/Reset without losing the world view
-   - wrong token shows a friendly control-level error
-   - correct token allows Step/Reset
-   - refresh restores token from `sessionStorage`
-   - clearing input removes token from `sessionStorage`
-5. Commit if not already committed.
-   - Suggested message: `Add admin token controls for world mutations`
-
-## Slice 3: Better Controller Configuration
-
-Status: next architecture slice after the current commits are clean.
-
-Current assignment is provider-level:
+Suggested commit:
 
 ```txt
-npc_0 -> opencode-go
-npc_1 -> google-ai
-npc_2 -> openrouter
-npc_3 -> deterministic
+Share visible context prompt formatting
 ```
 
-Future target is model-aware assignment:
+## Slice 2: Visible Context UI Debugging
+
+Goal: make it easier to inspect what an NPC can currently see.
+
+Possible UI locations:
+
+- `NpcSummary` expanded details
+- a small debug panel near the event log
+- an active-NPC panel later
+
+Important: the client should not recompute server-only prompt logic. If needed, expose visibility from the server or add a debug endpoint later. Do not rush this before the shared formatter slice unless debugging becomes painful.
+
+## Slice 3: Provider Fallbacks
+
+Goal: make public/live runs less brittle when a provider returns `429`, invalid JSON, or no content.
+
+Possible first rule:
 
 ```txt
-npc_0 -> provider: opencode-go, model: deepseek-v4-flash
-npc_1 -> provider: google-ai, model: gemma-4-26b-a4b-it
-npc_2 -> provider: openrouter, model: provider/model-name
-npc_3 -> deterministic
+If selected provider returns null, fallback to deterministic.
 ```
 
-Do this later, after OpenRouter works with one default model.
+Future richer rule:
 
-Possible shape:
-
-```ts
-type ControllerAssignment =
-  | { type: 'deterministic' }
-  | { type: 'llm'; provider: 'opencode-go' | 'google-ai' | 'openrouter'; model?: string };
+```txt
+OpenRouter model A -> OpenRouter model B -> deterministic
 ```
 
-Reason:
-
-- The provider chooses the API/client.
-- The model chooses the specific brain inside that provider.
-- Defaults can still come from env.
-- Per-NPC overrides can come later.
+Keep this simple when we do it. The engine should still own final action validation.
 
 ## Slice 4: Deployment Prep
 
@@ -125,6 +151,7 @@ These are intentionally not part of the current slice.
 - UI for changing an NPC model live.
 - Save controller assignment in world state instead of hardcoded config.
 - Add OpenRouter model experiments and latency comparison.
-- Add NPC personalities, goals, memory, and field-of-view prompts.
+- Add NPC personalities, goals, and memories.
+- Add richer field-of-view details such as relative direction/distance.
 - Add chop tree, wood, seeds, and richer item interactions.
-- Add Mermaid diagrams for new controller/model assignment flow.
+- Add Mermaid diagrams for controller/model/visibility flow.

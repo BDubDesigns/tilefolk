@@ -2,6 +2,7 @@ import type { Npc, WorldEvent } from '@tilefolk/shared';
 import type { ActionOption, ControllerDecision } from './types.js';
 import { serverEnv } from '../../config/env.js';
 import type { VisibleWorldContext } from '../getVisibleWorldContext.js';
+import { formatVisibleContext } from './formatVisibleContext.js';
 
 const OPENCODE_GO_CHAT_COMPLETIONS_URL = 'https://opencode.ai/zen/go/v1/chat/completions';
 
@@ -40,11 +41,16 @@ export async function requestOpenCodeGoDecision(
     .map((option) => `${option.id}: ${option.description}`)
     .join('\n');
 
+  const visibleContext = formatVisibleContext(options.visibleContext);
+
   const promptText = `
 You are choosing the next action for NPC ${options.npc.id}.
 Prefer an active action such as moving or picking up an item when one seems reasonable.
 Choose wait only when no other option is useful.
 Current Location: X:${options.npc.position.x}, Y:${options.npc.position.y}
+
+Visible context:
+${visibleContext}
 
 Recent events:
 ${recentEventLines}
