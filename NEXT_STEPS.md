@@ -18,14 +18,6 @@ validActions
 -> event log
 ```
 
-Core rule:
-
-```txt
-The controller selects.
-The engine owns.
-The reason explains.
-```
-
 Controllers choose option IDs from server-generated legal actions. They do not create actions, mutate the world, or bypass `ActionOption[]`.
 
 Completed recently:
