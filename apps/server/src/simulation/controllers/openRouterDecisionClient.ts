@@ -2,7 +2,7 @@ import type { Npc, WorldEvent } from '@tilefolk/shared';
 import type { ActionOption, ControllerDecision } from './types.js';
 import { serverEnv } from '../../config/env.js';
 import type { VisibleWorldContext } from '@tilefolk/shared';
-import { formatVisibleContext } from './formatVisibleContext.js';
+import { buildControllerPrompt } from './buildControllerPrompt.js';
 
 const OPENROUTER_CHAT_COMPLETIONS_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
@@ -33,36 +33,12 @@ export async function requestOpenRouterDecision(
     return null;
   }
 
-  const recentEventLines = options.recentEvents
-    .map((event) => `Turn ${event.turn}: ${event.message}`)
-    .join('\n');
-
-  const actionOptionLines = options.actionOptions
-    .map((option) => `${option.id}: ${option.description}`)
-    .join('\n');
-
-  const visibleContext = formatVisibleContext(options.visibleContext);
-
-  const promptText = `
-You are choosing the next action for NPC ${options.npc.id}.
-Prefer an active action such as moving or picking up an item when one seems reasonable.
-Choose wait only when no other option is useful.
-Current Location: X:${options.npc.position.x}, Y:${options.npc.position.y}
-
-Visible context:
-${visibleContext}
-
-Recent events:
-${recentEventLines}
-
-Valid action options:
-${actionOptionLines}
-
-Return only JSON with:
-{
-  "selectedOptionId": "one of the listed option IDs",
-  "reason": "12 words or fewer"
-}`;
+  const promptText = buildControllerPrompt({
+    npc: options.npc,
+    recentEvents: options.recentEvents,
+    actionOptions: options.actionOptions,
+    visibleContext: options.visibleContext,
+  });
 
   let response: Response;
   try {
