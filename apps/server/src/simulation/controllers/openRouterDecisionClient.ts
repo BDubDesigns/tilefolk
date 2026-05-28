@@ -3,6 +3,7 @@ import type { ActionOption, ControllerDecision } from './types.js';
 import { serverEnv } from '../../config/env.js';
 import type { VisibleWorldContext } from '@tilefolk/shared';
 import { buildControllerPrompt } from './buildControllerPrompt.js';
+import { parseControllerDecision } from './parseControllerDecision.js';
 
 const OPENROUTER_CHAT_COMPLETIONS_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
@@ -95,28 +96,8 @@ export async function requestOpenRouterDecision(
     return null;
   }
 
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(text);
-  } catch {
-    console.error('OpenRouter returned non-JSON message content:', JSON.stringify(text));
-    return null;
-  }
-
-  if (typeof parsed !== 'object' || parsed === null) return null;
-
-  const maybeDecision = parsed as Partial<ControllerDecision>;
-
-  if (typeof maybeDecision.selectedOptionId !== 'string') return null;
-  if (typeof maybeDecision.reason !== 'string') return null;
-
-  const selectedOptionExists = options.actionOptions.some(
-    (option) => option.id === maybeDecision.selectedOptionId,
-  );
-  if (!selectedOptionExists) return null;
-
-  return {
-    selectedOptionId: maybeDecision.selectedOptionId,
-    reason: maybeDecision.reason,
-  };
+  return parseControllerDecision({
+    text,
+    actionOptions: options.actionOptions,
+  });
 }
