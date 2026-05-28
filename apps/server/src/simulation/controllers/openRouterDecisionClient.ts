@@ -78,7 +78,7 @@ Return only JSON with:
           {
             role: 'system',
             content:
-              'You are an NPC action selector. Do not think out loud. Choose exactly one listed option ID and return only valid JSON.',
+              'You are an NPC action selector. Do not think out loud. Choose exactly one listed option ID. Return one complete JSON object only. No markdown. No trailing explanation.',
           },
           {
             role: 'user',
@@ -92,7 +92,7 @@ Return only JSON with:
         // Tilefolk only needs a tiny menu choice here, so disable reasoning
         // to keep latency and completion size low.
         reasoning: { enabled: false },
-        max_tokens: 150,
+        max_tokens: 250,
       }),
     });
   } catch (error) {
@@ -123,7 +123,7 @@ Return only JSON with:
   try {
     parsed = JSON.parse(text);
   } catch {
-    console.error('OpenRouter returned non-JSON message content:', text);
+    console.error('OpenRouter returned non-JSON message content:', JSON.stringify(text));
     return null;
   }
 

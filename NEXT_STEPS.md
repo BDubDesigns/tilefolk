@@ -42,6 +42,7 @@ Completed recently:
 - Visible-context prompts now include relative direction and distance for visible entities.
 - Move action options now include destination coordinates.
 - Event log shows controller provider/model, reason, and duration.
+- LLM providers fall back to deterministic selection when they return no usable decision.
 
 ## Current Goal: Visible Context UI Debugging
 
@@ -87,25 +88,7 @@ Suggested commit:
 Show NPC visible context in debug panel
 ```
 
-## Slice 2: Provider Fallbacks
-
-Goal: make public/live runs less brittle when a provider returns `429`, invalid JSON, or no content.
-
-Possible first rule:
-
-```txt
-If selected provider returns null, fallback to deterministic.
-```
-
-Future richer rule:
-
-```txt
-OpenRouter model A -> OpenRouter model B -> deterministic
-```
-
-Keep this simple when we do it. The engine should still own final action validation.
-
-## Slice 3: Deployment Prep
+## Slice 2: Deployment Prep
 
 Target: Coolify on the existing Hetzner VPS.
 
@@ -138,6 +121,7 @@ These are intentionally not part of the current slice.
 - UI for changing an NPC model live.
 - Save controller assignment in world state instead of hardcoded config.
 - Add OpenRouter model experiments and latency comparison.
+- Add richer provider fallback chains such as OpenRouter model A -> model B -> deterministic.
 - Add NPC personalities, goals, and memories.
 - Add chop tree, wood, seeds, and richer item interactions.
 - Add Mermaid diagrams for controller/model/visibility flow.

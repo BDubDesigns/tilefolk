@@ -20,43 +20,61 @@ export async function resolveControllerDecision({
   actionOptions,
   controllerAssignment,
 }: ResolveControllerDecisionOptions): Promise<ControllerDecision | null> {
-  if (controllerAssignment.type === 'deterministic') {
-    return deterministicController.chooseAction({
+  const deterministicDecision = async (
+    reason = 'Chose the first option in the list of valid options, deterministically.',
+  ): Promise<ControllerDecision | null> => {
+    const decision = await deterministicController.chooseAction({
       world,
       npc,
       actionOptions,
     });
+
+    return decision ? { ...decision, reason } : null;
+  };
+
+  if (controllerAssignment.type === 'deterministic') {
+    return deterministicDecision();
   }
 
   const recentEvents = world.events.slice(-5);
   const visibleContext = getVisibleWorldContext({ world, npc });
 
+  let providerDecision: ControllerDecision | null;
+
   switch (controllerAssignment.provider) {
     case 'opencode-go':
-      return requestOpenCodeGoDecision({
+      providerDecision = await requestOpenCodeGoDecision({
         recentEvents,
         npc,
         actionOptions,
         model: controllerAssignment.model,
         visibleContext,
       });
+      break;
     case 'google-ai':
-      return requestGoogleAiDecision({
+      providerDecision = await requestGoogleAiDecision({
         recentEvents,
         npc,
         actionOptions,
         model: controllerAssignment.model,
         visibleContext,
       });
+      break;
     case 'openrouter':
-      return requestOpenRouterDecision({
+      providerDecision = await requestOpenRouterDecision({
         recentEvents,
         npc,
         actionOptions,
         model: controllerAssignment.model,
         visibleContext,
       });
+      break;
     default:
       return null;
   }
+
+  return (
+    providerDecision ??
+    deterministicDecision('LLM failed; deterministic fallback selected the first valid option.')
+  );
 }
