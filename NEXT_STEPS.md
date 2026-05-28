@@ -1,10 +1,10 @@
 # Tilefolk Next Steps
 
-This file is the current working roadmap. Keep it short, update it after meaningful milestones, and use it to avoid losing the plot.
+This is the active roadmap. Keep it short, update it after meaningful milestones, and use it to avoid losing the plot.
 
 ## Current State
 
-Tilefolk has the core LLM-controller architecture working:
+Tilefolk has a working LLM-controller simulation loop:
 
 ```txt
 validActions
@@ -30,65 +30,85 @@ Controllers choose option IDs from server-generated legal actions. They do not c
 
 Completed recently:
 
+- Tagged the first working checkpoint as `v0.1.0`.
 - Multiple controllers can run in the same world.
 - Providers include deterministic, OpenCode Go, Google AI, and OpenRouter.
 - LLM assignments support per-NPC model overrides.
 - Controller labels show provider and effective model, including env defaults.
-- Provider error logging includes response bodies for easier debugging.
-- `getVisibleWorldContext` derives nearby NPCs, trees, and ground items.
-- `getVisibleWorldContext` now lives in `@tilefolk/shared`.
-- OpenRouter, OpenCode Go, and Google AI all receive the same visible-context prompt block.
+- `getVisibleWorldContext` derives nearby NPCs, trees, and ground items from shared types.
 - Visible-context prompt formatting is shared by all LLM providers.
-- Visible-context prompts now include relative direction and distance for visible entities.
-- Move action options now include destination coordinates.
+- Visible-context prompts include relative direction and distance for visible entities.
+- Move action options include destination coordinates.
 - Event log shows controller provider/model, reason, and duration.
 - LLM providers fall back to deterministic selection when they return no usable decision.
+- Towel pass extracted shared controller prompt building and shared controller decision parsing.
 
-## Current Goal: Visible Context UI Debugging
+## Current Goal: Memory And Witnessed Events
 
-We saw a model reason about a tree in a way that might have been either:
+NPCs still receive global recent events. That is useful for testing, but it breaks simulation truth because NPCs can react to things they should not know happened.
 
-1. correct, because the tree was visible, or
-2. hallucinated, because the prompt had no nearby tree.
+Next goal: make NPC knowledge local.
 
-The next slice is to make that inspectable in the UI.
+## Slice 1: Add Event Witnessing Foundation
 
-## Slice 1: Add NPC Visible Context Debug Panel
+Goal: events should have positions and NPCs should only learn about events they could witness.
 
-Goal: show what each NPC can currently see using the same shared helper the server uses for prompts.
+1. Confirm every world event has a useful `position` when an action happens.
 
-1. Use `getVisibleWorldContext` from `@tilefolk/shared` in the client.
-
-2. Add visible-context output to the existing NPC details, or create a small component:
-   - possible file: `apps/client/src/features/world/NpcDebugPanel.tsx`
-
-3. For each NPC, show:
-   - id/name
+2. Design the memory shape before coding:
+   - memory id
+   - npc id
+   - source event id
+   - turn witnessed
+   - message
    - position
-   - visible radius
-   - nearby NPCs
-   - nearby trees
-   - nearby ground items
-   - inventory
 
-4. Keep it collapsible with `<details>` so the main UI does not become noisy.
+3. Decide the SSOT:
+   - preferred: `world.memories` stores memory records
+   - NPCs may later reference memory ids, but avoid duplicating full memory objects inside each NPC
 
-5. Manual test:
-   - step the world
-   - when a model mentions an object, open that NPC's debug details
-   - verify whether the object was actually visible
+4. Add a helper:
+   - possible name: `addMemoriesForWitnesses`
+   - input: world, event, radius
+   - output: updated world or mutated draft world, matching the current `stepWorld` style
 
-6. Run checks:
-   - `npm run typecheck`
-   - `npm test`
+5. Acceptance criteria:
+   - actor remembers its own action
+   - nearby NPCs remember visible events
+   - faraway NPCs do not remember events
+   - tests prove witness radius behavior
 
-Suggested commit:
+## Slice 2: Use Memories In LLM Prompts
 
-```txt
-Show NPC visible context in debug panel
-```
+Goal: controller prompts should use NPC-local knowledge instead of global recent events.
 
-## Slice 2: Deployment Prep
+1. Replace `world.events.slice(-5)` in controller resolution with recent memories for the acting NPC.
+
+2. Keep visible context separate from memory:
+   - visible context: what the NPC can see now
+   - memories: what the NPC witnessed before
+
+3. Acceptance criteria:
+   - LLM prompt no longer includes global events
+   - deterministic controller behavior is unchanged
+   - tests prove NPCs do not receive unrelated faraway events
+
+## Slice 3: Chop Tree Action
+
+Goal: make the axe matter.
+
+1. Add valid chop action only when:
+   - NPC has an axe
+   - tree is adjacent or in allowed range
+
+2. Apply chop action:
+   - reduce tree hit points
+   - remove tree or convert it when hit points reach zero
+   - eventually create wood/seed items
+
+3. Add action options and prompt descriptions for chopping.
+
+## Slice 4: Deployment Prep
 
 Target: Coolify on the existing Hetzner VPS.
 
@@ -115,13 +135,11 @@ Target: Coolify on the existing Hetzner VPS.
 
 ## Later Ideas
 
-These are intentionally not part of the current slice.
-
 - UI for changing an NPC controller live.
 - UI for changing an NPC model live.
 - Save controller assignment in world state instead of hardcoded config.
 - Add OpenRouter model experiments and latency comparison.
 - Add richer provider fallback chains such as OpenRouter model A -> model B -> deterministic.
-- Add NPC personalities, goals, and memories.
-- Add chop tree, wood, seeds, and richer item interactions.
-- Add Mermaid diagrams for controller/model/visibility flow.
+- Add NPC personalities and goals.
+- Add wood, seeds, crafting, and richer item interactions.
+- Add Mermaid diagrams for controller/model/visibility/memory flow.
