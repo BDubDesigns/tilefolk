@@ -271,6 +271,7 @@ describe('stepWorld', () => {
       expect(event.turn).toBe(0);
       expect(event.actorId).toBe('npc_0');
       expect(event.message).toBe('npc_0 moved n');
+      expect(event.position).toEqual({ x: 2, y: 1 });
       expect(stepResult.actionResult.success).toBe(true);
     });
 
@@ -285,6 +286,7 @@ describe('stepWorld', () => {
       expect(event.turn).toBe(0);
       expect(event.actorId).toBe('npc_0');
       expect(event.message).toBe('npc_0 moved n');
+      expect(event.position).toEqual({ x: 2, y: 1 });
       expect(stepResult.actionResult.success).toBe(true);
       expect(world.events).toHaveLength(0);
     });
@@ -299,6 +301,19 @@ describe('stepWorld', () => {
 
       expect(event.turn).toBe(3);
       expect(stepResult.world.turn).toBe(4);
+    });
+
+    it('records event position as a snapshot', async () => {
+      const world = createWorldWithNpcAt({ x: 2, y: 2 });
+
+      const stepResult = await stepWorld(world);
+      const event = getEventOrThrow(stepResult.world, 0);
+      const npc = getNpcOrThrow(stepResult.world, 0);
+
+      npc.position.x = 9;
+      npc.position.y = 9;
+
+      expect(event.position).toEqual({ x: 2, y: 1 });
     });
   });
 });

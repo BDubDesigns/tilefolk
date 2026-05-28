@@ -146,7 +146,7 @@ export function App() {
             actionError={actionError}
           />
           <EventLog events={world.events} />
-          <NpcSummary npcs={world.npcs} items={world.items} />
+          <NpcSummary world={world} />
         </div>
 
         <WorldGrid tiles={world.tiles} npcs={world.npcs} items={world.items} trees={world.trees} />

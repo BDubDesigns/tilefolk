@@ -1,6 +1,6 @@
 # Tilefolk Next Steps
 
-This file is the current working roadmap. Keep it short, update it as slices land, and use it to avoid losing the plot.
+This file is the current working roadmap. Keep it short, update it after meaningful milestones, and use it to avoid losing the plot.
 
 ## Current State
 
@@ -9,6 +9,7 @@ Tilefolk has the core LLM-controller architecture working:
 ```txt
 validActions
 -> actionOptions
+-> visible context
 -> controller assignment
 -> controller decision
 -> selectedOptionId
@@ -32,75 +33,61 @@ Completed recently:
 - Multiple controllers can run in the same world.
 - Providers include deterministic, OpenCode Go, Google AI, and OpenRouter.
 - LLM assignments support per-NPC model overrides.
+- Controller labels show provider and effective model, including env defaults.
 - Provider error logging includes response bodies for easier debugging.
-- OpenRouter visible context is wired into prompts.
 - `getVisibleWorldContext` derives nearby NPCs, trees, and ground items.
+- `getVisibleWorldContext` now lives in `@tilefolk/shared`.
+- OpenRouter, OpenCode Go, and Google AI all receive the same visible-context prompt block.
+- Visible-context prompt formatting is shared by all LLM providers.
+- Visible-context prompts now include relative direction and distance for visible entities.
+- Move action options now include destination coordinates.
 - Event log shows controller provider/model, reason, and duration.
 
-## Current Decision Point
+## Current Goal: Visible Context UI Debugging
 
-OpenRouter now has eyes. The next question is whether to:
+We saw a model reason about a tree in a way that might have been either:
 
-1. Give every LLM provider the same visible-context prompt.
-2. Extract shared prompt formatting first so providers do not drift.
-3. Show visible context in the UI for debugging.
-4. Move toward deployment prep.
+1. correct, because the tree was visible, or
+2. hallucinated, because the prompt had no nearby tree.
 
-Recommended next slice:
+The next slice is to make that inspectable in the UI.
 
-```txt
-Extract shared visible-context prompt formatting, then use it in OpenRouter, OpenCode Go, and Google AI.
-```
+## Slice 1: Add NPC Visible Context Debug Panel
 
-Reason: every LLM provider should see the same world summary before we tune individual model behavior.
+Goal: show what each NPC can currently see using the same shared helper the server uses for prompts.
 
-## Slice 1: Shared Visible Context Prompt Formatter
+1. Use `getVisibleWorldContext` from `@tilefolk/shared` in the client.
 
-Goal: avoid duplicating visible-context text across provider clients.
+2. Add visible-context output to the existing NPC details, or create a small component:
+   - possible file: `apps/client/src/features/world/NpcDebugPanel.tsx`
 
-1. Create a server-side prompt helper near the controller/prompt code.
-   - Possible file: `apps/server/src/simulation/controllers/formatVisibleContextPrompt.ts`
-
-2. Move OpenRouter's visible-context formatting into that helper.
-
-3. The helper should accept `VisibleWorldContext`.
-
-4. It should output compact prompt text:
+3. For each NPC, show:
+   - id/name
+   - position
    - visible radius
-   - nearby NPCs or `None`
-   - nearby trees or `None`
-   - nearby ground items or `None`
+   - nearby NPCs
+   - nearby trees
+   - nearby ground items
+   - inventory
 
-5. Use the helper in:
-   - OpenRouter
-   - OpenCode Go
-   - Google AI
+4. Keep it collapsible with `<details>` so the main UI does not become noisy.
 
-6. Run checks.
+5. Manual test:
+   - step the world
+   - when a model mentions an object, open that NPC's debug details
+   - verify whether the object was actually visible
+
+6. Run checks:
    - `npm run typecheck`
    - `npm test`
-
-7. Smoke test at least OpenRouter and OpenCode Go.
 
 Suggested commit:
 
 ```txt
-Share visible context prompt formatting
+Show NPC visible context in debug panel
 ```
 
-## Slice 2: Visible Context UI Debugging
-
-Goal: make it easier to inspect what an NPC can currently see.
-
-Possible UI locations:
-
-- `NpcSummary` expanded details
-- a small debug panel near the event log
-- an active-NPC panel later
-
-Important: the client should not recompute server-only prompt logic. If needed, expose visibility from the server or add a debug endpoint later. Do not rush this before the shared formatter slice unless debugging becomes painful.
-
-## Slice 3: Provider Fallbacks
+## Slice 2: Provider Fallbacks
 
 Goal: make public/live runs less brittle when a provider returns `429`, invalid JSON, or no content.
 
@@ -118,7 +105,7 @@ OpenRouter model A -> OpenRouter model B -> deterministic
 
 Keep this simple when we do it. The engine should still own final action validation.
 
-## Slice 4: Deployment Prep
+## Slice 3: Deployment Prep
 
 Target: Coolify on the existing Hetzner VPS.
 
@@ -152,6 +139,5 @@ These are intentionally not part of the current slice.
 - Save controller assignment in world state instead of hardcoded config.
 - Add OpenRouter model experiments and latency comparison.
 - Add NPC personalities, goals, and memories.
-- Add richer field-of-view details such as relative direction/distance.
 - Add chop tree, wood, seeds, and richer item interactions.
 - Add Mermaid diagrams for controller/model/visibility flow.

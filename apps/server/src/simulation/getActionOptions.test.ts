@@ -1,17 +1,38 @@
 import { describe, expect, it } from 'vitest';
-import type { NpcAction } from '@tilefolk/shared';
+import type { Npc, NpcAction } from '@tilefolk/shared';
 import { getActionOptions } from './getActionOptions.js';
+
+const testNpc: Npc = {
+  id: 'npc_0',
+  name: 'Test NPC',
+  position: { x: 3, y: 4 },
+  memories: [],
+};
 
 describe('getActionOptions', () => {
   it('converts move actions into action options', () => {
     const moveAction: NpcAction = { type: 'move', npcId: 'npc_0', direction: 'n' };
 
-    const options = getActionOptions([moveAction]);
+    const options = getActionOptions([moveAction], { npc: testNpc });
 
     expect(options).toEqual([
       {
         id: 'move:n',
-        description: 'Move 1 tile north',
+        description: 'Move 1 tile north to (3, 3)',
+        action: moveAction,
+      },
+    ]);
+  });
+
+  it('can describe move actions without destination context', () => {
+    const moveAction: NpcAction = { type: 'move', npcId: 'npc_0', direction: 'se' };
+
+    const options = getActionOptions([moveAction]);
+
+    expect(options).toEqual([
+      {
+        id: 'move:se',
+        description: 'Move 1 tile southeast',
         action: moveAction,
       },
     ]);

@@ -116,6 +116,7 @@ export type WorldEvent = {
   controllerReason?: string;
   controllerDurationMs?: number;
   controllerLabel?: string;
+  position?: Position;
 };
 
 export interface GetVisibleWorldContextOptions {
