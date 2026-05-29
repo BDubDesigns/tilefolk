@@ -37,6 +37,7 @@ export type World = {
   trees: Tree[];
   turn: number;
   events: WorldEvent[];
+  memories: Memory[];
 };
 
 export type Tile = {
@@ -47,8 +48,11 @@ export type TileGrid = Tile[][];
 
 export type Memory = {
   id: MemoryId;
-  text: string;
-  turnNumber: number;
+  npcId: NpcId;
+  sourceEventId: WorldEventId;
+  turn: number;
+  message: string;
+  position: Position;
 };
 
 export type Npc = {
