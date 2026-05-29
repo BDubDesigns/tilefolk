@@ -7,13 +7,9 @@ export type ControllerAssignment =
 
 const controllerAssignments: Record<string, ControllerAssignment> = {
   npc_0: { type: 'llm', provider: 'opencode-go' },
-  npc_1: { type: 'llm', provider: 'openrouter' },
-  npc_2: {
-    type: 'llm',
-    provider: 'openrouter',
-    model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-  },
-  npc_3: { type: 'deterministic' },
+  npc_1: { type: 'llm', provider: 'opencode-go' },
+  npc_2: { type: 'llm', provider: 'opencode-go' },
+  npc_3: { type: 'llm', provider: 'opencode-go' },
 };
 
 export function getControllerAssignment(npcId: string): ControllerAssignment {
