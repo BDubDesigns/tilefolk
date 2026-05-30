@@ -6,6 +6,7 @@ import { requestGoogleAiDecision } from './googleAiDecisionClient.js';
 import { requestOpenCodeGoDecision } from './openCodeGoDecisionClient.js';
 import { requestOpenRouterDecision } from './openRouterDecisionClient.js';
 import { getVisibleWorldContext } from '@tilefolk/shared';
+import { getRecentMemoriesForNpc } from '../getRecentMemoriesForNpc.js';
 
 interface ResolveControllerDecisionOptions {
   world: World;
@@ -36,7 +37,7 @@ export async function resolveControllerDecision({
     return deterministicDecision();
   }
 
-  const recentEvents = world.events.slice(-5);
+  const recentMemories = getRecentMemoriesForNpc({ npc });
   const visibleContext = getVisibleWorldContext({ world, npc });
 
   let providerDecision: ControllerDecision | null;
@@ -44,7 +45,7 @@ export async function resolveControllerDecision({
   switch (controllerAssignment.provider) {
     case 'opencode-go':
       providerDecision = await requestOpenCodeGoDecision({
-        recentEvents,
+        recentMemories,
         npc,
         actionOptions,
         model: controllerAssignment.model,
@@ -53,7 +54,7 @@ export async function resolveControllerDecision({
       break;
     case 'google-ai':
       providerDecision = await requestGoogleAiDecision({
-        recentEvents,
+        recentMemories,
         npc,
         actionOptions,
         model: controllerAssignment.model,
@@ -62,7 +63,7 @@ export async function resolveControllerDecision({
       break;
     case 'openrouter':
       providerDecision = await requestOpenRouterDecision({
-        recentEvents,
+        recentMemories,
         npc,
         actionOptions,
         model: controllerAssignment.model,

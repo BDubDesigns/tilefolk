@@ -1,7 +1,6 @@
-import type { Npc, WorldEvent } from '@tilefolk/shared';
+import type { Memory, Npc, VisibleWorldContext } from '@tilefolk/shared';
 import type { ActionOption, ControllerDecision } from './types.js';
 import { serverEnv } from '../../config/env.js';
-import type { VisibleWorldContext } from '@tilefolk/shared';
 import { buildControllerPrompt } from './buildControllerPrompt.js';
 import { parseControllerDecision } from './parseControllerDecision.js';
 
@@ -9,7 +8,7 @@ const OPENCODE_GO_CHAT_COMPLETIONS_URL = 'https://opencode.ai/zen/go/v1/chat/com
 
 interface RequestOpenCodeGoDecisionOptions {
   npc: Npc;
-  recentEvents: WorldEvent[];
+  recentMemories: Memory[];
   actionOptions: ActionOption[];
   model?: string;
   visibleContext: VisibleWorldContext;
@@ -36,7 +35,7 @@ export async function requestOpenCodeGoDecision(
 
   const promptText = buildControllerPrompt({
     npc: options.npc,
-    recentEvents: options.recentEvents,
+    recentMemories: options.recentMemories,
     actionOptions: options.actionOptions,
     visibleContext: options.visibleContext,
   });
