@@ -23,6 +23,7 @@ Controllers choose option IDs from server-generated legal actions. They do not c
 Completed recently:
 
 - Tagged the first working checkpoint as `v0.1.0`.
+- Tagged the NPC-local memory milestone as `v0.2.0`.
 - Multiple controllers can run in the same world.
 - Providers include deterministic, OpenCode Go, Google AI, and OpenRouter.
 - LLM assignments support per-NPC model overrides.
@@ -34,58 +35,32 @@ Completed recently:
 - Event log shows controller provider/model, reason, and duration.
 - LLM providers fall back to deterministic selection when they return no usable decision.
 - Towel pass extracted shared controller prompt building and shared controller decision parsing.
+- NPC-local memories now track witnessed events.
+- LLM prompts now use NPC-local memories instead of global recent events.
 
-## Current Goal: Memory And Witnessed Events
+## Current Goal: Chop Trees And Resources
 
-NPCs still receive global recent events. That is useful for testing, but it breaks simulation truth because NPCs can react to things they should not know happened.
+Make the axe matter by adding a real resource loop:
 
-Next goal: make NPC knowledge local.
+- NPC sees or remembers a tree.
+- NPC has an axe.
+- NPC can choose a chop action.
+- Tree loses durability.
+- Tree eventually becomes resources.
 
-## Slice 1: Add Event Witnessing Foundation
+## Completed: Memory And Witnessed Events
 
 Goal: events should have positions and NPCs should only learn about events they could witness.
 
-1. Confirm every world event has a useful `position` when an action happens.
+Done:
 
-2. Design the memory shape before coding:
-   - memory id
-   - npc id
-   - source event id
-   - turn witnessed
-   - message
-   - position
+- `world.events` stores objective history.
+- `npc.memories` stores each NPC's subjective remembered history.
+- Positioned events create memories for nearby witness NPCs.
+- Controller prompts use `getRecentMemoriesForNpc({ npc })` instead of global recent events.
+- Tests cover witness radius behavior, snapshots, and recent memory lookup.
 
-3. Decide the SSOT:
-   - `world.events` stores objective history
-   - `npc.memories` stores that NPC's subjective remembered history
-
-4. Add a helper:
-   - possible name: `addMemoriesForWitnesses`
-   - input: world, event, radius
-   - output: updated world or mutated draft world, matching the current `stepWorld` style
-
-5. Acceptance criteria:
-   - actor remembers its own action
-   - nearby NPCs remember visible events
-   - faraway NPCs do not remember events
-   - tests prove witness radius behavior
-
-## Slice 2: Use Memories In LLM Prompts
-
-Goal: controller prompts should use NPC-local knowledge instead of global recent events.
-
-1. Replace `world.events.slice(-5)` in controller resolution with `getRecentMemoriesForNpc({ npc })`.
-
-2. Keep visible context separate from memory:
-   - visible context: what the NPC can see now
-   - memories: what the NPC witnessed before
-
-3. Acceptance criteria:
-   - LLM prompt no longer includes global events
-   - deterministic controller behavior is unchanged
-   - tests prove NPCs do not receive unrelated faraway events
-
-## Slice 3: Chop Tree Action
+## Slice 1: Chop Tree Action
 
 Goal: make the axe matter.
 
@@ -100,7 +75,21 @@ Goal: make the axe matter.
 
 3. Add action options and prompt descriptions for chopping.
 
-## Slice 4: Deployment Prep
+## Slice 2: Resource Drops
+
+Goal: chopped trees should create useful world resources.
+
+1. Decide first resource items:
+   - wood
+   - possibly seed
+
+2. When a tree reaches zero hit points:
+   - remove or mark the tree as felled
+   - create wood on the ground at or near the tree position
+
+3. Add tests for tree depletion and item placement.
+
+## Slice 3: Deployment Prep
 
 Target: Coolify on the existing Hetzner VPS.
 
@@ -125,7 +114,7 @@ Target: Coolify on the existing Hetzner VPS.
    - Attach subdomain.
    - Smoke test public read and admin mutations.
 
-## Slice 5: Provider Experiments
+## Slice 4: Provider Experiments
 
 Goal: keep controller latency low enough for live-ish simulation stepping.
 
@@ -146,5 +135,9 @@ Goal: keep controller latency low enough for live-ish simulation stepping.
 - Add provider/model experiments and latency comparison.
 - Add richer provider fallback chains such as OpenRouter model A -> model B -> deterministic.
 - Add NPC personalities and goals.
+- Add rounds: `turn` advances every NPC action, `round` advances after every NPC has acted once.
+- Use round-end ticks later for growth, hunger, tiredness, sleep, and other world processes.
+- Add audio perception memories, such as hearing chopping from farther away than visual range.
+- Add sleep/dream/memory compression once NPCs have enough memories for summarization to matter.
 - Add wood, seeds, crafting, and richer item interactions.
 - Add Mermaid diagrams for controller/model/visibility/memory flow.

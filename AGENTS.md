@@ -18,4 +18,5 @@
 - Keep semantic versions intentional, not automatic.
 - For meaningful public checkpoints, update the root and workspace `package.json` versions and create a matching git tag.
 - Use patch versions for small fixes/polish, minor versions for meaningful early-stage capabilities, and major versions only for a future stable public contract.
+- Keep README checkpoint/status text in sync with the current project version when bumping or tagging a release.
 - Update `NEXT_STEPS.md` before opening a PR when the milestone changes the active roadmap.
