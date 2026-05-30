@@ -22,8 +22,8 @@ export function addMemoriesForWitnesses({
   });
 
   for (const witness of witnesses) {
-    const memoryId = `memory_${world.memories.length}`;
-    world.memories.push({
+    const memoryId = `memory_${witness.id}_${witness.memories.length}`;
+    witness.memories.push({
       id: memoryId,
       npcId: witness.id,
       sourceEventId: event.id,
@@ -31,7 +31,5 @@ export function addMemoriesForWitnesses({
       message: event.message,
       position: { ...eventPosition },
     });
-
-    witness.memories.push(memoryId);
   }
 }

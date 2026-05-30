@@ -324,10 +324,9 @@ describe('stepWorld', () => {
       const stepResult = await stepWorld(world);
       const actor = getNpcOrThrow(stepResult.world, 0);
 
-      expect(stepResult.world.memories).toHaveLength(1);
-      expect(actor.memories).toEqual(['memory_0']);
-      expect(stepResult.world.memories[0]).toMatchObject({
-        id: 'memory_0',
+      expect(actor.memories).toHaveLength(1);
+      expect(actor.memories[0]).toMatchObject({
+        id: 'memory_npc_0_0',
         npcId: 'npc_0',
         sourceEventId: 'event_0',
         turn: 0,
@@ -352,12 +351,16 @@ describe('stepWorld', () => {
       const steppedActor = getNpcOrThrow(stepResult.world, 0);
       const steppedWitness = getNpcOrThrow(stepResult.world, 1);
 
-      expect(stepResult.world.memories.map((memory) => memory.npcId)).toEqual([
-        'npc_0',
-        'npc_1',
-      ]);
-      expect(steppedActor.memories).toEqual(['memory_0']);
-      expect(steppedWitness.memories).toEqual(['memory_1']);
+      expect(steppedActor.memories.map((memory) => memory.npcId)).toEqual(['npc_0']);
+      expect(steppedWitness.memories.map((memory) => memory.npcId)).toEqual(['npc_1']);
+      expect(steppedActor.memories[0]).toMatchObject({
+        id: 'memory_npc_0_0',
+        sourceEventId: 'event_0',
+      });
+      expect(steppedWitness.memories[0]).toMatchObject({
+        id: 'memory_npc_1_0',
+        sourceEventId: 'event_0',
+      });
     });
 
     it('does not create memories for NPCs outside the witness radius', async () => {
@@ -376,18 +379,20 @@ describe('stepWorld', () => {
       const steppedActor = getNpcOrThrow(stepResult.world, 0);
       const steppedFarNpc = getNpcOrThrow(stepResult.world, 1);
 
-      expect(stepResult.world.memories.map((memory) => memory.npcId)).toEqual(['npc_0']);
-      expect(steppedActor.memories).toEqual(['memory_0']);
+      expect(steppedActor.memories).toHaveLength(1);
+      expect(steppedActor.memories[0]).toMatchObject({
+        id: 'memory_npc_0_0',
+        npcId: 'npc_0',
+      });
       expect(steppedFarNpc.memories).toEqual([]);
     });
 
-    it('does not mutate the original world memories', async () => {
+    it('does not mutate the original world NPC memories', async () => {
       const world = createWorldWithNpcAt({ x: 2, y: 2 });
 
       const stepResult = await stepWorld(world);
 
-      expect(stepResult.world.memories).toHaveLength(1);
-      expect(world.memories).toHaveLength(0);
+      expect(getNpcOrThrow(stepResult.world, 0).memories).toHaveLength(1);
       expect(getNpcOrThrow(world, 0).memories).toEqual([]);
     });
   });

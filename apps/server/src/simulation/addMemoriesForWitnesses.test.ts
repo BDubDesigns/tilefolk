@@ -30,7 +30,6 @@ const createTestWorld = (): World => ({
   items: [],
   trees: [],
   events: [],
-  memories: [],
   turn: 0,
 });
 
@@ -56,9 +55,9 @@ describe('addMemoriesForWitnesses', () => {
     addMemoriesForWitnesses({ world, event });
 
     const actor = getNpcOrThrow(world, 'npc_actor');
-    expect(actor.memories).toEqual(['memory_0']);
-    expect(world.memories[0]).toMatchObject({
-      id: 'memory_0',
+    expect(actor.memories).toHaveLength(1);
+    expect(actor.memories[0]).toMatchObject({
+      id: 'memory_npc_actor_0',
       npcId: 'npc_actor',
       sourceEventId: 'event_0',
       turn: 3,
@@ -74,8 +73,12 @@ describe('addMemoriesForWitnesses', () => {
     addMemoriesForWitnesses({ world, event });
 
     const nearNpc = getNpcOrThrow(world, 'npc_near');
-    expect(nearNpc.memories).toEqual(['memory_1']);
-    expect(world.memories.map((memory) => memory.npcId)).toEqual(['npc_actor', 'npc_near']);
+    expect(nearNpc.memories).toHaveLength(1);
+    expect(nearNpc.memories[0]).toMatchObject({
+      id: 'memory_npc_near_0',
+      npcId: 'npc_near',
+      sourceEventId: 'event_0',
+    });
   });
 
   it('does not add memories for NPCs outside the witness radius', () => {
@@ -86,7 +89,8 @@ describe('addMemoriesForWitnesses', () => {
 
     const farNpc = getNpcOrThrow(world, 'npc_far');
     expect(farNpc.memories).toEqual([]);
-    expect(world.memories).toHaveLength(2);
+    expect(getNpcOrThrow(world, 'npc_actor').memories).toHaveLength(1);
+    expect(getNpcOrThrow(world, 'npc_near').memories).toHaveLength(1);
   });
 
   it('does nothing for events without a position', () => {
@@ -100,7 +104,6 @@ describe('addMemoriesForWitnesses', () => {
 
     addMemoriesForWitnesses({ world, event });
 
-    expect(world.memories).toEqual([]);
     expect(world.npcs.every((npc) => npc.memories.length === 0)).toBe(true);
   });
 
@@ -110,7 +113,8 @@ describe('addMemoriesForWitnesses', () => {
 
     addMemoriesForWitnesses({ world, event });
 
-    expect(world.memories[0]?.position).toEqual(event.position);
-    expect(world.memories[0]?.position).not.toBe(event.position);
+    const actor = getNpcOrThrow(world, 'npc_actor');
+    expect(actor.memories[0]?.position).toEqual(event.position);
+    expect(actor.memories[0]?.position).not.toBe(event.position);
   });
 });

@@ -8,7 +8,6 @@ const createTestWorld = (): World => ({
   tiles: [],
   turn: 0,
   events: [],
-  memories: [],
   npcs: [
     {
       id: 'npc_viewer',

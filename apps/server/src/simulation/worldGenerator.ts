@@ -197,7 +197,6 @@ export function createWorld({
     items,
     trees,
     events,
-    memories: [],
     turn: 0,
   };
   return world;

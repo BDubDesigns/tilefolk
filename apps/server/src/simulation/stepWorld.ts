@@ -100,12 +100,14 @@ function assertUnhandledAction(action: never): never {
 export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
   const newWorld = {
     ...world,
-    memories: [...world.memories],
     events: [...world.events],
     npcs: world.npcs.map((npc) => ({
       ...npc,
       position: { ...npc.position },
-      memories: [...npc.memories],
+      memories: npc.memories.map((memory) => ({
+        ...memory,
+        position: { ...memory.position },
+      })),
     })),
     items: structuredClone(world.items),
     trees: structuredClone(world.trees),

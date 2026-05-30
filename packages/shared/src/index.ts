@@ -37,7 +37,6 @@ export type World = {
   trees: Tree[];
   turn: number;
   events: WorldEvent[];
-  memories: Memory[];
 };
 
 export type Tile = {
@@ -59,7 +58,7 @@ export type Npc = {
   id: NpcId;
   name: string;
   position: Position;
-  memories: MemoryId[];
+  memories: Memory[];
 };
 
 // ItemLocation can be either on the ground or held by an NPC

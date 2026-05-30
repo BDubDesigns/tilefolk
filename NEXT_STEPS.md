@@ -56,8 +56,8 @@ Goal: events should have positions and NPCs should only learn about events they 
    - position
 
 3. Decide the SSOT:
-   - preferred: `world.memories` stores memory records
-   - NPCs may later reference memory ids, but avoid duplicating full memory objects inside each NPC
+   - `world.events` stores objective history
+   - `npc.memories` stores that NPC's subjective remembered history
 
 4. Add a helper:
    - possible name: `addMemoriesForWitnesses`
@@ -74,7 +74,7 @@ Goal: events should have positions and NPCs should only learn about events they 
 
 Goal: controller prompts should use NPC-local knowledge instead of global recent events.
 
-1. Replace `world.events.slice(-5)` in controller resolution with recent memories for the acting NPC.
+1. Replace `world.events.slice(-5)` in controller resolution with `getRecentMemoriesForNpc({ npc })`.
 
 2. Keep visible context separate from memory:
    - visible context: what the NPC can see now
