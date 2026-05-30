@@ -47,15 +47,18 @@ export type TileGrid = Tile[][];
 
 export type Memory = {
   id: MemoryId;
-  text: string;
-  turnNumber: number;
+  npcId: NpcId;
+  sourceEventId: WorldEventId;
+  turn: number;
+  message: string;
+  position: Position;
 };
 
 export type Npc = {
   id: NpcId;
   name: string;
   position: Position;
-  memories: MemoryId[];
+  memories: Memory[];
 };
 
 // ItemLocation can be either on the ground or held by an NPC

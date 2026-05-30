@@ -1,4 +1,4 @@
-import type { ActionResult, Direction, Npc, Position, World } from '@tilefolk/shared';
+import type { ActionResult, Direction, Npc, Position, World, WorldEvent } from '@tilefolk/shared';
 import { directionDeltas } from './directionDeltas.js';
 import type { StepWorldResponse, ItemId } from '@tilefolk/shared';
 import { getValidActions } from './getValidActions.js';
@@ -8,6 +8,7 @@ import {
   getControllerLabel,
 } from './controllers/controllerAssignments.js';
 import { resolveControllerDecision } from './controllers/resolveControllerDecision.js';
+import { addMemoriesForWitnesses } from './addMemoriesForWitnesses.js';
 
 function appendActionEvent(
   world: World,
@@ -17,8 +18,8 @@ function appendActionEvent(
   controllerDurationMs?: number,
   controllerLabel?: string,
   position?: Position,
-): void {
-  world.events.push({
+): WorldEvent {
+  const event: WorldEvent = {
     id: `event_${world.events.length}`,
     turn,
     actorId: actionResult.action.npcId,
@@ -27,7 +28,9 @@ function appendActionEvent(
     ...(controllerDurationMs !== undefined ? { controllerDurationMs } : {}),
     ...(controllerLabel ? { controllerLabel } : {}),
     ...(position ? { position: { ...position } } : {}),
-  });
+  };
+  world.events.push(event);
+  return event;
 }
 
 function createWaitResult(npc: Npc, message: string): ActionResult {
@@ -73,7 +76,7 @@ function finishNpcAttempt(
   controllerLabel?: string,
   position?: Position,
 ): StepWorldResponse {
-  appendActionEvent(
+  const event = appendActionEvent(
     world,
     actionResult,
     turn,
@@ -82,6 +85,8 @@ function finishNpcAttempt(
     controllerLabel,
     position,
   );
+
+  addMemoriesForWitnesses({ world, event });
   return {
     world,
     actionResult,
@@ -96,7 +101,14 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
   const newWorld = {
     ...world,
     events: [...world.events],
-    npcs: world.npcs.map((npc) => ({ ...npc, position: { ...npc.position } })),
+    npcs: world.npcs.map((npc) => ({
+      ...npc,
+      position: { ...npc.position },
+      memories: npc.memories.map((memory) => ({
+        ...memory,
+        position: { ...memory.position },
+      })),
+    })),
     items: structuredClone(world.items),
     trees: structuredClone(world.trees),
   };

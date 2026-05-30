@@ -56,8 +56,8 @@ Goal: events should have positions and NPCs should only learn about events they 
    - position
 
 3. Decide the SSOT:
-   - preferred: `world.memories` stores memory records
-   - NPCs may later reference memory ids, but avoid duplicating full memory objects inside each NPC
+   - `world.events` stores objective history
+   - `npc.memories` stores that NPC's subjective remembered history
 
 4. Add a helper:
    - possible name: `addMemoriesForWitnesses`
@@ -74,7 +74,7 @@ Goal: events should have positions and NPCs should only learn about events they 
 
 Goal: controller prompts should use NPC-local knowledge instead of global recent events.
 
-1. Replace `world.events.slice(-5)` in controller resolution with recent memories for the acting NPC.
+1. Replace `world.events.slice(-5)` in controller resolution with `getRecentMemoriesForNpc({ npc })`.
 
 2. Keep visible context separate from memory:
    - visible context: what the NPC can see now
@@ -125,12 +125,25 @@ Target: Coolify on the existing Hetzner VPS.
    - Attach subdomain.
    - Smoke test public read and admin mutations.
 
+## Slice 5: Provider Experiments
+
+Goal: keep controller latency low enough for live-ish simulation stepping.
+
+1. Add Cerebras as another LLM provider option.
+   - evaluate free-tier limits
+   - test time to first token and tokens per second
+   - compare reliability against OpenCode Go and OpenRouter
+
+2. Keep provider selection behind the existing controller-assignment shape.
+
+3. Do not make Cerebras the default until it has been tested in normal Tilefolk turns.
+
 ## Later Ideas
 
 - UI for changing an NPC controller live.
 - UI for changing an NPC model live.
 - Save controller assignment in world state instead of hardcoded config.
-- Add OpenRouter model experiments and latency comparison.
+- Add provider/model experiments and latency comparison.
 - Add richer provider fallback chains such as OpenRouter model A -> model B -> deterministic.
 - Add NPC personalities and goals.
 - Add wood, seeds, crafting, and richer item interactions.

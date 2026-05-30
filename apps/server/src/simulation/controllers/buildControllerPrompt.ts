@@ -1,17 +1,17 @@
-import type { Npc, VisibleWorldContext, WorldEvent } from '@tilefolk/shared';
+import type { Npc, VisibleWorldContext, Memory } from '@tilefolk/shared';
 import type { ActionOption } from './types.js';
 import { formatVisibleContext } from './formatVisibleContext.js';
 
 interface BuildControllerPromptOptions {
-  recentEvents: WorldEvent[];
+  recentMemories: Memory[];
   actionOptions: ActionOption[];
   visibleContext: VisibleWorldContext;
   npc: Npc;
 }
 
 export function buildControllerPrompt(options: BuildControllerPromptOptions): string {
-  const recentEventLines = options.recentEvents
-    .map((event) => `Turn ${event.turn}: ${event.message}`)
+  const recentMemoryLines = options.recentMemories
+    .map((memory) => `Turn ${memory.turn}: ${memory.message}`)
     .join('\n');
 
   const actionOptionLines = options.actionOptions
@@ -29,8 +29,8 @@ Current Location: X:${options.npc.position.x}, Y:${options.npc.position.y}
 Visible context:
 ${visibleContext}
 
-Recent events:
-${recentEventLines}
+Recent Memories:
+${recentMemoryLines}
 
 Valid action options:
 ${actionOptionLines}

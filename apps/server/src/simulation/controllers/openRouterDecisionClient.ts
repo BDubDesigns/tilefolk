@@ -1,7 +1,6 @@
-import type { Npc, WorldEvent } from '@tilefolk/shared';
+import type { Memory, Npc, VisibleWorldContext } from '@tilefolk/shared';
 import type { ActionOption, ControllerDecision } from './types.js';
 import { serverEnv } from '../../config/env.js';
-import type { VisibleWorldContext } from '@tilefolk/shared';
 import { buildControllerPrompt } from './buildControllerPrompt.js';
 import { parseControllerDecision } from './parseControllerDecision.js';
 
@@ -9,7 +8,7 @@ const OPENROUTER_CHAT_COMPLETIONS_URL = 'https://openrouter.ai/api/v1/chat/compl
 
 interface RequestOpenRouterDecisionOptions {
   npc: Npc;
-  recentEvents: WorldEvent[];
+  recentMemories: Memory[];
   actionOptions: ActionOption[];
   model?: string;
   visibleContext: VisibleWorldContext;
@@ -36,7 +35,7 @@ export async function requestOpenRouterDecision(
 
   const promptText = buildControllerPrompt({
     npc: options.npc,
-    recentEvents: options.recentEvents,
+    recentMemories: options.recentMemories,
     actionOptions: options.actionOptions,
     visibleContext: options.visibleContext,
   });

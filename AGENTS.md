@@ -12,3 +12,10 @@
 - Keep SSOT discipline front and center.
 - Controllers should choose from server-generated options, not author raw actions.
 - The LLM path should select an option ID; the server resolves that ID against server-owned `ActionOption` objects.
+
+## Tilefolk Release Process
+
+- Keep semantic versions intentional, not automatic.
+- For meaningful public checkpoints, update the root and workspace `package.json` versions and create a matching git tag.
+- Use patch versions for small fixes/polish, minor versions for meaningful early-stage capabilities, and major versions only for a future stable public contract.
+- Update `NEXT_STEPS.md` before opening a PR when the milestone changes the active roadmap.
