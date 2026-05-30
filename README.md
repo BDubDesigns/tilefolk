@@ -14,6 +14,7 @@ The current focus is not fancy graphics yet. The goal is to build a clean simula
 - Deterministic controller
 - LLM provider clients for OpenCode Go, Google AI, and OpenRouter
 - Visible-world context for prompts and UI debugging
+- NPC-local memories for witnessed events
 - Event log with action reason, controller label, model, and duration
 - Admin-token protection for Step/Reset mutation routes
 - Shared TypeScript package for core types and helpers
@@ -168,7 +169,7 @@ npm run lint
 
 See `NEXT_STEPS.md`.
 
-The next major simulation truth pass is NPC-local memory: NPCs should remember only events they witnessed instead of receiving global recent events.
+The next major gameplay pass is chopping trees and producing resources, starting with making the axe matter.
 
 ## AI-Assisted Development
 
@@ -180,6 +181,6 @@ The project decisions, implementation direction, and learning process are intent
 
 ## Status
 
-Current checkpoint: `v0.1.0`
+Current checkpoint: `v0.2.0`
 
 Tilefolk is still pre-public and changing quickly. Expect types, world shape, and controller contracts to evolve while the simulation model gets sharper.
