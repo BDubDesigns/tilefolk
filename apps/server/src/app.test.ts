@@ -28,10 +28,10 @@ describe('createApp', () => {
     const response = await request(app).get('/api/worlds/default');
     //   expect status 200
     expect(response.status).toBe(200);
-    //   expect body.width to be 50
-    expect(response.body.width).toBe(50);
-    //   expect body.height to be 50
-    expect(response.body.height).toBe(50);
+    //   expect body.width to be 25
+    expect(response.body.width).toBe(25);
+    //   expect body.height to be 25
+    expect(response.body.height).toBe(25);
     //   expect body.npcs to have length 4
     expect(response.body.npcs).toHaveLength(4);
     //   expect body.items to have length 1
@@ -54,10 +54,10 @@ describe('POST /api/worlds/reset', () => {
     const response = await request(app).post('/api/worlds/reset');
     //   expect status 200
     expect(response.status).toBe(200);
-    //   expect body.width to be 50
-    expect(response.body.width).toBe(50);
-    //   expect body.height to be 50
-    expect(response.body.height).toBe(50);
+    //   expect body.width to be 25
+    expect(response.body.width).toBe(25);
+    //   expect body.height to be 25
+    expect(response.body.height).toBe(25);
     //   expect body.npcs to have length 4
     expect(response.body.npcs).toHaveLength(4);
     //   expect body.items to have length 1
@@ -86,7 +86,7 @@ describe('POST /api/worlds/reset', () => {
       .set('x-tilefolk-admin-token', 'secret-token');
 
     expect(response.status).toBe(200);
-    expect(response.body.width).toBe(50);
+    expect(response.body.width).toBe(25);
   });
 });
 

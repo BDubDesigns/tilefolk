@@ -91,12 +91,18 @@ export type PickupAction = {
   itemId: ItemId;
 };
 
+export type ChopTreeAction = {
+  type: 'chopTree';
+  npcId: NpcId;
+  treeId: TreeId;
+};
+
 export type WaitAction = {
   type: 'wait';
   npcId: NpcId;
 };
 
-export type NpcAction = MoveAction | WaitAction | PickupAction;
+export type NpcAction = MoveAction | WaitAction | PickupAction | ChopTreeAction;
 
 export type NpcActionType = NpcAction['type'];
 
@@ -136,7 +142,11 @@ export interface VisibleWorldContext {
   nearbyGroundItems: Item[];
 }
 
-function isPositionVisible(center: Position, candidatePosition: Position, radius: number): boolean {
+export function isPositionInSquareRadius(
+  center: Position,
+  candidatePosition: Position,
+  radius: number,
+): boolean {
   const xDist = Math.abs(center.x - candidatePosition.x);
   const yDist = Math.abs(center.y - candidatePosition.y);
   return xDist <= radius && yDist <= radius;
@@ -152,16 +162,16 @@ export function getVisibleWorldContext({
   const nearbyNpcs = world.npcs.filter((candidateNpc) => {
     // exclude the npc itself
     if (npc.id === candidateNpc.id) return false;
-    return isPositionVisible(center, candidateNpc.position, radius);
+    return isPositionInSquareRadius(center, candidateNpc.position, radius);
   });
 
   const nearbyTrees = world.trees.filter((candidateTree) => {
-    return isPositionVisible(center, candidateTree.position, radius);
+    return isPositionInSquareRadius(center, candidateTree.position, radius);
   });
 
   const nearbyGroundItems = world.items.filter((candidateGroundItem) => {
     if (candidateGroundItem.location.type !== 'ground') return false;
-    return isPositionVisible(center, candidateGroundItem.location.position, radius);
+    return isPositionInSquareRadius(center, candidateGroundItem.location.position, radius);
   });
 
   return {

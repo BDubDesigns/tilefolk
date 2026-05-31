@@ -49,6 +49,28 @@ describe('getValidActions', () => {
     expect(actions).toContainEqual({ type: 'wait', npcId: npc.id });
   });
 
+  it('includes valid chop tree actions for an axe-holding NPC', () => {
+    const world = createKnownWorld();
+    const npc = getNpcOrThrow(world, 0);
+    world.items = [
+      {
+        id: 'item_axe',
+        name: 'Bronze Axe',
+        location: { type: 'inventory', npcId: npc.id },
+        type: 'axe',
+      },
+    ];
+    world.trees = [{ id: 'tree_adjacent', position: { x: 3, y: 2 }, hitPoints: 3 }];
+
+    const actions = getValidActions({ world, npcId: npc.id });
+
+    expect(actions).toContainEqual({
+      type: 'chopTree',
+      npcId: npc.id,
+      treeId: 'tree_adjacent',
+    });
+  });
+
   it('returns wait when movement is fully blocked', () => {
     const world = createKnownWorld();
     const npc = getNpcOrThrow(world, 0);

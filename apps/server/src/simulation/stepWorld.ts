@@ -1,4 +1,12 @@
-import type { ActionResult, Direction, Npc, Position, World, WorldEvent } from '@tilefolk/shared';
+import type {
+  ActionResult,
+  Direction,
+  Npc,
+  Position,
+  TreeId,
+  World,
+  WorldEvent,
+} from '@tilefolk/shared';
 import { directionDeltas } from './directionDeltas.js';
 import type { StepWorldResponse, ItemId } from '@tilefolk/shared';
 import { getValidActions } from './getValidActions.js';
@@ -62,6 +70,19 @@ function createMoveResult(
 ): ActionResult {
   return {
     action: { type: 'move', npcId: npc.id, direction },
+    success,
+    message,
+  };
+}
+
+function createChopTreeResult(
+  npc: Npc,
+  treeId: TreeId,
+  success: boolean,
+  message: string,
+): ActionResult {
+  return {
+    action: { type: 'chopTree', npcId: npc.id, treeId },
     success,
     message,
   };
@@ -202,6 +223,39 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
       return finishNpcAttempt(
         newWorld,
         createMoveResult(npc, direction, true, `${npc.id} moved ${direction}`),
+        actionTurn,
+        controllerDecision.reason,
+        controllerDurationMs,
+        controllerLabel,
+        npc.position,
+      );
+    }
+
+    case 'chopTree': {
+      const treeId = selectedAction.treeId;
+      const tree = newWorld.trees.find((tree) => tree.id === treeId);
+
+      if (tree) {
+        tree.hitPoints -= 1;
+      } else {
+        return finishNpcAttempt(
+          newWorld,
+          createChopTreeResult(
+            npc,
+            treeId,
+            false,
+            `${npc.id} tried to chop tree ${treeId}, but it was not found`,
+          ),
+          actionTurn,
+          controllerDecision.reason,
+          controllerDurationMs,
+          controllerLabel,
+          npc.position,
+        );
+      }
+      return finishNpcAttempt(
+        newWorld,
+        createChopTreeResult(npc, treeId, true, `${npc.id} chopped tree ${treeId}`),
         actionTurn,
         controllerDecision.reason,
         controllerDurationMs,

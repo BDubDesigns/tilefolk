@@ -15,8 +15,8 @@ describe('createWorld', () => {
   it('creates a world with default dimensions', () => {
     const world = createWorld();
 
-    expect(world.width).toBe(50);
-    expect(world.height).toBe(50);
+    expect(world.width).toBe(25);
+    expect(world.height).toBe(25);
   });
 
   it('creates a tile grid matching the world dimensions', () => {

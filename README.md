@@ -6,7 +6,7 @@ The current focus is not fancy graphics yet. The goal is to build a clean simula
 
 ## What Works Now
 
-- 50x50 tile world generation
+- 25x25 tile world generation
 - NPCs, trees, and ground/inventory items
 - Legal movement, wait, and pickup actions
 - Server-generated `ActionOption[]` menus

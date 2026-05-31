@@ -168,8 +168,8 @@ const createItems = (numItems: number, positionPool: Position[]): Item[] => {
 
 export function createWorld({
   id = `world_0`, // only one world to start so we can safely hardcode this. revisit if needed.
-  width = 50,
-  height = 50,
+  width = 25,
+  height = 25,
   numNpcs = 4,
   numItems = 1,
   numTrees = 20,

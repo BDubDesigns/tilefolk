@@ -198,6 +198,109 @@ describe('stepWorld', () => {
     });
   });
 
+  describe('chop tree application', () => {
+    it('reduces the target tree hit points by 1', async () => {
+      const world = createWorldWithNpcAt({ x: 2, y: 2 });
+      world.items = [
+        {
+          id: 'item_axe',
+          name: 'Bronze Axe',
+          location: { type: 'inventory', npcId: 'npc_0' },
+          type: 'axe',
+        },
+      ];
+      world.trees = [{ id: 'tree_0', position: { x: 3, y: 2 }, hitPoints: 3 }];
+
+      const stepResult = await stepWorld(world);
+      const tree = stepResult.world.trees.find((tree) => tree.id === 'tree_0');
+
+      expect(stepResult.actionResult.success).toBe(true);
+      expect(stepResult.actionResult.action).toEqual({
+        type: 'chopTree',
+        npcId: 'npc_0',
+        treeId: 'tree_0',
+      });
+      expect(tree?.hitPoints).toBe(2);
+    });
+
+    it('does not mutate the original world tree hit points', async () => {
+      const world = createWorldWithNpcAt({ x: 2, y: 2 });
+      world.items = [
+        {
+          id: 'item_axe',
+          name: 'Bronze Axe',
+          location: { type: 'inventory', npcId: 'npc_0' },
+          type: 'axe',
+        },
+      ];
+      world.trees = [{ id: 'tree_0', position: { x: 3, y: 2 }, hitPoints: 3 }];
+
+      const stepResult = await stepWorld(world);
+      const steppedTree = stepResult.world.trees.find((tree) => tree.id === 'tree_0');
+      const originalTree = world.trees.find((tree) => tree.id === 'tree_0');
+
+      expect(steppedTree?.hitPoints).toBe(2);
+      expect(originalTree?.hitPoints).toBe(3);
+    });
+
+    it('records a chop tree event', async () => {
+      const world = createWorldWithNpcAt({ x: 2, y: 2 });
+      world.items = [
+        {
+          id: 'item_axe',
+          name: 'Bronze Axe',
+          location: { type: 'inventory', npcId: 'npc_0' },
+          type: 'axe',
+        },
+      ];
+      world.trees = [{ id: 'tree_0', position: { x: 3, y: 2 }, hitPoints: 3 }];
+
+      const stepResult = await stepWorld(world);
+      const event = getEventOrThrow(stepResult.world, 0);
+
+      expect(event.id).toBe('event_0');
+      expect(event.turn).toBe(0);
+      expect(event.actorId).toBe('npc_0');
+      expect(event.message).toBe('npc_0 chopped tree tree_0');
+      expect(event.position).toEqual({ x: 2, y: 2 });
+    });
+
+    it('creates memories for nearby NPCs that witness a chop event', async () => {
+      const world = createWorld();
+      world.npcs = world.npcs.slice(0, 2);
+      world.items = [
+        {
+          id: 'item_axe',
+          name: 'Bronze Axe',
+          location: { type: 'inventory', npcId: 'npc_0' },
+          type: 'axe',
+        },
+      ];
+      world.trees = [{ id: 'tree_0', position: { x: 3, y: 2 }, hitPoints: 3 }];
+      world.turn = 0;
+
+      const actor = getNpcOrThrow(world, 0);
+      const witness = getNpcOrThrow(world, 1);
+      actor.position = { x: 2, y: 2 };
+      witness.position = { x: 4, y: 2 };
+
+      const stepResult = await stepWorld(world);
+      const steppedActor = getNpcOrThrow(stepResult.world, 0);
+      const steppedWitness = getNpcOrThrow(stepResult.world, 1);
+
+      expect(steppedActor.memories[0]).toMatchObject({
+        npcId: 'npc_0',
+        sourceEventId: 'event_0',
+        message: 'npc_0 chopped tree tree_0',
+      });
+      expect(steppedWitness.memories[0]).toMatchObject({
+        npcId: 'npc_1',
+        sourceEventId: 'event_0',
+        message: 'npc_0 chopped tree tree_0',
+      });
+    });
+  });
+
   describe('missing actors', () => {
     it('fails when there are no NPCs in the world', async () => {
       const world = createWorld();
@@ -397,4 +500,3 @@ describe('stepWorld', () => {
     });
   });
 });
-
