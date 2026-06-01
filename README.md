@@ -8,7 +8,9 @@ The current focus is not fancy graphics yet. The goal is to build a clean simula
 
 - 25x25 tile world generation
 - NPCs, trees, and ground/inventory items
-- Legal movement, wait, and pickup actions
+- Legal movement, wait, pickup, and chop tree actions
+- Axe-gated tree chopping with durability
+- Depleted trees drop wood items that NPCs can pick up
 - Server-generated `ActionOption[]` menus
 - Mixed controller assignments per NPC
 - Deterministic controller
@@ -169,7 +171,7 @@ npm run lint
 
 See `NEXT_STEPS.md`.
 
-The next major gameplay pass is chopping trees and producing resources, starting with making the axe matter.
+The next major pass is deployment prep: keep public viewing open, keep world mutation protected, and make sure provider/model env config is documented for Coolify.
 
 ## AI-Assisted Development
 
@@ -181,6 +183,6 @@ The project decisions, implementation direction, and learning process are intent
 
 ## Status
 
-Current checkpoint: `v0.2.0`
+Current checkpoint: `v0.2.1`
 
 Tilefolk is still pre-public and changing quickly. Expect types, world shape, and controller contracts to evolve while the simulation model gets sharper.
