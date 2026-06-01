@@ -299,6 +299,62 @@ describe('stepWorld', () => {
         message: 'npc_0 chopped tree tree_0',
       });
     });
+
+    it('removes a depleted tree and creates wood at the tree position', async () => {
+      const world = createWorldWithNpcAt({ x: 2, y: 2 });
+      world.items = [
+        {
+          id: 'item_axe',
+          name: 'Bronze Axe',
+          location: { type: 'inventory', npcId: 'npc_0' },
+          type: 'axe',
+        },
+      ];
+      world.trees = [{ id: 'tree_0', position: { x: 3, y: 2 }, hitPoints: 1 }];
+
+      const stepResult = await stepWorld(world);
+      const depletedTree = stepResult.world.trees.find((tree) => tree.id === 'tree_0');
+      const wood = stepResult.world.items.find((item) => item.id === 'item_wood_tree_0');
+
+      expect(depletedTree).toBeUndefined();
+      expect(wood).toEqual({
+        id: 'item_wood_tree_0',
+        name: 'Wood',
+        location: { type: 'ground', position: { x: 3, y: 2 } },
+        type: 'wood',
+      });
+    });
+
+    it('does not mutate the original world when a depleted tree drops wood', async () => {
+      const world = createWorldWithNpcAt({ x: 2, y: 2 });
+      world.items = [
+        {
+          id: 'item_axe',
+          name: 'Bronze Axe',
+          location: { type: 'inventory', npcId: 'npc_0' },
+          type: 'axe',
+        },
+      ];
+      world.trees = [{ id: 'tree_0', position: { x: 3, y: 2 }, hitPoints: 1 }];
+
+      const stepResult = await stepWorld(world);
+
+      expect(stepResult.world.items).toContainEqual({
+        id: 'item_wood_tree_0',
+        name: 'Wood',
+        location: { type: 'ground', position: { x: 3, y: 2 } },
+        type: 'wood',
+      });
+      expect(world.trees).toEqual([{ id: 'tree_0', position: { x: 3, y: 2 }, hitPoints: 1 }]);
+      expect(world.items).toEqual([
+        {
+          id: 'item_axe',
+          name: 'Bronze Axe',
+          location: { type: 'inventory', npcId: 'npc_0' },
+          type: 'axe',
+        },
+      ]);
+    });
   });
 
   describe('missing actors', () => {
