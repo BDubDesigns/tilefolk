@@ -155,7 +155,7 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
     npcId: npc.id,
   });
 
-  const actionOptions = getActionOptions(validActions, { npc });
+  const actionOptions = getActionOptions(validActions, { npc, world: newWorld });
 
   const controllerAssignment = getControllerAssignment(npc.id);
   const controllerLabel = getControllerLabel(controllerAssignment);

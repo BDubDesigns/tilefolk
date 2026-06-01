@@ -26,7 +26,7 @@ Completed recently:
 - Tagged the NPC-local memory milestone as `v0.2.0`.
 - Preparing the axe/resource loop checkpoint as `v0.2.1`.
 - Multiple controllers can run in the same world.
-- Providers include deterministic, OpenCode Go, Google AI, and OpenRouter.
+- Providers include deterministic, OpenCode Go, Google AI, OpenRouter, and Cerebras.
 - LLM assignments support per-NPC model overrides.
 - Controller labels show provider and effective model, including env defaults.
 - `getVisibleWorldContext` derives nearby NPCs, trees, and ground items from shared types.
@@ -104,20 +104,66 @@ Target: Coolify on the existing Hetzner VPS.
 
 Goal: keep controller latency low enough for live-ish simulation stepping.
 
-1. Add Cerebras as another LLM provider option.
-   - evaluate free-tier limits
-   - test time to first token and tokens per second
-   - compare reliability against OpenCode Go and OpenRouter
+1. Continue Cerebras testing.
+   - compare paid-tier reliability against OpenCode Go and OpenRouter
+   - keep tracking completion time during normal Tilefolk turns
+   - watch cost and token usage once the app runs longer sessions
 
 2. Keep provider selection behind the existing controller-assignment shape.
 
-3. Do not make Cerebras the default until it has been tested in normal Tilefolk turns.
+3. Keep model/provider defaults easy to change before deployment.
+
+## Slice 3: Provider Model Config
+
+Goal: let each NPC carry provider-specific model settings without hardcoding every experiment.
+
+1. Extend controller assignments with optional provider config.
+   - first target: `reasoningEffort`
+   - keep provider-specific options optional
+   - preserve current env-model defaults when no override is supplied
+
+2. Use provider config inside decision clients.
+   - Cerebras can use different reasoning effort values per model
+   - future providers can add small typed options without changing the engine flow
+
+3. Later, expose this in the client.
+   - provider dropdown
+   - model dropdown or text input
+   - provider-specific advanced settings
+   - save assignment in world state instead of only hardcoded config
+
+## Slice 4: Provider Test Panel
+
+Goal: make provider/model reliability and latency visible from inside Tilefolk.
+
+1. Add a server-side test route for configured provider/model combos.
+   - run a tiny decision-style prompt against each selected combo
+   - never expose API keys to the client
+   - protect mutation/cost-bearing tests behind the admin token
+
+2. Add a client test panel.
+   - list configured provider/model combos
+   - allow checkbox selection
+   - run selected tests one at a time or with a small concurrency limit
+   - stream or progressively update results as each test returns
+
+3. Show useful measurements.
+   - success/failure
+   - HTTP/provider error body when safe
+   - time to first token when streaming is supported
+   - total completion time
+   - rough token usage/cost when the provider returns it
+   - parsed decision validity
+
+4. Use the panel to decide live simulation defaults.
+   - compare OpenCode Go, OpenRouter, Google AI, Cerebras, and future providers
+   - identify free endpoint rate-limit behavior
+   - pick reliable defaults before deployment
 
 ## Later Ideas
 
 - UI for changing an NPC controller live.
 - UI for changing an NPC model live.
-- Save controller assignment in world state instead of hardcoded config.
 - Add provider/model experiments and latency comparison.
 - Add richer provider fallback chains such as OpenRouter model A -> model B -> deterministic.
 - Add NPC personalities and goals.

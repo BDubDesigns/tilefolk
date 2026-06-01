@@ -14,7 +14,7 @@ The current focus is not fancy graphics yet. The goal is to build a clean simula
 - Server-generated `ActionOption[]` menus
 - Mixed controller assignments per NPC
 - Deterministic controller
-- LLM provider clients for OpenCode Go, Google AI, and OpenRouter
+- LLM provider clients for OpenCode Go, Google AI, OpenRouter, and Cerebras
 - Visible-world context for prompts and UI debugging
 - NPC-local memories for witnessed events
 - Event log with action reason, controller label, model, and duration
@@ -97,6 +97,9 @@ GOOGLE_AI_MODEL=gemma-4-26b-a4b-it
 
 OPENROUTER_API_KEY=
 OPENROUTER_MODEL=poolside/laguna-xs.2:free
+
+CEREBRAS_API_KEY=
+CEREBRAS_MODEL=gpt-oss-120b
 ```
 
 ## Optional Provider Credits
