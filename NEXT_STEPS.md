@@ -24,6 +24,7 @@ Completed recently:
 
 - Tagged the first working checkpoint as `v0.1.0`.
 - Tagged the NPC-local memory milestone as `v0.2.0`.
+- Preparing the axe/resource loop checkpoint as `v0.2.1`.
 - Multiple controllers can run in the same world.
 - Providers include deterministic, OpenCode Go, Google AI, and OpenRouter.
 - LLM assignments support per-NPC model overrides.
@@ -37,16 +38,16 @@ Completed recently:
 - Towel pass extracted shared controller prompt building and shared controller decision parsing.
 - NPC-local memories now track witnessed events.
 - LLM prompts now use NPC-local memories instead of global recent events.
+- NPCs can pick up axes, chop adjacent trees, deplete tree durability, drop wood, and pick up that wood.
 
-## Current Goal: Chop Trees And Resources
+## Current Goal: Deployment Prep
 
-Make the axe matter by adding a real resource loop:
+Get Tilefolk ready for a small public read-only deployment:
 
-- NPC sees or remembers a tree.
-- NPC has an axe.
-- NPC can choose a chop action.
-- Tree loses durability.
-- Tree eventually becomes resources.
+- Public visitors can view the world.
+- Step/Reset stay protected by the admin token.
+- Server-only provider keys are documented for Coolify.
+- The deployed app can run the same mixed-controller world as local dev.
 
 ## Completed: Memory And Witnessed Events
 
@@ -60,36 +61,21 @@ Done:
 - Controller prompts use `getRecentMemoriesForNpc({ npc })` instead of global recent events.
 - Tests cover witness radius behavior, snapshots, and recent memory lookup.
 
-## Slice 1: Chop Tree Action
+## Completed: Chop Trees And Resource Drops
 
-Goal: make the axe matter.
+Goal: make the axe matter and produce the first useful resource.
 
-1. Add valid chop action only when:
-   - NPC has an axe
-   - tree is adjacent or in allowed range
+Done:
 
-2. Apply chop action:
-   - reduce tree hit points
-   - remove tree or convert it when hit points reach zero
-   - eventually create wood/seed items
+- Chop tree actions are valid only when an NPC has an axe and is close enough to a tree.
+- Chop actions reduce tree hit points.
+- Depleted trees are removed from the world.
+- Depleted trees drop wood at the tree position.
+- Wood uses the normal item/location model and can be picked up by NPCs.
+- Event logs and nearby memories continue to record the action loop.
+- Tests cover valid chop actions, tree depletion, wood placement, and original-world non-mutation.
 
-3. Add action options and prompt descriptions for chopping.
-
-## Slice 2: Resource Drops
-
-Goal: chopped trees should create useful world resources.
-
-1. Decide first resource items:
-   - wood
-   - possibly seed
-
-2. When a tree reaches zero hit points:
-   - remove or mark the tree as felled
-   - create wood on the ground at or near the tree position
-
-3. Add tests for tree depletion and item placement.
-
-## Slice 3: Deployment Prep
+## Slice 1: Deployment Prep
 
 Target: Coolify on the existing Hetzner VPS.
 
@@ -114,7 +100,7 @@ Target: Coolify on the existing Hetzner VPS.
    - Attach subdomain.
    - Smoke test public read and admin mutations.
 
-## Slice 4: Provider Experiments
+## Slice 2: Provider Experiments
 
 Goal: keep controller latency low enough for live-ish simulation stepping.
 
@@ -139,5 +125,5 @@ Goal: keep controller latency low enough for live-ish simulation stepping.
 - Use round-end ticks later for growth, hunger, tiredness, sleep, and other world processes.
 - Add audio perception memories, such as hearing chopping from farther away than visual range.
 - Add sleep/dream/memory compression once NPCs have enough memories for summarization to matter.
-- Add wood, seeds, crafting, and richer item interactions.
+- Add seeds, crafting, and richer item interactions.
 - Add Mermaid diagrams for controller/model/visibility/memory flow.
