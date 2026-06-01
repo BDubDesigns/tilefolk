@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Npc, NpcAction } from '@tilefolk/shared';
+import type { Npc, NpcAction, World } from '@tilefolk/shared';
 import { getActionOptions } from './getActionOptions.js';
 
 const testNpc: Npc = {
@@ -48,6 +48,69 @@ describe('getActionOptions', () => {
         id: 'pickup:item_0',
         description: 'Pick up item item_0',
         action: pickupAction,
+      },
+    ]);
+  });
+
+  it('uses item context when describing pickup actions', () => {
+    const pickupAction: NpcAction = { type: 'pickup', npcId: 'npc_0', itemId: 'item_0' };
+    const world: World = {
+      id: 'world_0',
+      width: 25,
+      height: 25,
+      turn: 0,
+      tiles: [],
+      npcs: [testNpc],
+      trees: [],
+      items: [
+        {
+          id: 'item_0',
+          name: 'Bronze Axe',
+          type: 'axe',
+          location: { type: 'ground', position: { x: 4, y: 4 } },
+        },
+      ],
+      events: [],
+    };
+
+    const options = getActionOptions([pickupAction], { world });
+
+    expect(options).toEqual([
+      {
+        id: 'pickup:item_0',
+        description: 'Pick up Bronze Axe (item_0)',
+        action: pickupAction,
+      },
+    ]);
+  });
+
+  it('uses tree context when describing chop tree actions', () => {
+    const chopAction: NpcAction = { type: 'chopTree', npcId: 'npc_0', treeId: 'tree_0' };
+    const world: World = {
+      id: 'world_0',
+      width: 25,
+      height: 25,
+      turn: 0,
+      tiles: [],
+      npcs: [testNpc],
+      trees: [
+        {
+          id: 'tree_0',
+          position: { x: 5, y: 6 },
+          hitPoints: 2,
+        },
+      ],
+      items: [],
+      events: [],
+    };
+
+    const options = getActionOptions([chopAction], { world });
+
+    expect(options).toEqual([
+      {
+        id: 'chopTree:tree_0',
+        description: 'Chop tree tree_0 at (5, 6), hp 2',
+        action: chopAction,
       },
     ]);
   });

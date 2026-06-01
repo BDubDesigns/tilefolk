@@ -18,6 +18,7 @@ const trimmedOpenCodeGoApiKey = process.env.OPENCODE_GO_API_KEY?.trim();
 const openCodeGoApiKey = trimmedOpenCodeGoApiKey ? trimmedOpenCodeGoApiKey : null;
 const trimmedOpenCodeGoModel = process.env.OPENCODE_GO_MODEL?.trim();
 const openCodeGoModel = trimmedOpenCodeGoModel ? trimmedOpenCodeGoModel : null;
+
 const trimmedDefaultController = process.env.TILEFOLK_DEFAULT_CONTROLLER?.trim();
 const defaultController: 'deterministic' | 'llm' =
   trimmedDefaultController === 'llm' ? 'llm' : 'deterministic';
@@ -26,6 +27,12 @@ const useSampleControllerAssignments =
 
 const trimmedAdminToken = process.env.TILEFOLK_ADMIN_TOKEN?.trim();
 const tilefolkAdminToken = trimmedAdminToken ? trimmedAdminToken : null;
+
+const trimmedCerebrasApiKey = process.env.CEREBRAS_API_KEY?.trim();
+const cerebrasApiKey = trimmedCerebrasApiKey ? trimmedCerebrasApiKey : null;
+const trimmedCerebrasModel = process.env.CEREBRAS_MODEL?.trim();
+const cerebrasModel = trimmedCerebrasModel ? trimmedCerebrasModel : null;
+
 const trimmedOpenRouterApiKey = process.env.OPENROUTER_API_KEY?.trim();
 const openRouterApiKey = trimmedOpenRouterApiKey ? trimmedOpenRouterApiKey : null;
 const trimmedOpenRouterModel = process.env.OPENROUTER_MODEL?.trim();
@@ -41,6 +48,9 @@ export const serverEnv = {
   openRouterApiKey,
   openRouterModel,
   isOpenRouterConfigured: openRouterApiKey !== null && openRouterModel !== null,
+  cerebrasApiKey,
+  cerebrasModel,
+  isCerebrasConfigured: cerebrasApiKey !== null && cerebrasModel !== null,
   defaultController,
   useSampleControllerAssignments,
   tilefolkAdminToken,

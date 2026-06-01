@@ -1,4 +1,4 @@
-import type { NpcAction, Direction, Npc } from '@tilefolk/shared';
+import type { NpcAction, Direction, Npc, World } from '@tilefolk/shared';
 import type { ActionOption } from './controllers/types.js';
 import { directionDeltas } from './directionDeltas.js';
 
@@ -16,6 +16,7 @@ const directionDescriptions: Record<Direction, string> = {
 
 interface GetActionOptionsContext {
   npc?: Npc;
+  world?: World;
 }
 
 export function getActionOptions(
@@ -37,19 +38,31 @@ export function getActionOptions(
         };
       }
 
-      case 'pickup':
+      case 'pickup': {
+        const item = context.world?.items.find((i) => i.id === action.itemId);
+        const description = item
+          ? `Pick up ${item.name} (${action.itemId})`
+          : `Pick up item ${action.itemId}`;
+
         return {
           id: `pickup:${action.itemId}`,
-          description: `Pick up item ${action.itemId}`,
+          description,
           action,
         };
+      }
 
-      case 'chopTree':
+      case 'chopTree': {
+        const tree = context.world?.trees.find((candidate) => candidate.id === action.treeId);
+        const description = tree
+          ? `Chop tree ${action.treeId} at (${tree.position.x}, ${tree.position.y}), hp ${tree.hitPoints}`
+          : `Chop tree ${action.treeId}`;
+
         return {
           id: `chopTree:${action.treeId}`,
-          description: `Chop tree ${action.treeId}`,
+          description,
           action,
         };
+      }
 
       case 'wait':
         return {

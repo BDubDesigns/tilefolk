@@ -5,6 +5,7 @@ import { deterministicController } from './deterministicController.js';
 import { requestGoogleAiDecision } from './googleAiDecisionClient.js';
 import { requestOpenCodeGoDecision } from './openCodeGoDecisionClient.js';
 import { requestOpenRouterDecision } from './openRouterDecisionClient.js';
+import { requestCerebrasDecision } from './cerebrasDecisionClient.js';
 import { getVisibleWorldContext } from '@tilefolk/shared';
 import { getRecentMemoriesForNpc } from '../getRecentMemoriesForNpc.js';
 
@@ -63,6 +64,15 @@ export async function resolveControllerDecision({
       break;
     case 'openrouter':
       providerDecision = await requestOpenRouterDecision({
+        recentMemories,
+        npc,
+        actionOptions,
+        model: controllerAssignment.model,
+        visibleContext,
+      });
+      break;
+    case 'cerebras':
+      providerDecision = await requestCerebrasDecision({
         recentMemories,
         npc,
         actionOptions,
