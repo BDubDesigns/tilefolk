@@ -1,4 +1,4 @@
-import type { World, WorldEvent } from '@tilefolk/shared';
+import { isPositionInSquareRadius, type World, type WorldEvent } from '@tilefolk/shared';
 
 interface AddMemoriesForWitnessesOptions {
   world: World;
@@ -15,10 +15,7 @@ export function addMemoriesForWitnesses({
   const eventPosition = event.position;
 
   const witnesses = world.npcs.filter((npc) => {
-    return (
-      Math.abs(npc.position.x - eventPosition.x) <= radius &&
-      Math.abs(npc.position.y - eventPosition.y) <= radius
-    );
+    return isPositionInSquareRadius(npc.position, eventPosition, radius);
   });
 
   for (const witness of witnesses) {

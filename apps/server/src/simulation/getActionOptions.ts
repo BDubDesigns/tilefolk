@@ -44,6 +44,13 @@ export function getActionOptions(
           action,
         };
 
+      case 'chopTree':
+        return {
+          id: `chopTree:${action.treeId}`,
+          description: `Chop tree ${action.treeId}`,
+          action,
+        };
+
       case 'wait':
         return {
           id: 'wait',
