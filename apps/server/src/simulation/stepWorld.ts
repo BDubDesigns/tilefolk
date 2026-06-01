@@ -234,9 +234,18 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
     case 'chopTree': {
       const treeId = selectedAction.treeId;
       const tree = newWorld.trees.find((tree) => tree.id === treeId);
-
       if (tree) {
         tree.hitPoints -= 1;
+        const position = { ...tree.position };
+        if (tree.hitPoints <= 0) {
+          newWorld.trees = newWorld.trees.filter((tree) => tree.id !== treeId);
+          newWorld.items.push({
+            id: `item_wood_${treeId}`,
+            name: 'Wood',
+            type: 'wood',
+            location: { type: 'ground', position },
+          });
+        }
       } else {
         return finishNpcAttempt(
           newWorld,

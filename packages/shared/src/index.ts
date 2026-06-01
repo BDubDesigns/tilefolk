@@ -12,7 +12,7 @@ export type Direction = (typeof directions)[number];
 
 export type TerrainType = 'grass';
 
-export type ItemType = 'axe';
+export type ItemType = 'axe' | 'wood';
 
 // ID Aliases for better type safety and readability
 export type WorldId = string;
