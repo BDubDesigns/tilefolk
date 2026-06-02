@@ -1,0 +1,14 @@
+.git
+.vscode
+.zed
+node_modules
+apps/*/node_modules
+packages/*/node_modules
+apps/*/dist
+packages/*/dist
+*.tsbuildinfo
+**/*.tsbuildinfo
+.env
+apps/server/.env
+npm-debug.log
+Dockerfile
