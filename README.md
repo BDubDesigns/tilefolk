@@ -4,6 +4,8 @@ Tilefolk is an early full-stack TypeScript simulation project about tiny NPCs li
 
 The current focus is not fancy graphics yet. The goal is to build a clean simulation engine where the server owns world state, generates legal action options, and lets controllers choose from those options. World state is currently in memory; persistence will come later.
 
+Live demo: https://tf.qcfailed.com
+
 ## What Works Now
 
 - 25x25 tile world generation
@@ -19,6 +21,7 @@ The current focus is not fancy graphics yet. The goal is to build a clean simula
 - NPC-local memories for witnessed events
 - Event log with action reason, controller label, model, and duration
 - Admin-token protection for Step/Reset mutation routes
+- Docker/Coolify deployment at `tf.qcfailed.com`
 - Shared TypeScript package for core types and helpers
 
 ## Architecture
@@ -174,7 +177,7 @@ npm run lint
 
 See `NEXT_STEPS.md`.
 
-The next major pass is deployment prep: keep public viewing open, keep world mutation protected, and make sure provider/model env config is documented for Coolify.
+The next major pass is post-deploy hardening: keep the live app stable, improve operational visibility, and decide whether persistence or provider testing comes first.
 
 ## AI-Assisted Development
 
@@ -186,6 +189,6 @@ The project decisions, implementation direction, and learning process are intent
 
 ## Status
 
-Current checkpoint: `v0.2.1`
+Current checkpoint: `v0.2.2`
 
 Tilefolk is still pre-public and changing quickly. Expect types, world shape, and controller contracts to evolve while the simulation model gets sharper.

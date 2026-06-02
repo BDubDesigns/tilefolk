@@ -24,7 +24,8 @@ Completed recently:
 
 - Tagged the first working checkpoint as `v0.1.0`.
 - Tagged the NPC-local memory milestone as `v0.2.0`.
-- Preparing the axe/resource loop checkpoint as `v0.2.1`.
+- Tagged the axe/resource loop checkpoint as `v0.2.1`.
+- Deployed the first public Tilefolk build to `https://tf.qcfailed.com`.
 - Multiple controllers can run in the same world.
 - Providers include deterministic, OpenCode Go, Google AI, OpenRouter, and Cerebras.
 - LLM assignments support per-NPC model overrides.
@@ -40,14 +41,14 @@ Completed recently:
 - LLM prompts now use NPC-local memories instead of global recent events.
 - NPCs can pick up axes, chop adjacent trees, deplete tree durability, drop wood, and pick up that wood.
 
-## Current Goal: Deployment Prep
+## Current Goal: Post-Deploy Hardening
 
-Get Tilefolk ready for a small public read-only deployment:
+Keep the live app stable while choosing the next durable slice:
 
-- Public visitors can view the world.
-- Step/Reset stay protected by the admin token.
-- Server-only provider keys are documented for Coolify.
-- The deployed app can run the same mixed-controller world as local dev.
+- Confirm public read-only behavior stays reliable.
+- Confirm admin-only Step/Reset remains protected.
+- Decide whether provider testing or persistence is the next production-hardening move.
+- Keep deployment docs and env var notes current.
 
 ## Completed: Memory And Witnessed Events
 
@@ -75,30 +76,37 @@ Done:
 - Event logs and nearby memories continue to record the action loop.
 - Tests cover valid chop actions, tree depletion, wood placement, and original-world non-mutation.
 
-## Slice 1: Deployment Prep
+## Completed: Deployment Prep
 
 Target: Coolify on the existing Hetzner VPS.
 
-1. Confirm production env vars are documented.
-   - `TILEFOLK_ADMIN_TOKEN`
-   - `TILEFOLK_DEFAULT_CONTROLLER`
-   - `TILEFOLK_USE_SAMPLE_CONTROLLER_ASSIGNMENTS`
-   - `OPENCODE_GO_API_KEY`
-   - `OPENCODE_GO_MODEL`
-   - `GOOGLE_AI_API_KEY`
-   - `GOOGLE_AI_MODEL`
-   - `OPENROUTER_API_KEY`
-   - `OPENROUTER_MODEL`
+Done:
 
-2. Confirm public behavior.
-   - GET world works publicly.
-   - Step/Reset require admin token.
-   - API keys never ship to client.
+- Express serves the built React client and API from one container.
+- Added a Dockerfile and `.dockerignore`.
+- Added `DEPLOYMENT.md`.
+- Deployed to Coolify on `https://tf.qcfailed.com`.
+- Verified the live homepage returns `200`.
+- Verified `/api/health` returns `{ "status": "ok" }`.
 
-3. Deploy with Coolify.
-   - Set env vars in Coolify.
-   - Attach subdomain.
-   - Smoke test public read and admin mutations.
+## Slice 1: Post-Deploy Hardening
+
+Goal: make the deployed app easier to trust and operate.
+
+1. Add basic operational checks.
+   - visible app version/checkpoint
+   - current controller mode
+   - whether sample assignments are enabled
+   - server uptime or build timestamp if useful
+
+2. Improve production safety.
+   - confirm Step/Reset errors are friendly on the deployed site
+   - add reset confirmation if it starts to feel risky
+   - document the current in-memory world reset limitation
+
+3. Decide persistence timing.
+   - current world resets on container restart
+   - choose whether to add file/database persistence before heavier public sharing
 
 ## Slice 2: Provider Experiments
 
