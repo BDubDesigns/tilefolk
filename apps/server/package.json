@@ -1,6 +1,6 @@
 {
   "name": "@tilefolk/server",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@google/genai": "^2.6.0",
-    "@tilefolk/shared": "0.2.1",
+    "@tilefolk/shared": "0.2.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2"

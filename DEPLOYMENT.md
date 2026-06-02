@@ -2,6 +2,12 @@
 
 Tilefolk's first deployment target is Coolify on the existing Hetzner VPS.
 
+Current live URL:
+
+```txt
+https://tf.qcfailed.com
+```
+
 The production app runs as one Node/Express container:
 
 ```txt
@@ -136,6 +142,11 @@ After Coolify deploys:
 6. Confirm Step works.
 7. Confirm Reset works.
 8. If sample assignments are enabled, confirm event log controller labels include the expected provider/model.
+
+Last verified:
+
+- `https://tf.qcfailed.com` returned `200`.
+- `https://tf.qcfailed.com/api/health` returned `{ "status": "ok" }`.
 
 ## Notes
 
