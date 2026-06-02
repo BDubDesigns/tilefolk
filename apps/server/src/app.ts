@@ -1,8 +1,13 @@
 import cors from 'cors';
 import express from 'express';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { HealthResponse } from '@tilefolk/shared';
 import { getActiveWorld, resetWorld, stepActiveWorld } from './simulation/worldStore.js';
 import { requireAdminToken } from './auth/requireAdminToken.js';
+
+const serverDistDirectory = dirname(fileURLToPath(import.meta.url));
+const clientDistDirectory = resolve(serverDistDirectory, '../../client/dist');
 
 export function createApp() {
   const app = express();
@@ -42,5 +47,13 @@ export function createApp() {
       response.status(500).json({ error: 'Failed to step world' });
     }
   });
+
+  // serve static files and handle client-side routing
+  app.use(express.static(clientDistDirectory));
+
+  app.get('*', (_request, response) => {
+    response.sendFile(resolve(clientDistDirectory, 'index.html'));
+  });
+
   return app;
 }

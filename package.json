@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "dev": "npm run dev --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build -w packages/shared && npm run build -w apps/client && npm run build -w apps/server",
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "format": "prettier --write .",
