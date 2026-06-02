@@ -52,6 +52,8 @@ npm run start -w apps/server
 
 Set these in Coolify, not in the client and not in GitHub.
 
+Keep secrets and `NODE_ENV` runtime-only in Coolify. Do not make provider keys, admin tokens, or `NODE_ENV=production` available at build time.
+
 ```txt
 NODE_ENV=production
 PORT=4000
@@ -154,3 +156,54 @@ Last verified:
 - Do not add provider keys to Vite env vars.
 - The current world is in memory, so redeploying or restarting the container resets it.
 - Persistence should be a later deployment-hardening slice.
+
+## Coolify Troubleshooting
+
+### Remote Branch Not Found
+
+If deploy logs show:
+
+```txt
+fatal: Remote branch main not found in upstream origin
+```
+
+the Coolify app is pointing at the wrong branch.
+
+Tilefolk currently deploys from:
+
+```txt
+master
+```
+
+not:
+
+```txt
+main
+```
+
+Update the application Git branch in Coolify and redeploy.
+
+### `tsc: not found` During Docker Build
+
+If deploy logs show:
+
+```txt
+sh: tsc: not found
+```
+
+check whether `NODE_ENV=production` is available at build time.
+
+When `NODE_ENV=production` is injected during `npm ci`, npm can skip dev dependencies. Tilefolk needs dev dependencies such as TypeScript and Vite during the Docker build.
+
+Fix in Coolify:
+
+```txt
+NODE_ENV=production -> runtime only, or omit it
+TILEFOLK_ADMIN_TOKEN -> runtime only
+CEREBRAS_API_KEY -> runtime only
+OPENCODE_GO_API_KEY -> runtime only
+GOOGLE_AI_API_KEY -> runtime only
+OPENROUTER_API_KEY -> runtime only
+```
+
+The Dockerfile sets `NODE_ENV=production` after `npm run build`, so Coolify does not need to inject `NODE_ENV` at build time.
