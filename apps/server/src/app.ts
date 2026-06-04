@@ -2,7 +2,9 @@ import cors from 'cors';
 import express from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { HealthResponse } from '@tilefolk/shared';
+import type { HealthResponse, StatusResponse } from '@tilefolk/shared';
+import { serverEnv } from './config/env.js';
+import { appMetadata } from './config/appMetadata.js';
 import { getActiveWorld, resetWorld, stepActiveWorld } from './simulation/worldStore.js';
 import { requireAdminToken } from './auth/requireAdminToken.js';
 
@@ -18,6 +20,18 @@ export function createApp() {
   // health check
   app.get('/api/health', (_request, response) => {
     const body: HealthResponse = { status: 'ok' };
+
+    response.json(body);
+  });
+
+  // status
+  app.get('/api/status', (_request, response) => {
+    const body: StatusResponse = {
+      version: appMetadata.version,
+      defaultController: serverEnv.defaultController,
+      useSampleControllerAssignments: serverEnv.useSampleControllerAssignments,
+      isAdminTokenConfigured: serverEnv.isAdminTokenConfigured,
+    };
 
     response.json(body);
   });

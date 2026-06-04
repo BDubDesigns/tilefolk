@@ -2,6 +2,7 @@ import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { createApp } from './app.js';
+import { appMetadata } from './config/appMetadata.js';
 import { serverEnv } from './config/env.js';
 
 function setServerAdminToken(token: string | null): void {
@@ -19,6 +20,20 @@ describe('createApp', () => {
     expect(response.status).toBe(200);
     // expect body to equal { status: 'ok' }
     expect(response.body).toEqual({ status: 'ok' });
+  });
+
+  it('returns operational status', async () => {
+    const app = createApp();
+
+    const response = await request(app).get('/api/status');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      version: appMetadata.version,
+      defaultController: serverEnv.defaultController,
+      useSampleControllerAssignments: serverEnv.useSampleControllerAssignments,
+      isAdminTokenConfigured: serverEnv.isAdminTokenConfigured,
+    });
   });
 
   it('returns the default generated world', async () => {
