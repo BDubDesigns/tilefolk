@@ -2,6 +2,13 @@ export type HealthResponse = {
   status: 'ok';
 };
 
+export type StatusResponse = {
+  version: string;
+  defaultController: 'deterministic' | 'llm';
+  useSampleControllerAssignments: boolean;
+  isAdminTokenConfigured: boolean;
+};
+
 export type Position = {
   x: number;
   y: number;

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { WorldGrid } from './features/world/WorldGrid';
 import './App.css';
-import type { StepWorldResponse, World, ActionResult } from '@tilefolk/shared';
+import type { StepWorldResponse, World, ActionResult, StatusResponse } from '@tilefolk/shared';
 import { WorldSummary } from './features/world/WorldSummary';
 import { SimulationControls } from './features/simulation/SimulationControls';
 import { EventLog } from './features/simulation/EventLog';
@@ -18,6 +18,7 @@ export function App() {
   const [adminToken, setAdminToken] = useState(() => {
     return sessionStorage.getItem('adminToken') ?? '';
   });
+  const [status, setStatus] = useState<null | StatusResponse>(null);
 
   const getAdminHeaders = (): HeadersInit => {
     if (adminToken) {
@@ -96,6 +97,14 @@ export function App() {
   };
 
   useEffect(() => {
+    // fetch status on load to display version number
+    const fetchStatus = async () => {
+      const response = await fetch('/api/status');
+      const data = (await response.json()) as StatusResponse;
+      setStatus(data);
+    };
+
+    // fetch world on load
     const fetchWorld = async () => {
       setLoading(true);
 
@@ -121,6 +130,7 @@ export function App() {
       }
     };
     fetchWorld();
+    fetchStatus();
   }, []);
 
   let content;
@@ -161,6 +171,7 @@ export function App() {
       <section aria-labelledby="app-title">
         <p className="eyebrow">Tilefolk NPC Simulation</p>
         <h1 id="app-title">Simulation Console</h1>
+        {status ? <p className="statusLine">Version: {status.version}</p> : null}
         <div>{content}</div>
       </section>
     </main>
