@@ -181,6 +181,19 @@ Status: current active slice.
    - identify free endpoint rate-limit behavior
    - pick reliable defaults before deployment
 
+## Follow-up Slice: Admin Auth Header Cleanup
+
+Goal: modernize Tilefolk's internal admin-token header before more admin-only tools build on it.
+
+1. Replace the legacy `x-tilefolk-admin-token` header.
+   - prefer `Authorization: Bearer <token>` for admin-token protected requests
+   - update the client request helper, server middleware, and tests together
+   - keep `TILEFOLK_ADMIN_TOKEN` as the server-owned secret source
+
+2. Update operator-facing docs.
+   - mention the new header shape in deployment/admin-token notes
+   - remove stale `x-` header references from tests or examples
+
 ## Later Ideas
 
 - UI for changing an NPC controller live.

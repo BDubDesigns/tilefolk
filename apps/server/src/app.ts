@@ -2,7 +2,7 @@ import cors from 'cors';
 import express from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { HealthResponse, StatusResponse } from '@tilefolk/shared';
+import type { HealthResponse, StatusResponse, ProviderTestResult } from '@tilefolk/shared';
 import { serverEnv } from './config/env.js';
 import { appMetadata } from './config/appMetadata.js';
 import { getActiveWorld, resetWorld, stepActiveWorld } from './simulation/worldStore.js';
@@ -33,6 +33,20 @@ export function createApp() {
       isAdminTokenConfigured: serverEnv.isAdminTokenConfigured,
     };
 
+    response.json(body);
+  });
+
+  // test configured provider/model health
+  app.post('/api/providers/test', requireAdminToken, (_request, response) => {
+    const body: ProviderTestResult[] = [
+      {
+        provider: 'cerebras',
+        model: 'gpt-oss-120b',
+        success: true,
+        durationMs: 420,
+        message: 'Static provider test placeholder succeeded.',
+      },
+    ];
     response.json(body);
   });
 

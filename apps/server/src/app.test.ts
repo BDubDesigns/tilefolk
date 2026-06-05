@@ -150,3 +150,60 @@ describe('POST /api/worlds/default/step', () => {
     expect(response.body.actionResult).toBeDefined();
   });
 });
+
+describe('POST /api/providers/test', () => {
+  it('rejects requests without an admin token when one is configured', async () => {
+    setServerAdminToken('secret-token');
+    const app = createApp();
+
+    const response = await request(app).post('/api/providers/test');
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ error: 'Admin token required or invalid' });
+  });
+
+  it('returns an array', async () => {
+    setServerAdminToken('secret-token');
+    const app = createApp();
+
+    const response = await request(app)
+      .post('/api/providers/test')
+      .set('x-tilefolk-admin-token', 'secret-token');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toBeDefined();
+    expect(Array.isArray(response.body)).toBe(true);
+  });
+
+  it('succeeds with the configured admin token', async () => {
+    setServerAdminToken('secret-token');
+    const app = createApp();
+
+    const response = await request(app)
+      .post('/api/providers/test')
+      .set('x-tilefolk-admin-token', 'secret-token');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toBeDefined();
+    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('includes provider, model, success, durationMs, and message in the returned first row', async () => {
+    setServerAdminToken('secret-token');
+    const app = createApp();
+
+    const response = await request(app)
+      .post('/api/providers/test')
+      .set('x-tilefolk-admin-token', 'secret-token');
+
+    expect(response.status).toBe(200);
+    expect(response.body[0]).toEqual({
+      provider: 'cerebras',
+      model: 'gpt-oss-120b',
+      success: true,
+      durationMs: 420,
+      message: 'Static provider test placeholder succeeded.',
+    });
+  });
+});
