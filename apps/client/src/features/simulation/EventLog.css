@@ -1,9 +1,22 @@
+.eventLog {
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(56, 82, 61, 0.12);
+}
+
 .eventLogItem {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid rgba(55, 85, 61, 0.12);
+  border-radius: 6px;
+  background: #fbfdf9;
 }
 
 .eventLogItem p {
   margin: 0;
+}
+
+.eventMessage {
+  font-weight: 800;
 }
 
 .eventReason {
@@ -16,4 +29,9 @@
   color: #6f7d75;
   font-size: 0.75rem;
   margin-top: 2px;
+}
+
+.eventLog__empty {
+  margin: 0;
+  color: #607067;
 }

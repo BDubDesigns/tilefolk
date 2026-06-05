@@ -1,6 +1,8 @@
 :root {
-  color: #1f2933;
-  background: #f4f7f2;
+  color: #17212b;
+  background:
+    radial-gradient(circle at top left, rgba(80, 130, 92, 0.16), transparent 34rem),
+    #eef3ed;
   font-family:
     Inter,
     ui-sans-serif,
@@ -20,14 +22,30 @@ body {
 }
 
 .appShell {
+  min-height: 100vh;
   padding: 16px;
 }
 
-/* Responsive style */
-@media (min-width: 768px) {
-  .appShell {
-    padding: 32px;
-  }
+.appFrame {
+  max-width: 1540px;
+  margin: 0 auto;
+}
+
+.appHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding: 18px;
+  border: 1px solid rgba(62, 91, 68, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow: 0 18px 48px rgba(34, 53, 38, 0.08);
+}
+
+.appHeader h1 {
+  margin: 0;
 }
 
 .eyebrow {
@@ -39,27 +57,207 @@ body {
 }
 
 h1 {
-  margin: 0 0 16px;
-  font-size: 2rem;
+  font-size: 2.25rem;
   letter-spacing: 0;
 }
 
-.statusLine {
-  margin: 0;
-  color: #43505c;
-  font-size: 1rem;
+.statusCluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-start;
 }
 
-.simulationPanel {
+.statusCluster span {
+  padding: 6px 10px;
+  border: 1px solid rgba(72, 99, 74, 0.18);
+  border-radius: 999px;
+  background: #f9fbf7;
+  color: #435446;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.panelHeader {
+  margin-bottom: 12px;
+}
+
+.panelHeader h2,
+.mapPanel__header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: 0;
+}
+
+.panelEyebrow {
+  margin: 0;
+  color: #607666;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.simulationConsole {
+  display: grid;
+  gap: 14px;
+}
+
+.sidebarPanel,
+.mapPanel {
+  border: 1px solid rgba(48, 73, 54, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 16px 40px rgba(24, 43, 28, 0.08);
+}
+
+.sidebarPanel {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  padding: 14px;
+}
+
+.mapPanel {
+  min-width: 0;
+  padding: 14px;
+}
+
+.mapPanel__header {
   display: flex;
-  flex-direction: column;
   gap: 12px;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.turnBadge {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #1d4f2a;
+  color: #f7fff7;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.worldSummary,
+.simulationControls,
+.eventLog,
+.npcSummary {
+  min-width: 0;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.summaryGrid div {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(55, 85, 61, 0.12);
+  border-radius: 6px;
+  background: #f7faf5;
+}
+
+.summaryGrid dt {
+  color: #607067;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.summaryGrid dd {
+  overflow-wrap: anywhere;
+  margin: 4px 0 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.npcSummary {
+  padding-top: 14px;
+}
+
+.npcSummary__list {
+  display: grid;
+  gap: 8px;
+}
+
+.npcSummary__npc {
+  border: 1px solid rgba(55, 85, 61, 0.12);
+  border-radius: 6px;
+  background: #fbfdf9;
+}
+
+.npcSummary__npc summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+  color: #1f2c25;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.npcSummary__npc summary span:last-child {
+  color: #607067;
+  font-size: 0.86rem;
+}
+
+.npcSummary__npc p,
+.npcSummary__npc ul {
+  margin: 0 10px 8px;
+}
+
+.npcSummary__npc ul {
+  padding-left: 18px;
+  color: #435047;
 }
 
 @media (min-width: 768px) {
-  .simulationPanel {
-    align-items: flex-start;
+  .appShell {
+    padding: 24px;
+  }
+
+  .appHeader {
     flex-direction: row;
-    gap: 24px;
+    align-items: flex-start;
+  }
+
+  .simulationConsole {
+    grid-template-columns: minmax(220px, 0.72fr) minmax(430px, 1.6fr);
+    align-items: start;
+  }
+
+  .sidebarPanel--right {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 1180px) {
+  .appShell {
+    padding: 32px;
+  }
+
+  .simulationConsole {
+    grid-template-columns: minmax(230px, 0.78fr) minmax(520px, 1.6fr) minmax(300px, 1fr);
+  }
+
+  .mapPanel {
+    grid-column: 2;
+  }
+
+  .sidebarPanel--left {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .sidebarPanel--right {
+    grid-column: 3;
+    grid-row: 1;
   }
 }

@@ -10,12 +10,15 @@ export const EventLog = ({ events }: EventLogProps) => {
   const newestEvents = reverseEvents.slice(0, 5);
   return (
     <div className="eventLog">
-      <h2>Event Log</h2>
-      {!events.length && <p>No events yet</p>}
+      <div className="panelHeader">
+        <p className="panelEyebrow">Recent Turns</p>
+        <h2>Event Log</h2>
+      </div>
+      {!events.length && <p className="eventLog__empty">No events yet</p>}
       {newestEvents.map((event) => {
         return (
           <div key={event.id} className="eventLogItem">
-            <p>
+            <p className="eventMessage">
               Turn {event.turn}: {event.message}
             </p>
             {event.controllerReason && (

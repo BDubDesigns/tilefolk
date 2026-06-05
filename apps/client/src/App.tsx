@@ -141,8 +141,8 @@ export function App() {
     content = <p className="error">{loadError}</p>;
   } else if (world) {
     content = (
-      <div id="world-container">
-        <div className="simulationPanel">
+      <div className="simulationConsole">
+        <aside className="sidebarPanel sidebarPanel--left" aria-label="World controls">
           <WorldSummary world={world} />
 
           <SimulationControls
@@ -155,11 +155,23 @@ export function App() {
             onAdminTokenChange={handleAdminTokenChange}
             actionError={actionError}
           />
+        </aside>
+
+        <section className="mapPanel" aria-label="Tilefolk world map">
+          <div className="mapPanel__header">
+            <div>
+              <p className="panelEyebrow">Live World</p>
+              <h2>25 x 25 Tile Map</h2>
+            </div>
+            <p className="turnBadge">Turn {world.turn}</p>
+          </div>
+          <WorldGrid tiles={world.tiles} npcs={world.npcs} items={world.items} trees={world.trees} />
+        </section>
+
+        <div className="sidebarPanel sidebarPanel--right">
           <EventLog events={world.events} />
           <NpcSummary world={world} />
         </div>
-
-        <WorldGrid tiles={world.tiles} npcs={world.npcs} items={world.items} trees={world.trees} />
       </div>
     );
   } else {
@@ -168,10 +180,21 @@ export function App() {
 
   return (
     <main className="appShell">
-      <section aria-labelledby="app-title">
-        <p className="eyebrow">Tilefolk NPC Simulation</p>
-        <h1 id="app-title">Simulation Console</h1>
-        {status ? <p className="statusLine">Version: {status.version}</p> : null}
+      <section className="appFrame" aria-labelledby="app-title">
+        <header className="appHeader">
+          <div>
+            <p className="eyebrow">Tilefolk NPC Simulation</p>
+            <h1 id="app-title">Simulation Console</h1>
+          </div>
+          {status ? (
+            <div className="statusCluster" aria-label="Operational status">
+              <span>Version: v{status.version}</span>
+              <span>Controller: {status.defaultController.toUpperCase()}</span>
+              <span>Assignments: {status.useSampleControllerAssignments ? 'Sample' : 'Default'}</span>
+              <span>Mutation: {status.isAdminTokenConfigured ? 'Locked' : 'Open'}</span>
+            </div>
+          ) : null}
+        </header>
         <div>{content}</div>
       </section>
     </main>
