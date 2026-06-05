@@ -15,8 +15,13 @@ export const NpcSummary = ({ world }: NpcSummaryProps) => {
     );
 
     return (
-      <details key={npc.id}>
-        <summary>{npc.id}</summary>
+      <details key={npc.id} className="npcSummary__npc">
+        <summary>
+          <span>{npc.id}</span>
+          <span>
+            {npc.position.x}, {npc.position.y}
+          </span>
+        </summary>
         <p>
           <b>{npc.name}</b>
         </p>
@@ -86,5 +91,13 @@ export const NpcSummary = ({ world }: NpcSummaryProps) => {
     );
   });
 
-  return <div>{output}</div>;
+  return (
+    <div className="npcSummary">
+      <div className="panelHeader">
+        <p className="panelEyebrow">Agents</p>
+        <h2>NPC Context</h2>
+      </div>
+      <div className="npcSummary__list">{output}</div>
+    </div>
+  );
 };

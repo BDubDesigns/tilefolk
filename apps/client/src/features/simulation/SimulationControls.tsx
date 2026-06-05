@@ -24,33 +24,38 @@ export const SimulationControls = ({
 }: SimulationControlsProps) => {
   return (
     <div className="simulationControls">
-      <div>
+      <div className="panelHeader">
+        <p className="panelEyebrow">Admin Controls</p>
+        <h2>Drive The Sim</h2>
+      </div>
+
+      <div className="simulationControls__body">
         <div className="simulationControls__buttons">
-          {/* step world button */}
           <button onClick={onStepWorld} disabled={stepLoading}>
-            Step World
+            {stepLoading ? 'Stepping...' : 'Step World'}
           </button>
-          {/* reset world button */}
           <button onClick={onResetWorld} disabled={resetLoading}>
-            Reset World
+            {resetLoading ? 'Resetting...' : 'Reset World'}
           </button>
         </div>
         <div className="simulationControls__token">
-          <label>
-            Admin Token:{' '}
+          <label htmlFor="admin-token">Admin Token</label>
+          <div className="simulationControls__inputRow">
             <input
+              id="admin-token"
               type="password"
+              placeholder="Required to mutate world"
               value={adminToken}
               onChange={(e) => onAdminTokenChange(e.target.value)}
             />
-          </label>
-          {actionError && <p className="simulationControls__error">{actionError}</p>}
+          </div>
         </div>
       </div>
+      {actionError && <p className="simulationControls__error">{actionError}</p>}
       {lastActionResult ? (
-        <p>Last Action Result: {lastActionResult.message}</p>
+        <p className="simulationControls__lastAction">{lastActionResult.message}</p>
       ) : (
-        <p>Last Action Result: No actions yet</p>
+        <p className="simulationControls__lastAction">No actions yet</p>
       )}
     </div>
   );
