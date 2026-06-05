@@ -41,14 +41,14 @@ Completed recently:
 - LLM prompts now use NPC-local memories instead of global recent events.
 - NPCs can pick up axes, chop adjacent trees, deplete tree durability, drop wood, and pick up that wood.
 
-## Current Goal: Post-Deploy Hardening
+## Current Goal: Provider Test Panel
 
-Keep the live app stable while choosing the next durable slice:
+Build the first in-app way to compare configured LLM providers before changing live simulation defaults:
 
-- Confirm public read-only behavior stays reliable.
-- Confirm admin-only Step/Reset remains protected.
-- Decide whether provider testing or persistence is the next production-hardening move.
-- Keep deployment docs and env var notes current.
+- Keep provider tests server-owned and admin-token protected.
+- Start with configured provider/model combos; do not expose API keys to the client.
+- Return compact success/failure, latency, and safe error information.
+- Use the results to pick reliable live defaults before further deployment work.
 
 ## Completed: Memory And Witnessed Events
 
@@ -93,7 +93,18 @@ Done:
 
 Goal: make the deployed app easier to trust and operate.
 
-1. Add basic operational checks.
+Status: mostly done; keep this stable while working on provider testing.
+
+Done:
+
+- Added `/api/status`.
+- Client header shows app version, default controller, assignment mode, and mutation lock status.
+- Step/Reset are admin-token protected when `TILEFOLK_ADMIN_TOKEN` is configured.
+- Deployment docs and env var notes cover the current Coolify setup.
+
+Remaining:
+
+1. Add any missing operational checks if they become useful.
    - visible app version/checkpoint
    - current controller mode
    - whether sample assignments are enabled
@@ -143,6 +154,8 @@ Goal: let each NPC carry provider-specific model settings without hardcoding eve
 ## Slice 4: Provider Test Panel
 
 Goal: make provider/model reliability and latency visible from inside Tilefolk.
+
+Status: current active slice.
 
 1. Add a server-side test route for configured provider/model combos.
    - run a tiny decision-style prompt against each selected combo

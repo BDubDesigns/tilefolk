@@ -177,7 +177,7 @@ npm run lint
 
 See `NEXT_STEPS.md`.
 
-The next major pass is post-deploy hardening: keep the live app stable, improve operational visibility, and decide whether persistence or provider testing comes first.
+The current pass is the provider test panel: keep LLM provider tests server-owned, admin-token protected, and useful enough to compare reliability and latency before changing live simulation defaults.
 
 ## AI-Assisted Development
 

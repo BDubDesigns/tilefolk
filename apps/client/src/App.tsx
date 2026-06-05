@@ -1,11 +1,16 @@
-import { useEffect, useState } from 'react';
-import { WorldGrid } from './features/world/WorldGrid';
-import './App.css';
-import type { StepWorldResponse, World, ActionResult, StatusResponse } from '@tilefolk/shared';
-import { WorldSummary } from './features/world/WorldSummary';
-import { SimulationControls } from './features/simulation/SimulationControls';
-import { EventLog } from './features/simulation/EventLog';
-import { NpcSummary } from './features/world/NpcSummary';
+import { useEffect, useState } from "react";
+import { WorldGrid } from "./features/world/WorldGrid";
+import "./App.css";
+import type {
+  StepWorldResponse,
+  World,
+  ActionResult,
+  StatusResponse,
+} from "@tilefolk/shared";
+import { WorldSummary } from "./features/world/WorldSummary";
+import { SimulationControls } from "./features/simulation/SimulationControls";
+import { EventLog } from "./features/simulation/EventLog";
+import { NpcSummary } from "./features/world/NpcSummary";
 
 export function App() {
   const [world, setWorld] = useState<null | World>(null);
@@ -13,26 +18,28 @@ export function App() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [stepLoading, setStepLoading] = useState(false);
-  const [lastActionResult, setLastActionResult] = useState<null | ActionResult>(null);
+  const [lastActionResult, setLastActionResult] = useState<null | ActionResult>(
+    null,
+  );
   const [resetLoading, setResetLoading] = useState(false);
   const [adminToken, setAdminToken] = useState(() => {
-    return sessionStorage.getItem('adminToken') ?? '';
+    return sessionStorage.getItem("adminToken") ?? "";
   });
   const [status, setStatus] = useState<null | StatusResponse>(null);
 
   const getAdminHeaders = (): HeadersInit => {
     if (adminToken) {
-      return { 'x-tilefolk-admin-token': adminToken };
+      return { "x-tilefolk-admin-token": adminToken };
     }
     return {};
   };
 
   const handleAdminTokenChange = (token: string) => {
     setAdminToken(token);
-    if (token === '') {
-      sessionStorage.removeItem('adminToken');
+    if (token === "") {
+      sessionStorage.removeItem("adminToken");
     } else {
-      sessionStorage.setItem('adminToken', token);
+      sessionStorage.setItem("adminToken", token);
     }
   };
 
@@ -41,13 +48,15 @@ export function App() {
 
     try {
       // hit reset endpoint, which returns a new world
-      const response = await fetch('/api/worlds/reset', {
-        method: 'POST',
+      const response = await fetch("/api/worlds/reset", {
+        method: "POST",
         headers: getAdminHeaders(),
       });
       if (!response.ok) {
         const errorBody = (await response.json()) as { error?: string };
-        setActionError(errorBody.error ?? `An error occurred: ${response.statusText}`);
+        setActionError(
+          errorBody.error ?? `An error occurred: ${response.statusText}`,
+        );
       } else {
         const data = (await response.json()) as World;
         setActionError(null);
@@ -69,14 +78,16 @@ export function App() {
 
     try {
       // fetch world from server
-      const response = await fetch('/api/worlds/default/step', {
-        method: 'POST',
+      const response = await fetch("/api/worlds/default/step", {
+        method: "POST",
         headers: getAdminHeaders(),
       });
       // guard against no world
       if (!response.ok) {
         const errorBody = (await response.json()) as { error?: string };
-        setActionError(errorBody.error ?? `An error occurred: ${response.statusText}`);
+        setActionError(
+          errorBody.error ?? `An error occurred: ${response.statusText}`,
+        );
       } else {
         const data = (await response.json()) as StepWorldResponse;
         setActionError(null);
@@ -99,7 +110,7 @@ export function App() {
   useEffect(() => {
     // fetch status on load to display version number
     const fetchStatus = async () => {
-      const response = await fetch('/api/status');
+      const response = await fetch("/api/status");
       const data = (await response.json()) as StatusResponse;
       setStatus(data);
     };
@@ -112,7 +123,7 @@ export function App() {
         // clear error state first
         setLoadError(null);
         // fetch world from server
-        const response = await fetch('/api/worlds/default');
+        const response = await fetch("/api/worlds/default");
         const data = (await response.json()) as World;
         if (!response.ok) {
           setLoadError(`An error occurred: ${response.statusText}`);
@@ -142,7 +153,10 @@ export function App() {
   } else if (world) {
     content = (
       <div className="simulationConsole">
-        <aside className="sidebarPanel sidebarPanel--left" aria-label="World controls">
+        <aside
+          className="sidebarPanel sidebarPanel--left"
+          aria-label="World controls"
+        >
           <WorldSummary world={world} />
 
           <SimulationControls
@@ -165,7 +179,13 @@ export function App() {
             </div>
             <p className="turnBadge">Turn {world.turn}</p>
           </div>
-          <WorldGrid tiles={world.tiles} npcs={world.npcs} items={world.items} trees={world.trees} />
+
+          <WorldGrid
+            tiles={world.tiles}
+            npcs={world.npcs}
+            items={world.items}
+            trees={world.trees}
+          />
         </section>
 
         <div className="sidebarPanel sidebarPanel--right">
@@ -190,8 +210,13 @@ export function App() {
             <div className="statusCluster" aria-label="Operational status">
               <span>Version: v{status.version}</span>
               <span>Controller: {status.defaultController.toUpperCase()}</span>
-              <span>Assignments: {status.useSampleControllerAssignments ? 'Sample' : 'Default'}</span>
-              <span>Mutation: {status.isAdminTokenConfigured ? 'Locked' : 'Open'}</span>
+              <span>
+                Assignments:{" "}
+                {status.useSampleControllerAssignments ? "Sample" : "Default"}
+              </span>
+              <span>
+                Mutation: {status.isAdminTokenConfigured ? "Locked" : "Open"}
+              </span>
             </div>
           ) : null}
         </header>

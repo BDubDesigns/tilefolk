@@ -9,6 +9,14 @@ export type StatusResponse = {
   isAdminTokenConfigured: boolean;
 };
 
+export type ProviderTestResult = {
+  provider: string;
+  model: string;
+  success: boolean;
+  durationMs: number;
+  message: string;
+};
+
 export type Position = {
   x: number;
   y: number;
