@@ -194,6 +194,25 @@ Goal: modernize Tilefolk's internal admin-token header before more admin-only to
    - mention the new header shape in deployment/admin-token notes
    - remove stale `x-` header references from tests or examples
 
+## Follow-up Slice: Tooling Cleanup
+
+Goal: remove dependency drift and keep local validation quiet/reliable.
+
+1. Decide TypeScript/tooling strategy.
+   - current `package.json` declares TypeScript `^5.5.4`, but the lockfile resolves `5.9.3`
+   - current `@typescript-eslint` 7.x warns because it officially supports TypeScript `<5.6.0`
+   - choose either pinning TypeScript to a supported 5.5.x version or upgrading the ESLint/TypeScript-ESLint stack
+
+2. Clean dependency metadata intentionally.
+   - avoid unrelated `package-lock.json` churn during feature slices
+   - run `npm install` only when dependency changes are intentional
+   - include `package-lock.json` when package versions actually change
+
+3. Validate the final tooling state.
+   - `npm run lint`
+   - `npm run typecheck`
+   - `npm test`
+
 ## Later Ideas
 
 - UI for changing an NPC controller live.

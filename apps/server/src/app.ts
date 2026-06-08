@@ -7,6 +7,7 @@ import { serverEnv } from './config/env.js';
 import { appMetadata } from './config/appMetadata.js';
 import { getActiveWorld, resetWorld, stepActiveWorld } from './simulation/worldStore.js';
 import { requireAdminToken } from './auth/requireAdminToken.js';
+import { getProviderTestTargets } from './providers/providerTestTargets.js';
 
 const serverDistDirectory = dirname(fileURLToPath(import.meta.url));
 const clientDistDirectory = resolve(serverDistDirectory, '../../client/dist');
@@ -36,17 +37,14 @@ export function createApp() {
     response.json(body);
   });
 
-  // test configured provider/model health
   app.post('/api/providers/test', requireAdminToken, (_request, response) => {
-    const body: ProviderTestResult[] = [
-      {
-        provider: 'cerebras',
-        model: 'gpt-oss-120b',
-        success: true,
-        durationMs: 420,
-        message: 'Static provider test placeholder succeeded.',
-      },
-    ];
+    const body: ProviderTestResult[] = getProviderTestTargets().map((target) => ({
+      provider: target.provider,
+      model: target.model,
+      success: true,
+      durationMs: 0,
+      message: 'Configured provider test placeholder.',
+    }));
     response.json(body);
   });
 

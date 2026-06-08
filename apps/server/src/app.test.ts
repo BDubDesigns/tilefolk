@@ -10,6 +10,30 @@ function setServerAdminToken(token: string | null): void {
   serverEnv.isAdminTokenConfigured = token !== null;
 }
 
+function resetProviderConfig(): void {
+  serverEnv.googleAiApiKey = null;
+  serverEnv.googleAiModel = null;
+  serverEnv.isGoogleAiConfigured = false;
+
+  serverEnv.openCodeGoApiKey = null;
+  serverEnv.openCodeGoModel = null;
+  serverEnv.isOpenCodeGoConfigured = false;
+
+  serverEnv.openRouterApiKey = null;
+  serverEnv.openRouterModel = null;
+  serverEnv.isOpenRouterConfigured = false;
+
+  serverEnv.cerebrasApiKey = null;
+  serverEnv.cerebrasModel = null;
+  serverEnv.isCerebrasConfigured = false;
+}
+
+function setCerebrasProviderConfig(model: string): void {
+  serverEnv.cerebrasApiKey = 'test-cerebras-key';
+  serverEnv.cerebrasModel = model;
+  serverEnv.isCerebrasConfigured = true;
+}
+
 describe('createApp', () => {
   it('returns health status', async () => {
     // create app
@@ -152,6 +176,11 @@ describe('POST /api/worlds/default/step', () => {
 });
 
 describe('POST /api/providers/test', () => {
+  afterEach(() => {
+    setServerAdminToken(null);
+    resetProviderConfig();
+  });
+
   it('rejects requests without an admin token when one is configured', async () => {
     setServerAdminToken('secret-token');
     const app = createApp();
@@ -184,13 +213,12 @@ describe('POST /api/providers/test', () => {
       .set('x-tilefolk-admin-token', 'secret-token');
 
     expect(response.status).toBe(200);
-    expect(response.body).toBeDefined();
-    expect(Array.isArray(response.body)).toBe(true);
-    expect(response.body.length).toBeGreaterThanOrEqual(1);
+    expect(response.body).toEqual([]);
   });
 
-  it('includes provider, model, success, durationMs, and message in the returned first row', async () => {
+  it('includes provider, model, success, durationMs, and message for a configured provider', async () => {
     setServerAdminToken('secret-token');
+    setCerebrasProviderConfig('gpt-oss-120b');
     const app = createApp();
 
     const response = await request(app)
@@ -202,8 +230,8 @@ describe('POST /api/providers/test', () => {
       provider: 'cerebras',
       model: 'gpt-oss-120b',
       success: true,
-      durationMs: 420,
-      message: 'Static provider test placeholder succeeded.',
+      durationMs: 0,
+      message: 'Configured provider test placeholder.',
     });
   });
 });
