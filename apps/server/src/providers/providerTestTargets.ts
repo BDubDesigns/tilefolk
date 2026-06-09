@@ -1,39 +1,48 @@
 import { serverEnv } from '../config/env.js';
 
+const providerTestDefinitions = [
+  {
+    provider: 'cerebras',
+    getApiKey: () => serverEnv.cerebrasApiKey,
+    getModel: () => serverEnv.cerebrasModel,
+  },
+  {
+    provider: 'opencode-go',
+    getApiKey: () => serverEnv.openCodeGoApiKey,
+    getModel: () => serverEnv.openCodeGoModel,
+  },
+  {
+    provider: 'openrouter',
+    getApiKey: () => serverEnv.openRouterApiKey,
+    getModel: () => serverEnv.openRouterModel,
+  },
+  {
+    provider: 'google-ai',
+    getApiKey: () => serverEnv.googleAiApiKey,
+    getModel: () => serverEnv.googleAiModel,
+  },
+] as const;
+
+export type ProviderTestProvider = (typeof providerTestDefinitions)[number]['provider'];
+
 export type ProviderTestTarget = {
-  provider: string;
+  provider: ProviderTestProvider;
   model: string;
 };
 
 export function getProviderTestTargets(): ProviderTestTarget[] {
   const targets: ProviderTestTarget[] = [];
 
-  if (serverEnv.isCerebrasConfigured && serverEnv.cerebrasModel !== null) {
-    targets.push({
-      provider: 'cerebras',
-      model: serverEnv.cerebrasModel,
-    });
-  }
+  for (const definition of providerTestDefinitions) {
+    const apiKey = definition.getApiKey();
+    const model = definition.getModel();
 
-  if (serverEnv.isOpenCodeGoConfigured && serverEnv.openCodeGoModel !== null) {
-    targets.push({
-      provider: 'opencode-go',
-      model: serverEnv.openCodeGoModel,
-    });
-  }
-
-  if (serverEnv.isOpenRouterConfigured && serverEnv.openRouterModel !== null) {
-    targets.push({
-      provider: 'openrouter',
-      model: serverEnv.openRouterModel,
-    });
-  }
-
-  if (serverEnv.isGoogleAiConfigured && serverEnv.googleAiModel !== null) {
-    targets.push({
-      provider: 'google-ai',
-      model: serverEnv.googleAiModel,
-    });
+    if (apiKey !== null && model !== null) {
+      targets.push({
+        provider: definition.provider,
+        model,
+      });
+    }
   }
 
   return targets;

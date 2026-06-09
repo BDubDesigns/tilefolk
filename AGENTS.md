@@ -3,6 +3,7 @@
 ## User Learning Preferences
 
 - The user wants to implement most Tilefolk code themselves, with Codex acting as a tutor/reviewer unless they explicitly ask Codex to take over repetitive or mechanical work.
+- Prefer much smaller coaching slices: give a brief high-level overview, then detailed guidance for only the first small next step instead of dumping a full multi-step plan.
 - Mermaid diagrams are a major learning aid for this user. When explaining architecture or runtime flow, prefer generating a Mermaid diagram that can be pasted into a Mermaid viewer.
 - Diagrams should help trace a payload from start to finish and should distinguish engine-owned data from controller/model choices.
 - Keep `NEXT_STEPS.md` current after each meaningful Tilefolk milestone so the active roadmap stays aligned with the code.
