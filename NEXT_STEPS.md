@@ -198,20 +198,24 @@ Goal: modernize Tilefolk's internal admin-token header before more admin-only to
 
 Goal: remove dependency drift and keep local validation quiet/reliable.
 
-1. Decide TypeScript/tooling strategy.
+1. Add a single quality-gate command.
+   - add `npm run verify` for local and CI validation
+   - start with `npm run lint`, `npm run typecheck`, and `npm run test` if lint is already stable
+   - wire future GitHub Actions/CI to call the same command so local and CI checks do not drift
+
+2. Decide TypeScript/tooling strategy.
    - current `package.json` declares TypeScript `^5.5.4`, but the lockfile resolves `5.9.3`
    - current `@typescript-eslint` 7.x warns because it officially supports TypeScript `<5.6.0`
    - choose either pinning TypeScript to a supported 5.5.x version or upgrading the ESLint/TypeScript-ESLint stack
 
-2. Clean dependency metadata intentionally.
+3. Clean dependency metadata intentionally.
    - avoid unrelated `package-lock.json` churn during feature slices
    - run `npm install` only when dependency changes are intentional
    - include `package-lock.json` when package versions actually change
 
-3. Validate the final tooling state.
-   - `npm run lint`
-   - `npm run typecheck`
-   - `npm test`
+4. Validate the final tooling state.
+   - `npm run verify`
+   - confirm it covers lint, typecheck, and tests
 
 ## Later Ideas
 
