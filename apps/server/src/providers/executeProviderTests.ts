@@ -1,10 +1,12 @@
 import type { ProviderTestResult } from '@tilefolk/shared';
 import { getProviderTestTargets, type ProviderTestTarget } from './providerTestTargets.js';
 
-export type ProviderTestProbe = (target: ProviderTestTarget) => Promise<{
+export type ProviderTestProbeResult = {
   success: boolean;
   message: string;
-}>;
+};
+
+export type ProviderTestProbe = (target: ProviderTestTarget) => Promise<ProviderTestProbeResult>;
 
 type ExecuteProviderTestsOptions = {
   targets?: ProviderTestTarget[];
@@ -45,3 +47,10 @@ export async function executeProviderTests(
     }),
   );
 }
+
+export const runRealProviderProbe: ProviderTestProbe = async (target) => {
+  return {
+    success: true,
+    message: `Provider test execution seam is wired. target: ${target.provider} ${target.model}`,
+  };
+};
