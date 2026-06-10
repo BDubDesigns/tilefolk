@@ -19,7 +19,7 @@ export async function executeProviderTests(
 ): Promise<ProviderTestResult[]> {
   const targets = options.targets ?? getProviderTestTargets();
   const probe = options.probe ?? runRealProviderProbe;
-  const now = options.now ?? performance.now;
+  const now = options.now ?? (() => performance.now());
 
   return Promise.all(
     targets.map(async (target) => {

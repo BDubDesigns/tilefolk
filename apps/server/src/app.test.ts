@@ -216,22 +216,33 @@ describe('POST /api/providers/test', () => {
     expect(response.body).toEqual([]);
   });
 
-  it('includes provider, model, success, durationMs, and message for a configured provider', async () => {
+  it('returns provider test executor results', async () => {
     setServerAdminToken('secret-token');
-    setCerebrasProviderConfig('gpt-oss-120b');
-    const app = createApp();
+    const app = createApp({
+      runProviderTests: async () => [
+        {
+          provider: 'cerebras',
+          model: 'gpt-oss-120b',
+          success: true,
+          durationMs: 12,
+          message: 'Provider responded.',
+        },
+      ],
+    });
 
     const response = await request(app)
       .post('/api/providers/test')
       .set('x-tilefolk-admin-token', 'secret-token');
 
     expect(response.status).toBe(200);
-    expect(response.body[0]).toEqual({
-      provider: 'cerebras',
-      model: 'gpt-oss-120b',
-      success: true,
-      durationMs: 0,
-      message: 'Configured provider test placeholder.',
-    });
+    expect(response.body).toEqual([
+      {
+        provider: 'cerebras',
+        model: 'gpt-oss-120b',
+        success: true,
+        durationMs: 12,
+        message: 'Provider responded.',
+      },
+    ]);
   });
 });
