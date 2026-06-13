@@ -1,22 +1,22 @@
-import { requestCerebrasDecision } from '../simulation/controllers/cerebrasDecisionClient.js';
+import { requestOpenCodeGoDecision } from '../simulation/controllers/openCodeGoDecisionClient.js';
 import { runDecisionProviderProbe } from './decisionProviderProbe.js';
 
 import type { DecisionRequester } from './decisionProviderProbe.js';
 import type { ProviderTestProbeResult } from './executeProviderTests.js';
 import type { ProviderTestTarget } from './providerTestTargets.js';
 
-export type CerebrasDecisionRequester = typeof requestCerebrasDecision;
+export type OpenCodeGoDecisionRequester = typeof requestOpenCodeGoDecision;
 
-type RunCerebrasProviderProbeOptions = {
-  requestDecision?: CerebrasDecisionRequester;
+type RunOpenCodeGoProviderProbeOptions = {
+  requestDecision?: OpenCodeGoDecisionRequester;
 };
 
-export async function runCerebrasProviderProbe(
+export async function runOpenCodeGoProviderProbe(
   target: ProviderTestTarget,
-  { requestDecision = requestCerebrasDecision }: RunCerebrasProviderProbeOptions = {},
+  { requestDecision = requestOpenCodeGoDecision }: RunOpenCodeGoProviderProbeOptions = {},
 ): Promise<ProviderTestProbeResult> {
   return runDecisionProviderProbe({
-    providerLabel: 'Cerebras',
+    providerLabel: 'OpenCode Go',
     target,
     requestDecision: requestDecision as DecisionRequester,
   });

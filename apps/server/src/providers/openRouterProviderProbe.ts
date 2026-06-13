@@ -1,22 +1,22 @@
-import { requestCerebrasDecision } from '../simulation/controllers/cerebrasDecisionClient.js';
+import { requestOpenRouterDecision } from '../simulation/controllers/openRouterDecisionClient.js';
 import { runDecisionProviderProbe } from './decisionProviderProbe.js';
 
 import type { DecisionRequester } from './decisionProviderProbe.js';
 import type { ProviderTestProbeResult } from './executeProviderTests.js';
 import type { ProviderTestTarget } from './providerTestTargets.js';
 
-export type CerebrasDecisionRequester = typeof requestCerebrasDecision;
+export type OpenRouterDecisionRequester = typeof requestOpenRouterDecision;
 
-type RunCerebrasProviderProbeOptions = {
-  requestDecision?: CerebrasDecisionRequester;
+type RunOpenRouterProviderProbeOptions = {
+  requestDecision?: OpenRouterDecisionRequester;
 };
 
-export async function runCerebrasProviderProbe(
+export async function runOpenRouterProviderProbe(
   target: ProviderTestTarget,
-  { requestDecision = requestCerebrasDecision }: RunCerebrasProviderProbeOptions = {},
+  { requestDecision = requestOpenRouterDecision }: RunOpenRouterProviderProbeOptions = {},
 ): Promise<ProviderTestProbeResult> {
   return runDecisionProviderProbe({
-    providerLabel: 'Cerebras',
+    providerLabel: 'OpenRouter',
     target,
     requestDecision: requestDecision as DecisionRequester,
   });

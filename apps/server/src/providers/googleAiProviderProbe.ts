@@ -1,22 +1,22 @@
-import { requestCerebrasDecision } from '../simulation/controllers/cerebrasDecisionClient.js';
+import { requestGoogleAiDecision } from '../simulation/controllers/googleAiDecisionClient.js';
 import { runDecisionProviderProbe } from './decisionProviderProbe.js';
 
 import type { DecisionRequester } from './decisionProviderProbe.js';
 import type { ProviderTestProbeResult } from './executeProviderTests.js';
 import type { ProviderTestTarget } from './providerTestTargets.js';
 
-export type CerebrasDecisionRequester = typeof requestCerebrasDecision;
+export type GoogleAiDecisionRequester = typeof requestGoogleAiDecision;
 
-type RunCerebrasProviderProbeOptions = {
-  requestDecision?: CerebrasDecisionRequester;
+type RunGoogleAiProviderProbeOptions = {
+  requestDecision?: GoogleAiDecisionRequester;
 };
 
-export async function runCerebrasProviderProbe(
+export async function runGoogleAiProviderProbe(
   target: ProviderTestTarget,
-  { requestDecision = requestCerebrasDecision }: RunCerebrasProviderProbeOptions = {},
+  { requestDecision = requestGoogleAiDecision }: RunGoogleAiProviderProbeOptions = {},
 ): Promise<ProviderTestProbeResult> {
   return runDecisionProviderProbe({
-    providerLabel: 'Cerebras',
+    providerLabel: 'Google AI',
     target,
     requestDecision: requestDecision as DecisionRequester,
   });

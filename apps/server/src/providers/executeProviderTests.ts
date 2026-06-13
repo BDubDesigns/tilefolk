@@ -1,5 +1,8 @@
 import type { ProviderTestResult } from '@tilefolk/shared';
 import { runCerebrasProviderProbe } from './cerebrasProviderProbe.js';
+import { runGoogleAiProviderProbe } from './googleAiProviderProbe.js';
+import { runOpenCodeGoProviderProbe } from './openCodeGoProviderProbe.js';
+import { runOpenRouterProviderProbe } from './openRouterProviderProbe.js';
 import { getProviderTestTargets, type ProviderTestTarget } from './providerTestTargets.js';
 
 export type ProviderTestProbeResult = {
@@ -50,12 +53,14 @@ export async function executeProviderTests(
 }
 
 export const runRealProviderProbe: ProviderTestProbe = async (target) => {
-  if (target.provider === 'cerebras') {
-    return runCerebrasProviderProbe(target);
+  switch (target.provider) {
+    case 'cerebras':
+      return runCerebrasProviderProbe(target);
+    case 'opencode-go':
+      return runOpenCodeGoProviderProbe(target);
+    case 'openrouter':
+      return runOpenRouterProviderProbe(target);
+    case 'google-ai':
+      return runGoogleAiProviderProbe(target);
   }
-
-  return {
-    success: true,
-    message: `Provider test execution seam is wired. target: ${target.provider} ${target.model}`,
-  };
 };
