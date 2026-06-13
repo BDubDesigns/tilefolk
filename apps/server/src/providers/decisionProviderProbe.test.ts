@@ -53,6 +53,24 @@ describe('runDecisionProviderProbe', () => {
     });
   });
 
+  it('returns requester failure details when provided', async () => {
+    const requestDecision = vi.fn<DecisionRequester>(async ({ onFailure }) => {
+      onFailure?.('Provider API returned status 500.');
+      return null;
+    });
+
+    const result = await runDecisionProviderProbe({
+      providerLabel: 'Test Provider',
+      target,
+      requestDecision,
+    });
+
+    expect(result).toEqual({
+      success: false,
+      message: 'Provider API returned status 500.',
+    });
+  });
+
   it('returns failure when the requester selects the wrong option', async () => {
     const requestDecision = vi.fn<DecisionRequester>(async () => ({
       selectedOptionId: 'unexpected-option',

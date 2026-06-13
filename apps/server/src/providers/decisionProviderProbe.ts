@@ -10,6 +10,7 @@ export type DecisionRequester = (options: {
   actionOptions: ReturnType<typeof createProviderTestScenario>['actionOptions'];
   visibleContext: ReturnType<typeof createProviderTestScenario>['visibleContext'];
   model?: string;
+  onFailure?: (message: string) => void;
 }) => Promise<ControllerDecision | null>;
 
 type RunDecisionProviderProbeOptions = {
@@ -24,18 +25,22 @@ export async function runDecisionProviderProbe({
   requestDecision,
 }: RunDecisionProviderProbeOptions): Promise<ProviderTestProbeResult> {
   const scenario = createProviderTestScenario();
+  let failureMessage: string | null = null;
   const decision = await requestDecision({
     npc: scenario.npc,
     recentMemories: scenario.recentMemories,
     actionOptions: scenario.actionOptions,
     visibleContext: scenario.visibleContext,
     model: target.model,
+    onFailure: (message) => {
+      failureMessage = message;
+    },
   });
 
   if (decision === null) {
     return {
       success: false,
-      message: `${providerLabel} returned no valid provider test decision.`,
+      message: failureMessage ?? `${providerLabel} returned no valid provider test decision.`,
     };
   }
 
