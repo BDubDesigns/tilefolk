@@ -40,14 +40,16 @@ Completed recently:
 - NPC-local memories now track witnessed events.
 - LLM prompts now use NPC-local memories instead of global recent events.
 - NPCs can pick up axes, chop adjacent trees, deplete tree durability, drop wood, and pick up that wood.
+- Provider Test Panel MVP can run admin-protected decision-contract probes for configured Cerebras, OpenCode Go, OpenRouter, and Google AI models from the client.
 
-## Current Goal: Provider Test Panel
+## Current Goal: Provider Test Panel Follow-ups
 
-Build the first in-app way to compare configured LLM providers before changing live simulation defaults:
+Provider Test Panel MVP is complete. The app now has an admin-protected client panel that runs server-owned decision-contract probes for configured provider/model combos without exposing API keys.
 
-- Keep provider tests server-owned and admin-token protected.
-- Start with configured provider/model combos; do not expose API keys to the client.
-- Return compact success/failure, latency, and safe error information.
+Keep the remaining work focused on making provider comparison more useful:
+
+- Support selected-provider runs instead of always testing every configured provider.
+- Add richer diagnostics such as safe provider error bodies, token usage, cost hints, and parsed-decision validity details.
 - Use the results to pick reliable live defaults before further deployment work.
 
 ## Completed: Memory And Witnessed Events
@@ -151,32 +153,36 @@ Goal: let each NPC carry provider-specific model settings without hardcoding eve
    - provider-specific advanced settings
    - save assignment in world state instead of only hardcoded config
 
-## Slice 4: Provider Test Panel
+## Completed: Provider Test Panel MVP
 
 Goal: make provider/model reliability and latency visible from inside Tilefolk.
 
-Status: current active slice.
+Done:
 
-1. Add a server-side test route for configured provider/model combos.
-   - run a tiny decision-style prompt against each selected combo
-   - never expose API keys to the client
-   - protect mutation/cost-bearing tests behind the admin token
+- Added an admin-protected server route for configured provider/model combos.
+- Added server-owned provider target discovery from configured env values.
+- Added decision-contract probes that require models to select a server-owned `ActionOption` ID.
+- Added real provider probes for Cerebras, OpenCode Go, OpenRouter, and Google AI.
+- Added no-network tests around target discovery, probe execution, route wiring, and scenario validity.
+- Added a client panel that runs provider tests and displays provider, model, success/failure, latency, and message.
+- Shared the controller decision system instruction across provider clients.
+- Verified all four configured providers from the running app.
 
-2. Add a client test panel.
-   - list configured provider/model combos
+Follow-ups:
+
+1. Add selected-provider runs.
+   - list configured provider/model combos before running
    - allow checkbox selection
-   - run selected tests one at a time or with a small concurrency limit
-   - stream or progressively update results as each test returns
+   - optionally run selected tests one at a time or with a small concurrency limit
 
-3. Show useful measurements.
-   - success/failure
-   - HTTP/provider error body when safe
+2. Show richer measurements.
+   - safe HTTP/provider error body details
    - time to first token when streaming is supported
    - total completion time
    - rough token usage/cost when the provider returns it
    - parsed decision validity
 
-4. Use the panel to decide live simulation defaults.
+3. Use the panel to decide live simulation defaults.
    - compare OpenCode Go, OpenRouter, Google AI, Cerebras, and future providers
    - identify free endpoint rate-limit behavior
    - pick reliable defaults before deployment
