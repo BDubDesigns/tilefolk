@@ -1,8 +1,7 @@
 :root {
   color: #17212b;
   background:
-    radial-gradient(circle at top left, rgba(80, 130, 92, 0.16), transparent 34rem),
-    #eef3ed;
+    radial-gradient(circle at top left, rgba(80, 130, 92, 0.16), transparent 34rem), #eef3ed;
   font-family:
     Inter,
     ui-sans-serif,
@@ -144,6 +143,7 @@ h1 {
 
 .worldSummary,
 .simulationControls,
+.providerTestPanel,
 .eventLog,
 .npcSummary {
   min-width: 0;
@@ -176,6 +176,97 @@ h1 {
   margin: 4px 0 0;
   font-size: 1rem;
   font-weight: 800;
+}
+
+.providerTestPanel {
+  display: grid;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(55, 85, 61, 0.12);
+}
+
+.providerTestPanel button {
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: #245c33;
+  color: #f7fff7;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.providerTestPanel button:disabled {
+  opacity: 0.68;
+  cursor: not-allowed;
+}
+
+.providerTestPanel__error {
+  margin: 0;
+  padding: 9px 10px;
+  border-radius: 6px;
+  background: #fff1f1;
+  color: #8c2525;
+  font-weight: 700;
+}
+
+.providerTestPanel__empty {
+  margin: 0;
+  color: #607067;
+  font-size: 0.9rem;
+}
+
+.providerTestPanel__results {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.providerTestPanel__result {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid rgba(55, 85, 61, 0.12);
+  border-left-width: 4px;
+  border-radius: 6px;
+  background: #fbfdf9;
+}
+
+.providerTestPanel__result--success {
+  border-left-color: #2f7d3f;
+}
+
+.providerTestPanel__result--failure {
+  border-left-color: #b63c3c;
+}
+
+.providerTestPanel__result div {
+  display: grid;
+  gap: 2px;
+}
+
+.providerTestPanel__result strong,
+.providerTestPanel__result span,
+.providerTestPanel__result p {
+  overflow-wrap: anywhere;
+}
+
+.providerTestPanel__result strong {
+  color: #1f2c25;
+}
+
+.providerTestPanel__result span {
+  color: #607067;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.providerTestPanel__result p {
+  margin: 0;
+  color: #435047;
+  font-size: 0.86rem;
 }
 
 .npcSummary {
