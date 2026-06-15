@@ -21,6 +21,8 @@ Live demo: https://tf.qcfailed.com
 - NPC-local memories for witnessed events
 - Event log with action reason, controller label, model, and duration
 - Admin-token protection for Step/Reset mutation routes
+- Admin-protected provider test panel for live LLM provider/model diagnostics
+- Decision-contract provider probes for OpenCode Go, Google AI, OpenRouter, and Cerebras
 - Docker/Coolify deployment at `tf.qcfailed.com`
 - Shared TypeScript package for core types and helpers
 
@@ -177,7 +179,7 @@ npm run lint
 
 See `NEXT_STEPS.md`.
 
-The next major pass is post-deploy hardening: keep the live app stable, improve operational visibility, and decide whether persistence or provider testing comes first.
+The `v0.3.0` checkpoint completed the Provider Test Panel MVP. The next pass will build on that reliability work with selected-provider runs, richer diagnostics, tooling cleanup, or the next simulation feature slice.
 
 ## AI-Assisted Development
 
@@ -189,6 +191,6 @@ The project decisions, implementation direction, and learning process are intent
 
 ## Status
 
-Current checkpoint: `v0.2.2`
+Current checkpoint: `v0.3.0`
 
 Tilefolk is still pre-public and changing quickly. Expect types, world shape, and controller contracts to evolve while the simulation model gets sharper.

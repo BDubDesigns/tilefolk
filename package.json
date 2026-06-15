@@ -1,6 +1,6 @@
 {
   "name": "tilefolk",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -12,7 +12,6 @@
     "build": "npm run build -w packages/shared && npm run build -w apps/client && npm run build -w apps/server",
     "typecheck": "tsc -b",
     "lint": "eslint .",
-    "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest"
   },
@@ -20,7 +19,7 @@
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "eslint": "^8.57.0",
-    "prettier": "^3.3.3",
+    "prettier": "^3.8.3",
     "typescript": "^5.5.4",
     "vitest": "^4.1.5"
   }

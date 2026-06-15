@@ -2,22 +2,22 @@
 
 ## Vision
 
-Build a turn-based 50x50 tile simulation where four NPCs use an LLM to choose actions from a constrained action set. The goal is to observe emergent behavior, social dynamics, knowledge transfer, and tool use inside a small, inspectable world.
+Build a turn-based tile simulation where NPCs use deterministic or LLM-backed controllers to choose actions from a constrained action set. The goal is to observe emergent behavior, social dynamics, knowledge transfer, and tool use inside a small, inspectable world.
 
 The simulation should feel like a laboratory first and a game second: every NPC decision should be visible, logged, replayable, and explainable.
 
 ## Core Principles
 
-- The game engine is authoritative. The LLM may request an action, but the server validates and applies it.
+- The game engine is authoritative. Controllers choose from server-generated legal options; the server resolves and applies the chosen action.
 - NPCs receive limited observations, not the full world state.
-- NPCs act through a small, explicit action schema.
+- NPCs act through a small, explicit action schema owned by the server.
 - Memory is persistent and inspectable.
 - Emergence should come from constraints, not from giving the model unlimited freedom.
 - The first version should be simple, deterministic where possible, and easy to debug.
 
 ## Initial World
 
-- Grid size: 50x50 tiles.
+- Current grid size: 25x25 tiles.
 - Coordinates use `{ x, y }`.
 - Origin is the top-left tile: `{ x: 0, y: 0 }`.
 - `x` increases east/right.
@@ -51,7 +51,7 @@ An NPC can observe:
 - Whether adjacent trees/items are interactable.
 - Recent speech events within hearing range.
 
-The NPC should not receive hidden state, full map information, private thoughts of others, or validation rules not represented in the available actions.
+The NPC should not receive hidden state, full map information, private thoughts of others, or validation rules not represented in the available action options.
 
 ## Turn Loop
 
@@ -61,9 +61,9 @@ For each round:
 
 1. NPC 1 observes the world.
 2. The server builds a prompt payload.
-3. The LLM chooses one action from the valid action list.
-4. The server validates the action.
-5. The server applies the action or records a rejected action.
+3. The controller chooses one option ID from the valid action option list.
+4. The server resolves the selected option ID against server-owned `ActionOption` objects.
+5. The server applies the action or records a fallback/rejected action.
 6. The world log is updated.
 7. Repeat for NPCs 2 through 4.
 
@@ -125,7 +125,7 @@ Recommended v1 tree HP: 3.
 
 ## Actions
 
-The LLM must choose from valid actions provided by the server.
+The LLM must choose from valid action options provided by the server.
 
 Base actions:
 
@@ -168,28 +168,24 @@ Pickup:
 - `pickup` can target an item on the same or adjacent tile.
 - The item moves from the world to the NPC inventory.
 
-## LLM Action Response
+## Controller Decision Response
 
-LLM responses must use JSON.
+LLM controllers must return JSON that selects one server-generated option ID.
 
 ```json
 {
-  "action": "move",
-  "direction": "n",
-  "targetId": null,
-  "speech": null,
+  "selectedOptionId": "move:e",
   "reason": "I want to get closer to the axe."
 }
 ```
 
 Rules:
 
-- `action` is required.
+- `selectedOptionId` is required.
 - `reason` is for logs/debugging only.
-- `speech` is required only for `say`.
-- `direction` is required only for `move`.
-- `targetId` is required for targeted actions.
-- Invalid responses are rejected and recorded.
+- The selected option must exist in the server-generated `ActionOption[]` for that turn.
+- Invalid, missing, or unusable decisions fall back to deterministic selection.
+- Controllers never author raw action objects.
 
 ## Memory
 
@@ -228,7 +224,7 @@ The first UI should be a development console for the simulation.
 
 Main areas:
 
-- 50x50 grid view.
+- 25x25 grid view.
 - NPC status panel.
 - Selected NPC detail panel.
 - World event log.
@@ -276,7 +272,7 @@ The server owns:
 - World generation.
 - Turn progression.
 - Visibility calculation.
-- Valid action generation.
+- Valid action option generation.
 - LLM prompt construction.
 - LLM API calls.
 - Action validation.
@@ -337,7 +333,7 @@ interface SimulationEvent {
 }
 ```
 
-LLM-specific events should also preserve the prompt version, model name, raw response, parsed action, and validation result. This makes NPC decisions inspectable without giving the LLM direct authority over world state.
+LLM-specific events should also preserve the prompt version, model name, raw response, parsed selected option, and validation result. This makes NPC decisions inspectable without giving the LLM direct authority over world state.
 
 ## Milestones
 
@@ -351,7 +347,7 @@ LLM-specific events should also preserve the prompt version, model name, raw res
 
 ### Milestone 2: Static World
 
-- Generate 50x50 grass world.
+- Generate 25x25 grass world.
 - Spawn trees as separate entities.
 - Render grid in client.
 - Display NPCs and axe.
@@ -367,8 +363,8 @@ LLM-specific events should also preserve the prompt version, model name, raw res
 ### Milestone 4: One LLM NPC
 
 - Connect one NPC to LLM.
-- Enforce JSON action responses.
-- Validate actions server-side.
+- Enforce JSON selected-option responses.
+- Resolve selected option IDs server-side.
 - Show prompt and response in UI.
 
 ### Milestone 5: Four LLM NPCs

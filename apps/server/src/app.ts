@@ -2,16 +2,21 @@ import cors from 'cors';
 import express from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { HealthResponse, StatusResponse } from '@tilefolk/shared';
+import type { HealthResponse, ProviderTestResult, StatusResponse } from '@tilefolk/shared';
 import { serverEnv } from './config/env.js';
 import { appMetadata } from './config/appMetadata.js';
 import { getActiveWorld, resetWorld, stepActiveWorld } from './simulation/worldStore.js';
 import { requireAdminToken } from './auth/requireAdminToken.js';
+import { executeProviderTests } from './providers/executeProviderTests.js';
 
 const serverDistDirectory = dirname(fileURLToPath(import.meta.url));
 const clientDistDirectory = resolve(serverDistDirectory, '../../client/dist');
 
-export function createApp() {
+type CreateAppOptions = {
+  runProviderTests?: () => Promise<ProviderTestResult[]>;
+};
+
+export function createApp({ runProviderTests = executeProviderTests }: CreateAppOptions = {}) {
   const app = express();
 
   app.use(cors());
@@ -34,6 +39,12 @@ export function createApp() {
     };
 
     response.json(body);
+  });
+
+  app.post('/api/providers/test', requireAdminToken, async (_request, response) => {
+    const results = await runProviderTests();
+
+    response.json(results);
   });
 
   // generate world

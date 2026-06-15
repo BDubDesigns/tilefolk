@@ -2,6 +2,7 @@ import type { Memory, Npc, VisibleWorldContext } from '@tilefolk/shared';
 import type { ActionOption, ControllerDecision } from './types.js';
 import { serverEnv } from '../../config/env.js';
 import { buildControllerPrompt } from './buildControllerPrompt.js';
+import { controllerDecisionSystemInstruction } from './controllerInstructions.js';
 import { parseControllerDecision } from './parseControllerDecision.js';
 
 const CEREBRAS_CHAT_COMPLETIONS_URL = 'https://api.cerebras.ai/v1/chat/completions';
@@ -51,8 +52,7 @@ export async function requestCerebrasDecision(
         messages: [
           {
             role: 'system',
-            content:
-              'You are an NPC action selector. Do not think out loud. Choose exactly one listed option ID. Return one complete JSON object only. No markdown. No trailing explanation.',
+            content: controllerDecisionSystemInstruction,
           },
           {
             role: 'user',

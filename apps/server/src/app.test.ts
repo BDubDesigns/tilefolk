@@ -10,6 +10,30 @@ function setServerAdminToken(token: string | null): void {
   serverEnv.isAdminTokenConfigured = token !== null;
 }
 
+function resetProviderConfig(): void {
+  serverEnv.googleAiApiKey = null;
+  serverEnv.googleAiModel = null;
+  serverEnv.isGoogleAiConfigured = false;
+
+  serverEnv.openCodeGoApiKey = null;
+  serverEnv.openCodeGoModel = null;
+  serverEnv.isOpenCodeGoConfigured = false;
+
+  serverEnv.openRouterApiKey = null;
+  serverEnv.openRouterModel = null;
+  serverEnv.isOpenRouterConfigured = false;
+
+  serverEnv.cerebrasApiKey = null;
+  serverEnv.cerebrasModel = null;
+  serverEnv.isCerebrasConfigured = false;
+}
+
+function setCerebrasProviderConfig(model: string): void {
+  serverEnv.cerebrasApiKey = 'test-cerebras-key';
+  serverEnv.cerebrasModel = model;
+  serverEnv.isCerebrasConfigured = true;
+}
+
 describe('createApp', () => {
   it('returns health status', async () => {
     // create app
@@ -148,5 +172,77 @@ describe('POST /api/worlds/default/step', () => {
     expect(response.status).toBe(200);
     expect(response.body.world).toBeDefined();
     expect(response.body.actionResult).toBeDefined();
+  });
+});
+
+describe('POST /api/providers/test', () => {
+  afterEach(() => {
+    setServerAdminToken(null);
+    resetProviderConfig();
+  });
+
+  it('rejects requests without an admin token when one is configured', async () => {
+    setServerAdminToken('secret-token');
+    const app = createApp();
+
+    const response = await request(app).post('/api/providers/test');
+
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ error: 'Admin token required or invalid' });
+  });
+
+  it('returns an array', async () => {
+    setServerAdminToken('secret-token');
+    const app = createApp();
+
+    const response = await request(app)
+      .post('/api/providers/test')
+      .set('x-tilefolk-admin-token', 'secret-token');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toBeDefined();
+    expect(Array.isArray(response.body)).toBe(true);
+  });
+
+  it('succeeds with the configured admin token', async () => {
+    setServerAdminToken('secret-token');
+    const app = createApp();
+
+    const response = await request(app)
+      .post('/api/providers/test')
+      .set('x-tilefolk-admin-token', 'secret-token');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual([]);
+  });
+
+  it('returns provider test executor results', async () => {
+    setServerAdminToken('secret-token');
+    const app = createApp({
+      runProviderTests: async () => [
+        {
+          provider: 'cerebras',
+          model: 'gpt-oss-120b',
+          success: true,
+          durationMs: 12,
+          message: 'Provider responded.',
+        },
+      ],
+    });
+
+    const response = await request(app)
+      .post('/api/providers/test')
+      .set('x-tilefolk-admin-token', 'secret-token');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual([
+      {
+        provider: 'cerebras',
+        model: 'gpt-oss-120b',
+        success: true,
+        durationMs: 12,
+        message: 'Provider responded.',
+      },
+    ]);
   });
 });

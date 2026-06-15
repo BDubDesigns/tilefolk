@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react';
 import { WorldGrid } from './features/world/WorldGrid';
 import './App.css';
-import type { StepWorldResponse, World, ActionResult, StatusResponse } from '@tilefolk/shared';
 import { WorldSummary } from './features/world/WorldSummary';
 import { SimulationControls } from './features/simulation/SimulationControls';
 import { EventLog } from './features/simulation/EventLog';
 import { NpcSummary } from './features/world/NpcSummary';
+
+import type {
+  StepWorldResponse,
+  World,
+  ActionResult,
+  StatusResponse,
+  ProviderTestResult,
+} from '@tilefolk/shared';
 
 export function App() {
   const [world, setWorld] = useState<null | World>(null);
@@ -19,6 +26,9 @@ export function App() {
     return sessionStorage.getItem('adminToken') ?? '';
   });
   const [status, setStatus] = useState<null | StatusResponse>(null);
+  const [providerTestResults, setProviderTestResults] = useState<ProviderTestResult[] | null>(null);
+  const [providerTestLoading, setProviderTestLoading] = useState(false);
+  const [providerTestError, setProviderTestError] = useState<string | null>(null);
 
   const getAdminHeaders = (): HeadersInit => {
     if (adminToken) {
@@ -33,6 +43,31 @@ export function App() {
       sessionStorage.removeItem('adminToken');
     } else {
       sessionStorage.setItem('adminToken', token);
+    }
+  };
+
+  const handleRunProviderTests = async () => {
+    setProviderTestLoading(true);
+    try {
+      setProviderTestError(null);
+      const response = await fetch('/api/providers/test', {
+        method: 'POST',
+        headers: getAdminHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorBody = (await response.json()) as { error?: string };
+        setProviderTestError(errorBody.error ?? `An error occurred: ${response.statusText}`);
+        return;
+      }
+
+      const body = (await response.json()) as ProviderTestResult[];
+      setProviderTestResults(body);
+      setProviderTestError(null);
+    } catch (error) {
+      setProviderTestError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setProviderTestLoading(false);
     }
   };
 
@@ -155,6 +190,44 @@ export function App() {
             onAdminTokenChange={handleAdminTokenChange}
             actionError={actionError}
           />
+
+          <section className="providerTestPanel" aria-label="Provider test panel">
+            <div className="panelHeader">
+              <p className="panelEyebrow">Provider Tests</p>
+              <h2>LLM Diagnostics</h2>
+            </div>
+
+            <button onClick={handleRunProviderTests} disabled={providerTestLoading}>
+              {providerTestLoading ? 'Testing providers...' : 'Run Provider Tests'}
+            </button>
+
+            {providerTestError ? (
+              <p className="providerTestPanel__error">{providerTestError}</p>
+            ) : null}
+
+            {providerTestResults ? (
+              <ul className="providerTestPanel__results">
+                {providerTestResults.map((result) => (
+                  <li
+                    key={`${result.provider}-${result.model}`}
+                    className={`providerTestPanel__result providerTestPanel__result--${
+                      result.success ? 'success' : 'failure'
+                    }`}
+                  >
+                    <div>
+                      <strong>{result.provider}</strong>
+                      <span>{result.model}</span>
+                    </div>
+                    <p>
+                      {result.success ? '✅' : '❌'} {result.durationMs}ms — {result.message}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="providerTestPanel__empty">No provider tests run yet.</p>
+            )}
+          </section>
         </aside>
 
         <section className="mapPanel" aria-label="Tilefolk world map">
@@ -165,7 +238,13 @@ export function App() {
             </div>
             <p className="turnBadge">Turn {world.turn}</p>
           </div>
-          <WorldGrid tiles={world.tiles} npcs={world.npcs} items={world.items} trees={world.trees} />
+
+          <WorldGrid
+            tiles={world.tiles}
+            npcs={world.npcs}
+            items={world.items}
+            trees={world.trees}
+          />
         </section>
 
         <div className="sidebarPanel sidebarPanel--right">
@@ -190,7 +269,9 @@ export function App() {
             <div className="statusCluster" aria-label="Operational status">
               <span>Version: v{status.version}</span>
               <span>Controller: {status.defaultController.toUpperCase()}</span>
-              <span>Assignments: {status.useSampleControllerAssignments ? 'Sample' : 'Default'}</span>
+              <span>
+                Assignments: {status.useSampleControllerAssignments ? 'Sample' : 'Default'}
+              </span>
               <span>Mutation: {status.isAdminTokenConfigured ? 'Locked' : 'Open'}</span>
             </div>
           ) : null}
