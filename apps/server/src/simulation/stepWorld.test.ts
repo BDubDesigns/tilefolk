@@ -369,6 +369,16 @@ describe('stepWorld', () => {
     });
   });
 
+  describe('round tracking', () => {
+    it("doesn't increment the round prematurely", async () => {
+      const world = createWorldWithNpcAt({ x: 2, y: 2 });
+
+      const stepResult = await stepWorld(world);
+
+      expect(stepResult.world.round).toBe(0);
+    });
+  });
+
   describe('turn tracking', () => {
     it('increments the world turn after a successful step', async () => {
       const world = createWorldWithNpcAt({ x: 2, y: 2 });
