@@ -7,6 +7,7 @@ const createTestWorld = (): World => ({
   height: 10,
   tiles: [],
   turn: 0,
+  round: 0,
   events: [],
   npcs: [
     {

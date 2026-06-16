@@ -59,6 +59,7 @@ describe('getActionOptions', () => {
       width: 25,
       height: 25,
       turn: 0,
+      round: 0,
       tiles: [],
       npcs: [testNpc],
       trees: [],
@@ -91,6 +92,7 @@ describe('getActionOptions', () => {
       width: 25,
       height: 25,
       turn: 0,
+      round: 0,
       tiles: [],
       npcs: [testNpc],
       trees: [
