@@ -236,7 +236,9 @@ export function App() {
               <p className="panelEyebrow">Live World</p>
               <h2>25 x 25 Tile Map</h2>
             </div>
-            <p className="turnBadge">Turn {world.turn}</p>
+            <p className="turnBadge">
+              Round {world.round} - Turn {world.turn}
+            </p>
           </div>
 
           <WorldGrid
