@@ -308,7 +308,9 @@ Do not implement these yet:
 - Per-round actor snapshots.
 - Persistent world storage.
 - World tick systems such as hunger/weather/growth.
+- A proper system/world-step failure result type for cases where no NPC can act.
 
 Future design direction:
 
 - Before adding birth/death/sleep, replace simple modulo actor selection with explicit per-round actor snapshots or another tested turn-order state model.
+- Replace the temporary no-NPC fake `wait` action with a typed system result or world-step failure shape so failed steps do not need placeholder NPC actions.

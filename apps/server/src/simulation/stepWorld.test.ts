@@ -365,7 +365,8 @@ describe('stepWorld', () => {
       const stepResult = await stepWorld(world);
 
       expect(stepResult.actionResult.success).toBe(false);
-      expect(stepResult.actionResult.message).toBe('No NPCs to move');
+      expect(stepResult.actionResult.action).toEqual({ type: 'wait', npcId: 'N/A' });
+      expect(stepResult.actionResult.message).toBe('No NPCs to act');
     });
   });
 

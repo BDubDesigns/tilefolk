@@ -18,15 +18,23 @@ import {
 import { resolveControllerDecision } from './controllers/resolveControllerDecision.js';
 import { addMemoriesForWitnesses } from './addMemoriesForWitnesses.js';
 
-function appendActionEvent(
-  world: World,
-  actionResult: ActionResult,
-  turn: number,
-  controllerReason?: string,
-  controllerDurationMs?: number,
-  controllerLabel?: string,
-  position?: Position,
-): WorldEvent {
+function appendActionEvent({
+  world,
+  actionResult,
+  turn,
+  controllerReason,
+  controllerDurationMs,
+  controllerLabel,
+  position,
+}: {
+  world: World;
+  actionResult: ActionResult;
+  turn: number;
+  controllerReason?: string;
+  controllerDurationMs?: number;
+  controllerLabel?: string;
+  position?: Position;
+}): WorldEvent {
   const event: WorldEvent = {
     id: `event_${world.events.length}`,
     turn,
@@ -88,25 +96,30 @@ function createChopTreeResult(
   };
 }
 
-// TODO: Replace positional optional parameters with an options
-// object before adding more finishNpcAttempt metadata.
-function finishNpcAttempt(
-  world: World,
-  actionResult: ActionResult,
-  controllerReason?: string,
-  controllerDurationMs?: number,
-  controllerLabel?: string,
-  position?: Position,
-): StepWorldResponse {
-  const event = appendActionEvent(
+function finishNpcAttempt({
+  world,
+  actionResult,
+  controllerReason,
+  controllerDurationMs,
+  controllerLabel,
+  position,
+}: {
+  world: World;
+  actionResult: ActionResult;
+  controllerReason?: string;
+  controllerDurationMs?: number;
+  controllerLabel?: string;
+  position?: Position;
+}): StepWorldResponse {
+  const event = appendActionEvent({
     world,
     actionResult,
-    world.turn,
+    turn: world.turn,
     controllerReason,
     controllerDurationMs,
     controllerLabel,
     position,
-  );
+  });
 
   addMemoriesForWitnesses({ world, event });
   // Last thing before returning, advance the turn/round clock
@@ -155,14 +168,12 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
   const npc = getActiveTurnNpc(newWorld);
 
   if (!npc) {
-    // TODO this needs to be refactored, it shouldnt be a
-    // failed movement east attempt
     return {
       world,
       actionResult: {
-        action: { type: 'move', npcId: 'N/A', direction: 'e' },
+        action: { type: 'wait', npcId: 'N/A' },
         success: false,
-        message: 'No NPCs to move',
+        message: 'No NPCs to act',
       },
     };
   }
@@ -187,42 +198,42 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
   const controllerDurationMs = Math.round(performance.now() - controllerStartedAt);
 
   if (!controllerDecision) {
-    return finishNpcAttempt(
-      newWorld,
-      createWaitResult(npc, `${npc.id} waited`),
-      'Controller did not select an option.',
+    return finishNpcAttempt({
+      world: newWorld,
+      actionResult: createWaitResult(npc, `${npc.id} waited`),
+      controllerReason: 'Controller did not select an option.',
       controllerDurationMs,
       controllerLabel,
-      npc.position,
-    );
+      position: npc.position,
+    });
   }
   const selectedOption = actionOptions.find(
     (option) => option.id === controllerDecision.selectedOptionId,
   );
 
   if (!selectedOption) {
-    return finishNpcAttempt(
-      newWorld,
-      createWaitResult(npc, `${npc.id} waited`),
-      'Controller selected an invalid option.',
+    return finishNpcAttempt({
+      world: newWorld,
+      actionResult: createWaitResult(npc, `${npc.id} waited`),
+      controllerReason: 'Controller selected an invalid option.',
       controllerDurationMs,
       controllerLabel,
-      npc.position,
-    );
+      position: npc.position,
+    });
   }
 
   const selectedAction = selectedOption.action;
 
   switch (selectedAction.type) {
     case 'wait':
-      return finishNpcAttempt(
-        newWorld,
-        createWaitResult(npc, `${npc.id} waited`),
-        controllerDecision.reason,
+      return finishNpcAttempt({
+        world: newWorld,
+        actionResult: createWaitResult(npc, `${npc.id} waited`),
+        controllerReason: controllerDecision.reason,
         controllerDurationMs,
         controllerLabel,
-        npc.position,
-      );
+        position: npc.position,
+      });
     case 'move': {
       const direction = selectedAction.direction;
 
@@ -234,14 +245,14 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
       npc.position.x = destX;
       npc.position.y = destY;
 
-      return finishNpcAttempt(
-        newWorld,
-        createMoveResult(npc, direction, true, `${npc.id} moved ${direction}`),
-        controllerDecision.reason,
+      return finishNpcAttempt({
+        world: newWorld,
+        actionResult: createMoveResult(npc, direction, true, `${npc.id} moved ${direction}`),
+        controllerReason: controllerDecision.reason,
         controllerDurationMs,
         controllerLabel,
-        npc.position,
-      );
+        position: npc.position,
+      });
     }
 
     case 'chopTree': {
@@ -260,28 +271,28 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
           });
         }
       } else {
-        return finishNpcAttempt(
-          newWorld,
-          createChopTreeResult(
+        return finishNpcAttempt({
+          world: newWorld,
+          actionResult: createChopTreeResult(
             npc,
             treeId,
             false,
             `${npc.id} tried to chop tree ${treeId}, but it was not found`,
           ),
-          controllerDecision.reason,
+          controllerReason: controllerDecision.reason,
           controllerDurationMs,
           controllerLabel,
-          npc.position,
-        );
+          position: npc.position,
+        });
       }
-      return finishNpcAttempt(
-        newWorld,
-        createChopTreeResult(npc, treeId, true, `${npc.id} chopped tree ${treeId}`),
-        controllerDecision.reason,
+      return finishNpcAttempt({
+        world: newWorld,
+        actionResult: createChopTreeResult(npc, treeId, true, `${npc.id} chopped tree ${treeId}`),
+        controllerReason: controllerDecision.reason,
         controllerDurationMs,
         controllerLabel,
-        npc.position,
-      );
+        position: npc.position,
+      });
     }
     case 'pickup': {
       const itemId = selectedAction.itemId;
@@ -289,28 +300,28 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
 
       if (item) {
         item.location = { type: 'inventory', npcId: npc.id };
-        return finishNpcAttempt(
-          newWorld,
-          createPickupResult(npc, itemId, true, `${npc.id} picked up ${itemId}`),
-          controllerDecision.reason,
+        return finishNpcAttempt({
+          world: newWorld,
+          actionResult: createPickupResult(npc, itemId, true, `${npc.id} picked up ${itemId}`),
+          controllerReason: controllerDecision.reason,
           controllerDurationMs,
           controllerLabel,
-          npc.position,
-        );
+          position: npc.position,
+        });
       } else {
-        return finishNpcAttempt(
-          newWorld,
-          createPickupResult(
+        return finishNpcAttempt({
+          world: newWorld,
+          actionResult: createPickupResult(
             npc,
             itemId,
             false,
             `${npc.id} tried to pickup ${itemId} but it was not found`,
           ),
-          controllerDecision.reason,
+          controllerReason: controllerDecision.reason,
           controllerDurationMs,
           controllerLabel,
-          npc.position,
-        );
+          position: npc.position,
+        });
       }
     }
   }
