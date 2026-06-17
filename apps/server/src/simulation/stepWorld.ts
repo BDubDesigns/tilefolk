@@ -118,7 +118,23 @@ function assertUnhandledAction(action: never): never {
   throw new Error(`Unhandled NPC action: ${JSON.stringify(action)}`);
 }
 
+// clock helpers
+function getActiveTurnNpc(world: World): Npc | undefined {
+  const npcIndex = world.turn % world.npcs.length;
+  const npc = world.npcs[npcIndex];
+  return npc;
+}
+
+function advanceTurnClock(world: World): void {
+  world.turn += 1;
+  if (world.turn % world.npcs.length === 0) {
+    world.round += 1;
+  }
+  return;
+}
+
 export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
+  // clone the world to avoid mutating the original
   const newWorld = {
     ...world,
     events: [...world.events],
@@ -133,8 +149,8 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
     items: structuredClone(world.items),
     trees: structuredClone(world.trees),
   };
-  const npcIndex = newWorld.turn % newWorld.npcs.length;
-  const npc = newWorld.npcs[npcIndex];
+  // get the active NPC for this turn
+  const npc = getActiveTurnNpc(newWorld);
 
   if (!npc) {
     return {
@@ -148,7 +164,8 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
   }
 
   const actionTurn = newWorld.turn;
-  newWorld.turn += 1;
+  // advance the turn clock
+  advanceTurnClock(newWorld);
 
   const validActions = getValidActions({
     world: newWorld,
