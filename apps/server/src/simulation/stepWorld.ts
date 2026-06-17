@@ -88,10 +88,11 @@ function createChopTreeResult(
   };
 }
 
+// TODO: Replace positional optional parameters with an options
+// object before adding more finishNpcAttempt metadata.
 function finishNpcAttempt(
   world: World,
   actionResult: ActionResult,
-  turn: number,
   controllerReason?: string,
   controllerDurationMs?: number,
   controllerLabel?: string,
@@ -100,7 +101,7 @@ function finishNpcAttempt(
   const event = appendActionEvent(
     world,
     actionResult,
-    turn,
+    world.turn,
     controllerReason,
     controllerDurationMs,
     controllerLabel,
@@ -108,6 +109,8 @@ function finishNpcAttempt(
   );
 
   addMemoriesForWitnesses({ world, event });
+  // Last thing before returning, advance the turn/round clock
+  advanceTurnClock(world);
   return {
     world,
     actionResult,
@@ -130,7 +133,6 @@ function advanceTurnClock(world: World): void {
   if (world.turn % world.npcs.length === 0) {
     world.round += 1;
   }
-  return;
 }
 
 export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
@@ -153,6 +155,8 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
   const npc = getActiveTurnNpc(newWorld);
 
   if (!npc) {
+    // TODO this needs to be refactored, it shouldnt be a
+    // failed movement east attempt
     return {
       world,
       actionResult: {
@@ -162,10 +166,6 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
       },
     };
   }
-
-  const actionTurn = newWorld.turn;
-  // advance the turn clock
-  advanceTurnClock(newWorld);
 
   const validActions = getValidActions({
     world: newWorld,
@@ -190,7 +190,6 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
     return finishNpcAttempt(
       newWorld,
       createWaitResult(npc, `${npc.id} waited`),
-      actionTurn,
       'Controller did not select an option.',
       controllerDurationMs,
       controllerLabel,
@@ -205,7 +204,6 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
     return finishNpcAttempt(
       newWorld,
       createWaitResult(npc, `${npc.id} waited`),
-      actionTurn,
       'Controller selected an invalid option.',
       controllerDurationMs,
       controllerLabel,
@@ -220,7 +218,6 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
       return finishNpcAttempt(
         newWorld,
         createWaitResult(npc, `${npc.id} waited`),
-        actionTurn,
         controllerDecision.reason,
         controllerDurationMs,
         controllerLabel,
@@ -240,7 +237,6 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
       return finishNpcAttempt(
         newWorld,
         createMoveResult(npc, direction, true, `${npc.id} moved ${direction}`),
-        actionTurn,
         controllerDecision.reason,
         controllerDurationMs,
         controllerLabel,
@@ -272,7 +268,6 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
             false,
             `${npc.id} tried to chop tree ${treeId}, but it was not found`,
           ),
-          actionTurn,
           controllerDecision.reason,
           controllerDurationMs,
           controllerLabel,
@@ -282,7 +277,6 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
       return finishNpcAttempt(
         newWorld,
         createChopTreeResult(npc, treeId, true, `${npc.id} chopped tree ${treeId}`),
-        actionTurn,
         controllerDecision.reason,
         controllerDurationMs,
         controllerLabel,
@@ -298,7 +292,6 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
         return finishNpcAttempt(
           newWorld,
           createPickupResult(npc, itemId, true, `${npc.id} picked up ${itemId}`),
-          actionTurn,
           controllerDecision.reason,
           controllerDurationMs,
           controllerLabel,
@@ -313,7 +306,6 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
             false,
             `${npc.id} tried to pickup ${itemId} but it was not found`,
           ),
-          actionTurn,
           controllerDecision.reason,
           controllerDurationMs,
           controllerLabel,
