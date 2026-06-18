@@ -75,6 +75,9 @@ export type Npc = {
   name: string;
   position: Position;
   memories: Memory[];
+  needs: {
+    hunger: number;
+  };
 };
 
 // ItemLocation can be either on the ground or held by an NPC

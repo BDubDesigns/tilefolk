@@ -126,4 +126,12 @@ describe('createWorld', () => {
       createWorld({ width: 3, height: 3, numNpcs: 5, numItems: 5, numTrees: 5 });
     }).toThrow();
   });
+
+  it('creates generated npcs with hunger 0', () => {
+    const world = createWorld();
+
+    for (const npc of world.npcs) {
+      expect(npc.needs.hunger).toBe(0);
+    }
+  });
 });

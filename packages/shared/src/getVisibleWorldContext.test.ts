@@ -15,18 +15,21 @@ const createTestWorld = (): World => ({
       name: 'Viewer',
       position: { x: 5, y: 5 },
       memories: [],
+      needs: { hunger: 0 },
     },
     {
       id: 'npc_near',
       name: 'Near NPC',
       position: { x: 7, y: 5 },
       memories: [],
+      needs: { hunger: 0 },
     },
     {
       id: 'npc_far',
       name: 'Far NPC',
       position: { x: 9, y: 5 },
       memories: [],
+      needs: { hunger: 0 },
     },
   ],
   trees: [
