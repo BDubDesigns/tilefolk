@@ -41,12 +41,25 @@ Completed recently:
 - LLM prompts now use NPC-local memories instead of global recent events.
 - NPCs can pick up axes, chop adjacent trees, deplete tree durability, drop wood, and pick up that wood.
 - Provider Test Panel MVP can run admin-protected decision-contract probes for configured Cerebras, OpenCode Go, OpenRouter, and Google AI models from the client.
+- World state now tracks both `turn` and `round`, with rounds advancing after each full fixed-roster NPC cycle.
 
-## Current Goal: Provider Test Panel Follow-ups
+## Current Goal: Simulation Timekeeping
 
-Provider Test Panel MVP is complete. The app now has an admin-protected client panel that runs server-owned decision-contract probes for configured provider/model combos without exposing API keys.
+Round tracking is the first small step toward world-level ticks such as hunger, tiredness, growth, sleep, weather, and seasons.
 
-Keep the remaining work focused on making provider comparison more useful:
+Keep the current slice focused and engine-owned:
+
+- `turn` advances once per NPC action.
+- `round` advances only after each NPC in the current fixed roster has acted once.
+- The client displays server-owned `round` and `turn` values without deriving timing state.
+- Turn/round selection has a small helper seam so future turn-order logic is localized.
+
+Future timing design before birth/death/sleep:
+
+- Replace modulo-based active NPC selection with explicit per-round actor snapshots or equivalent turn-order state.
+- Decide how newly born, dead, sleeping, or skipped NPCs enter/leave the active round.
+
+Provider Test Panel follow-ups remain useful but are no longer the active slice:
 
 - Support selected-provider runs instead of always testing every configured provider.
 - Add richer diagnostics such as safe provider error bodies, token usage, cost hints, and parsed-decision validity details.

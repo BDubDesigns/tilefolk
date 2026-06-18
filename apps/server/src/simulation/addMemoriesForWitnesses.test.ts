@@ -31,6 +31,7 @@ const createTestWorld = (): World => ({
   trees: [],
   events: [],
   turn: 0,
+  round: 0,
 });
 
 const createPositionedEvent = (): WorldEvent => ({

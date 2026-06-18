@@ -198,6 +198,7 @@ export function createWorld({
     trees,
     events,
     turn: 0,
+    round: 0,
   };
   return world;
 }

@@ -51,6 +51,7 @@ export type World = {
   items: Item[];
   trees: Tree[];
   turn: number;
+  round: number;
   events: WorldEvent[];
 };
 

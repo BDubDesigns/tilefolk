@@ -365,7 +365,42 @@ describe('stepWorld', () => {
       const stepResult = await stepWorld(world);
 
       expect(stepResult.actionResult.success).toBe(false);
-      expect(stepResult.actionResult.message).toBe('No NPCs to move');
+      expect(stepResult.actionResult.action).toEqual({ type: 'wait', npcId: 'N/A' });
+      expect(stepResult.actionResult.message).toBe('No NPCs to act');
+    });
+  });
+
+  describe('round tracking', () => {
+    it("doesn't increment the round prematurely", async () => {
+      const world = createWorld();
+
+      const stepResult = await stepWorld(world);
+
+      expect(stepResult.world.round).toBe(0);
+      expect(stepResult.world.turn).toBe(1);
+    });
+
+    it('increments the round after all NPCs have acted', async () => {
+      const world = createWorld();
+      world.turn = 3;
+      world.round = 0;
+
+      const stepResult = await stepWorld(world);
+
+      expect(stepResult.actionResult.action.npcId).toBe('npc_3');
+      expect(stepResult.world.round).toBe(1);
+      expect(stepResult.world.turn).toBe(4);
+    });
+
+    it('does not mutate the original world round', async () => {
+      const world = createWorld();
+      world.turn = 3;
+      world.round = 0;
+
+      const stepResult = await stepWorld(world);
+
+      expect(stepResult.world.round).toBe(1);
+      expect(world.round).toBe(0);
     });
   });
 
