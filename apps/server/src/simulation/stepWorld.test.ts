@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { stepWorld } from './stepWorld.js';
 import { createWorld } from './worldGenerator.js';
-import type { Position, World, WorldEvent } from '@tilefolk/shared';
+import { NEEDS_MAX_VALUES, type Position, type World, type WorldEvent } from '@tilefolk/shared';
 
 function createWorldWithNpcAt(position: Position): World {
   const world = createWorld();
@@ -401,6 +401,66 @@ describe('stepWorld', () => {
 
       expect(stepResult.world.round).toBe(1);
       expect(world.round).toBe(0);
+    });
+
+    it('does not increase hunger before a full round completes', async () => {
+      const world = createWorld();
+      world.turn = 0;
+      world.round = 0;
+
+      const stepResult = await stepWorld(world);
+
+      expect(stepResult.world.round).toBe(0);
+      expect(stepResult.world.npcs.map((npc) => npc.needs.hunger)).toEqual(
+        world.npcs.map((npc) => npc.needs.hunger),
+      );
+    });
+
+    it('increases every NPC hunger when a full round completes', async () => {
+      const world = createWorld();
+      world.turn = world.npcs.length - 1;
+      world.round = 0;
+      for (const npc of world.npcs) {
+        npc.needs.hunger = 10;
+      }
+
+      const stepResult = await stepWorld(world);
+
+      expect(stepResult.world.round).toBe(1);
+      expect(stepResult.world.npcs.map((npc) => npc.needs.hunger)).toEqual(
+        world.npcs.map(() => 11),
+      );
+    });
+
+    it('does not mutate original world NPC hunger when a full round completes', async () => {
+      const world = createWorld();
+      world.turn = world.npcs.length - 1;
+      world.round = 0;
+      for (const npc of world.npcs) {
+        npc.needs.hunger = 10;
+      }
+
+      const stepResult = await stepWorld(world);
+
+      expect(stepResult.world.npcs.map((npc) => npc.needs.hunger)).toEqual(
+        world.npcs.map(() => 11),
+      );
+      expect(world.npcs.map((npc) => npc.needs.hunger)).toEqual(world.npcs.map(() => 10));
+    });
+
+    it('does not increase hunger above the max when a full round completes', async () => {
+      const world = createWorld();
+      world.turn = world.npcs.length - 1;
+      world.round = 0;
+      for (const npc of world.npcs) {
+        npc.needs.hunger = NEEDS_MAX_VALUES.hunger;
+      }
+
+      const stepResult = await stepWorld(world);
+
+      expect(stepResult.world.npcs.map((npc) => npc.needs.hunger)).toEqual(
+        world.npcs.map(() => NEEDS_MAX_VALUES.hunger),
+      );
     });
   });
 

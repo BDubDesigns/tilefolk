@@ -17,6 +17,7 @@ import {
 } from './controllers/controllerAssignments.js';
 import { resolveControllerDecision } from './controllers/resolveControllerDecision.js';
 import { addMemoriesForWitnesses } from './addMemoriesForWitnesses.js';
+import { applyRoundTicks } from './applyRoundTicks.js';
 
 function appendActionEvent({
   world,
@@ -123,7 +124,10 @@ function finishNpcAttempt({
 
   addMemoriesForWitnesses({ world, event });
   // Last thing before returning, advance the turn/round clock
-  advanceTurnClock(world);
+  const clockAdvance = advanceTurnClock(world);
+  if (clockAdvance.didCompleteRound) {
+    applyRoundTicks(world);
+  }
   return {
     world,
     actionResult,
@@ -141,29 +145,18 @@ function getActiveTurnNpc(world: World): Npc | undefined {
   return npc;
 }
 
-function advanceTurnClock(world: World): void {
+function advanceTurnClock(world: World): { didCompleteRound: boolean } {
   world.turn += 1;
   if (world.turn % world.npcs.length === 0) {
     world.round += 1;
+    return { didCompleteRound: true };
   }
+  return { didCompleteRound: false };
 }
 
 export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
-  // clone the world to avoid mutating the original
-  const newWorld = {
-    ...world,
-    events: [...world.events],
-    npcs: world.npcs.map((npc) => ({
-      ...npc,
-      position: { ...npc.position },
-      memories: npc.memories.map((memory) => ({
-        ...memory,
-        position: { ...memory.position },
-      })),
-    })),
-    items: structuredClone(world.items),
-    trees: structuredClone(world.trees),
-  };
+  // Clone once at the simulation boundary so internals can mutate the working copy safely.
+  const newWorld = structuredClone(world);
   // get the active NPC for this turn
   const npc = getActiveTurnNpc(newWorld);
 
