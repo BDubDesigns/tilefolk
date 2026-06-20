@@ -94,6 +94,7 @@ describe('getValidMovementActions', () => {
       name: 'NPC 1',
       position: { x: 3, y: 1 },
       memories: [],
+      needs: { hunger: 0 },
     });
     const actions = getValidMovementActions({ world, npcId: npc.id });
     const actionDirections = actions.map((action) => action.direction);

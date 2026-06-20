@@ -113,6 +113,7 @@ const createNpcs = (numNpcs: number, positionPool: Position[]): Npc[] => {
       name: `NPC ${i}`,
       position,
       memories: [],
+      needs: { hunger: 0 },
     });
   }
 

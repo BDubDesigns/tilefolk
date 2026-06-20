@@ -13,6 +13,7 @@ describe('formatVisibleContext', () => {
           name: 'Neighbor',
           position: { x: 6, y: 4 },
           memories: [],
+          needs: { hunger: 0 },
         },
       ],
       nearbyTrees: [{ id: 'tree_0', position: { x: 5, y: 7 }, hitPoints: 3 }],

@@ -17,6 +17,7 @@ export function createProviderTestScenario(): ProviderTestScenario {
     name: 'Alex',
     position: testNpcPosition,
     memories: [],
+    needs: { hunger: 0 },
   };
   const testActionOption: ActionOption = {
     id: testOptionId,

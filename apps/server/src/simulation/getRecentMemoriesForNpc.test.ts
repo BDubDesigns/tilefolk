@@ -16,6 +16,7 @@ const createNpcWithMemories = (memories: Memory[]): Npc => ({
   name: 'NPC 0',
   position: { x: 0, y: 0 },
   memories,
+  needs: { hunger: 0 },
 });
 
 describe('getRecentMemoriesForNpc', () => {

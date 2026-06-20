@@ -22,6 +22,10 @@ export type Position = {
   y: number;
 };
 
+export const NEEDS_MAX_VALUES = {
+  hunger: 100,
+} as const;
+
 export const directions = ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'] as const;
 export type Direction = (typeof directions)[number];
 
@@ -75,6 +79,9 @@ export type Npc = {
   name: string;
   position: Position;
   memories: Memory[];
+  needs: {
+    hunger: number;
+  };
 };
 
 // ItemLocation can be either on the ground or held by an NPC

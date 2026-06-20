@@ -7,6 +7,7 @@ const testNpc: Npc = {
   name: 'Test NPC',
   position: { x: 3, y: 4 },
   memories: [],
+  needs: { hunger: 0 },
 };
 
 describe('getActionOptions', () => {
