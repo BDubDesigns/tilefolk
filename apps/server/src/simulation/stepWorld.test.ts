@@ -428,7 +428,7 @@ describe('stepWorld', () => {
 
       expect(stepResult.world.round).toBe(1);
       expect(stepResult.world.npcs.map((npc) => npc.needs.hunger)).toEqual(
-        world.npcs.map(() => 11),
+        world.npcs.map(() => 13),
       );
     });
 
@@ -443,7 +443,7 @@ describe('stepWorld', () => {
       const stepResult = await stepWorld(world);
 
       expect(stepResult.world.npcs.map((npc) => npc.needs.hunger)).toEqual(
-        world.npcs.map(() => 11),
+        world.npcs.map(() => 13),
       );
       expect(world.npcs.map((npc) => npc.needs.hunger)).toEqual(world.npcs.map(() => 10));
     });

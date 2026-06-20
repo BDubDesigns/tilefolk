@@ -1,4 +1,4 @@
-import { getVisibleWorldContext, type World } from '@tilefolk/shared';
+import { getVisibleWorldContext, NEEDS_MAX_VALUES, type World } from '@tilefolk/shared';
 
 interface NpcSummaryProps {
   world: World;
@@ -25,6 +25,14 @@ export const NpcSummary = ({ world }: NpcSummaryProps) => {
         <p>
           <b>{npc.name}</b>
         </p>
+        <p>
+          <b>Needs:</b>
+        </p>
+        <ul>
+          <li>
+            Hunger: {npc.needs.hunger} / {NEEDS_MAX_VALUES.hunger}
+          </li>
+        </ul>
         <p>
           X: {npc.position.x}, Y: {npc.position.y}
         </p>

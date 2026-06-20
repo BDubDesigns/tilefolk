@@ -38,13 +38,13 @@ const createTestWorld = (): World => ({
 });
 
 describe('applyRoundTicks', () => {
-  it('increases every NPC hunger by 1', () => {
+  it('increases every NPC hunger by 3', () => {
     const world = createTestWorld();
 
     applyRoundTicks(world);
 
-    expect(world.npcs[0]?.needs.hunger).toBe(1);
-    expect(world.npcs[1]?.needs.hunger).toBe(6);
+    expect(world.npcs[0]?.needs.hunger).toBe(3);
+    expect(world.npcs[1]?.needs.hunger).toBe(8);
   });
 
   it('caps NPC hunger at 100', () => {
