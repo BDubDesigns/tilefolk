@@ -28,12 +28,6 @@ function resetProviderConfig(): void {
   serverEnv.isCerebrasConfigured = false;
 }
 
-function setCerebrasProviderConfig(model: string): void {
-  serverEnv.cerebrasApiKey = 'test-cerebras-key';
-  serverEnv.cerebrasModel = model;
-  serverEnv.isCerebrasConfigured = true;
-}
-
 describe('createApp', () => {
   it('returns health status', async () => {
     // create app
