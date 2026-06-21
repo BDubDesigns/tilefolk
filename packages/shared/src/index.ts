@@ -31,7 +31,7 @@ export type Direction = (typeof directions)[number];
 
 export type TerrainType = 'grass';
 
-export type ItemType = 'axe' | 'wood';
+export type ItemType = 'axe' | 'wood' | 'berry';
 
 // ID Aliases for better type safety and readability
 export type WorldId = string;
@@ -139,7 +139,18 @@ export type WaitAction = {
   npcId: NpcId;
 };
 
-export type NpcAction = MoveAction | WaitAction | PickupAction | ChopTreeAction;
+export type CarefullyPickBerryAction = {
+  type: 'carefullyPickBerry';
+  npcId: NpcId;
+  berryBushId: BushId;
+};
+
+export type NpcAction =
+  | MoveAction
+  | WaitAction
+  | PickupAction
+  | ChopTreeAction
+  | CarefullyPickBerryAction;
 
 export type NpcActionType = NpcAction['type'];
 

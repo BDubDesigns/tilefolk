@@ -2,6 +2,7 @@ import type { World, NpcId, NpcAction } from '@tilefolk/shared';
 import { getValidMovementActions } from './getValidMovementActions.js';
 import { getValidPickupActions } from './getValidPickupActions.js';
 import { getValidChopTreeActions } from './getValidChopTreeActions.js';
+import { getValidCarefullyPickBerryActions } from './getValidCarefullyPickBerry.js';
 
 interface GetValidActionsOptions {
   world: World;
@@ -16,9 +17,16 @@ export function getValidActions({ world, npcId }: GetValidActionsOptions): NpcAc
   }
 
   const pickupActions = getValidPickupActions({ world, npcId });
+  const carefullyPickBerryActions = getValidCarefullyPickBerryActions({ world, npcId });
   const chopTreeActions = getValidChopTreeActions({ world, npcId });
   const movementActions = getValidMovementActions({ world, npcId });
   const waitAction: NpcAction = { type: 'wait', npcId };
 
-  return [...pickupActions, ...chopTreeActions, ...movementActions, waitAction];
+  return [
+    ...pickupActions,
+    ...carefullyPickBerryActions,
+    ...chopTreeActions,
+    ...movementActions,
+    waitAction,
+  ];
 }

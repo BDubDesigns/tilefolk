@@ -38,6 +38,15 @@ export function getActionOptions(
         };
       }
 
+      case 'carefullyPickBerry': {
+        const description = `Carefully pick berry from bush ${action.berryBushId}`;
+        return {
+          id: `carefullyPickBerry:${action.berryBushId}`,
+          description,
+          action,
+        };
+      }
+
       case 'pickup': {
         const item = context.world?.items.find((i) => i.id === action.itemId);
         const description = item

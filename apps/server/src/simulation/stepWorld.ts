@@ -1,5 +1,6 @@
 import type {
   ActionResult,
+  BushId,
   Direction,
   Npc,
   Position,
@@ -92,6 +93,19 @@ function createChopTreeResult(
 ): ActionResult {
   return {
     action: { type: 'chopTree', npcId: npc.id, treeId },
+    success,
+    message,
+  };
+}
+
+function createCarefullyPickBerryResult(
+  npc: Npc,
+  berryBushId: BushId,
+  success: boolean,
+  message: string,
+): ActionResult {
+  return {
+    action: { type: 'carefullyPickBerry', npcId: npc.id, berryBushId },
     success,
     message,
   };
@@ -316,6 +330,65 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
           position: npc.position,
         });
       }
+    }
+    case 'carefullyPickBerry': {
+      const berryBushId = selectedAction.berryBushId;
+      const berryBush = newWorld.bushes.find((bush) => bush.id === berryBushId);
+
+      if (!berryBush) {
+        return finishNpcAttempt({
+          world: newWorld,
+          actionResult: createCarefullyPickBerryResult(
+            npc,
+            berryBushId,
+            false,
+            `${npc.id} tried to pick berry from bush ${berryBushId}, but it was not found`,
+          ),
+          controllerReason: controllerDecision.reason,
+          controllerDurationMs,
+          controllerLabel,
+          position: npc.position,
+        });
+      }
+
+      if (berryBush.berries <= 0) {
+        return finishNpcAttempt({
+          world: newWorld,
+          actionResult: createCarefullyPickBerryResult(
+            npc,
+            berryBushId,
+            false,
+            `${npc.id} tried to pick berry from bush ${berryBushId}, but it had no berries`,
+          ),
+          controllerReason: controllerDecision.reason,
+          controllerDurationMs,
+          controllerLabel,
+          position: npc.position,
+        });
+      }
+
+      berryBush.berries -= 1;
+      const berryItemId = `item_berry_turn_${newWorld.turn}`;
+      newWorld.items.push({
+        id: berryItemId,
+        name: 'Berry',
+        type: 'berry',
+        location: { type: 'inventory', npcId: npc.id },
+      });
+
+      return finishNpcAttempt({
+        world: newWorld,
+        actionResult: createCarefullyPickBerryResult(
+          npc,
+          berryBushId,
+          true,
+          `${npc.id} carefully picked berry from bush ${berryBushId}`,
+        ),
+        controllerReason: controllerDecision.reason,
+        controllerDurationMs,
+        controllerLabel,
+        position: npc.position,
+      });
     }
   }
 

@@ -28,6 +28,7 @@ function createKnownWorld() {
 
   world.items = [];
   world.trees = [];
+  world.bushes = [];
   world.events = [];
   world.turn = 0;
 
@@ -62,6 +63,26 @@ describe('getValidMovementActions', () => {
         hitPoints: 3,
       },
     ];
+    const actions = getValidMovementActions({ world, npcId: npc.id });
+    const actionDirections = actions.map((action) => action.direction);
+
+    expect(actions).toHaveLength(7);
+    expect(actionDirections).not.toContain('n');
+  });
+
+  it('does not return movement actions blocked by a bush', () => {
+    const world = createKnownWorld();
+    const npc = getNpcOrThrow(world, 0);
+    world.bushes = [
+      {
+        id: 'bush_0',
+        type: 'berry',
+        position: { x: 2, y: 1 },
+        berries: 3,
+        maxBerries: 3,
+      },
+    ];
+
     const actions = getValidMovementActions({ world, npcId: npc.id });
     const actionDirections = actions.map((action) => action.direction);
 
