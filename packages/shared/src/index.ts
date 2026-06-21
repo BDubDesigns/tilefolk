@@ -42,6 +42,8 @@ export type ItemId = string;
 
 export type TreeId = string;
 
+export type BushId = string;
+
 export type MemoryId = string;
 
 export type WorldEventId = string;
@@ -54,6 +56,7 @@ export type World = {
   npcs: Npc[];
   items: Item[];
   trees: Tree[];
+  bushes: Bush[];
   turn: number;
   round: number;
   events: WorldEvent[];
@@ -101,6 +104,17 @@ export type Tree = {
   position: Position;
   hitPoints: number;
 };
+
+export type BerryBush = {
+  id: BushId;
+  type: 'berry';
+  position: Position;
+  berries: number;
+  maxBerries: number;
+};
+
+// Keep Bush as a category alias so future bush variants can add their own state.
+export type Bush = BerryBush;
 
 export type MoveAction = {
   type: 'move';

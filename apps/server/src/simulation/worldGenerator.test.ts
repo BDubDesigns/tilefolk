@@ -39,12 +39,13 @@ describe('createWorld', () => {
     }
   });
 
-  it('creates the requested number of NPCs, items, and trees', () => {
-    const world = createWorld({ numNpcs: 5, numItems: 10, numTrees: 15 });
+  it('creates the requested number of NPCs, items, trees, and bushes', () => {
+    const world = createWorld({ numNpcs: 5, numItems: 10, numTrees: 15, numBushes: 7 });
 
     expect(world.npcs).toHaveLength(5);
     expect(world.items).toHaveLength(10);
     expect(world.trees).toHaveLength(15);
+    expect(world.bushes).toHaveLength(7);
   });
 
   it('places every entity inside world bounds', () => {
@@ -76,10 +77,21 @@ describe('createWorld', () => {
       // check that the position is inside the world bounds
       expectPositionInsideBounds(item.location.position, world);
     }
+
+    for (const bush of world.bushes) {
+      expectPositionInsideBounds(bush.position, world);
+    }
   });
 
   it('does not place two starting entities on the same position', () => {
-    const world = createWorld({ width: 2, height: 2, numNpcs: 2, numItems: 1, numTrees: 1 });
+    const world = createWorld({
+      width: 2,
+      height: 2,
+      numNpcs: 2,
+      numItems: 1,
+      numTrees: 1,
+      numBushes: 0,
+    });
 
     const npcs = world.npcs;
     const items = world.items;
@@ -112,6 +124,34 @@ describe('createWorld', () => {
     }
   });
 
+  it('does not place bushes on the same position as other starting entities', () => {
+    const world = createWorld({ numNpcs: 4, numItems: 3, numTrees: 5, numBushes: 6 });
+
+    const usedLocations = new Set<string>();
+
+    for (const npc of world.npcs) {
+      usedLocations.add(`${npc.position.x},${npc.position.y}`);
+    }
+
+    for (const item of world.items) {
+      if (item.location.type !== 'ground') {
+        throw new Error('Expected item to be on the ground');
+      }
+      usedLocations.add(`${item.location.position.x},${item.location.position.y}`);
+    }
+
+    for (const tree of world.trees) {
+      usedLocations.add(`${tree.position.x},${tree.position.y}`);
+    }
+
+    for (const bush of world.bushes) {
+      const coords = `${bush.position.x},${bush.position.y}`;
+
+      expect(usedLocations.has(coords)).toBe(false);
+      usedLocations.add(coords);
+    }
+  });
+
   it('creates ground items with axe type', () => {
     const world = createWorld();
 
@@ -132,6 +172,17 @@ describe('createWorld', () => {
 
     for (const npc of world.npcs) {
       expect(npc.needs.hunger).toBe(0);
+    }
+  });
+
+  it('creates berry bushes full of berries by default', () => {
+    const world = createWorld();
+
+    expect(world.bushes).toHaveLength(6);
+    for (const bush of world.bushes) {
+      expect(bush.type).toBe('berry');
+      expect(bush.berries).toBe(3);
+      expect(bush.maxBerries).toBe(3);
     }
   });
 });

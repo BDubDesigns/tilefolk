@@ -7,6 +7,7 @@ import type {
   Tree,
   Item,
   WorldEvent,
+  Bush,
 } from '@tilefolk/shared';
 
 interface CreateWorldOptions {
@@ -16,6 +17,7 @@ interface CreateWorldOptions {
   numNpcs?: number;
   numItems?: number;
   numTrees?: number;
+  numBushes?: number;
 }
 
 // helper functions
@@ -144,6 +146,31 @@ const createTrees = (numTrees: number, positionPool: Position[]): Tree[] => {
 };
 
 /**
+ * Generates an array of bush objects and assigns them positions from a provided pool.
+ *
+ * @param numBushes - The total number of bushes to create.
+ * @param positionPool - The collection of available positions to draw from.
+ * @returns An array of fully initialized bush objects.
+ */
+const createBushes = (numBushes: number, positionPool: Position[]): Bush[] => {
+  const bushes: Bush[] = [];
+
+  for (let i = 0; i < numBushes; i++) {
+    const position: Position = takePosition(positionPool);
+
+    bushes.push({
+      id: `bush_${i}`,
+      type: 'berry',
+      position,
+      berries: 3,
+      maxBerries: 3,
+    });
+  }
+
+  return bushes;
+};
+
+/**
  * Generates an array of item objects and assigns them positions from a provided pool.
  *
  * @param numItems - The total number of items to create.
@@ -174,6 +201,7 @@ export function createWorld({
   numNpcs = 4,
   numItems = 1,
   numTrees = 20,
+  numBushes = 6,
 }: CreateWorldOptions = {}): World {
   //   Create a TileGrid. Each row is an array of Tiles.
   const tiles: TileGrid = createTileGrid(width, height);
@@ -187,6 +215,7 @@ export function createWorld({
   const npcs: Npc[] = createNpcs(numNpcs, positionPool);
   const trees: Tree[] = createTrees(numTrees, positionPool);
   const items: Item[] = createItems(numItems, positionPool);
+  const bushes: Bush[] = createBushes(numBushes, positionPool);
   const events: WorldEvent[] = [];
 
   const world: World = {
@@ -198,6 +227,7 @@ export function createWorld({
     items,
     trees,
     events,
+    bushes,
     turn: 0,
     round: 0,
   };
