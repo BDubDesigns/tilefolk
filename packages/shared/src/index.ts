@@ -31,7 +31,7 @@ export type Direction = (typeof directions)[number];
 
 export type TerrainType = 'grass';
 
-export type ItemType = 'axe' | 'wood';
+export type ItemType = 'axe' | 'wood' | 'berry';
 
 // ID Aliases for better type safety and readability
 export type WorldId = string;
@@ -41,6 +41,8 @@ export type NpcId = string;
 export type ItemId = string;
 
 export type TreeId = string;
+
+export type BushId = string;
 
 export type MemoryId = string;
 
@@ -54,6 +56,7 @@ export type World = {
   npcs: Npc[];
   items: Item[];
   trees: Tree[];
+  bushes: Bush[];
   turn: number;
   round: number;
   events: WorldEvent[];
@@ -102,6 +105,17 @@ export type Tree = {
   hitPoints: number;
 };
 
+export type BerryBush = {
+  id: BushId;
+  type: 'berry';
+  position: Position;
+  berries: number;
+  maxBerries: number;
+};
+
+// Keep Bush as a category alias so future bush variants can add their own state.
+export type Bush = BerryBush;
+
 export type MoveAction = {
   type: 'move';
   npcId: NpcId;
@@ -125,7 +139,18 @@ export type WaitAction = {
   npcId: NpcId;
 };
 
-export type NpcAction = MoveAction | WaitAction | PickupAction | ChopTreeAction;
+export type CarefullyPickBerryAction = {
+  type: 'carefullyPickBerry';
+  npcId: NpcId;
+  berryBushId: BushId;
+};
+
+export type NpcAction =
+  | MoveAction
+  | WaitAction
+  | PickupAction
+  | ChopTreeAction
+  | CarefullyPickBerryAction;
 
 export type NpcActionType = NpcAction['type'];
 
@@ -162,6 +187,7 @@ export interface VisibleWorldContext {
   center: Position;
   nearbyNpcs: Npc[];
   nearbyTrees: Tree[];
+  nearbyBushes: Bush[];
   nearbyGroundItems: Item[];
 }
 
@@ -192,6 +218,10 @@ export function getVisibleWorldContext({
     return isPositionInSquareRadius(center, candidateTree.position, radius);
   });
 
+  const nearbyBushes = world.bushes.filter((candidateBush) => {
+    return isPositionInSquareRadius(center, candidateBush.position, radius);
+  });
+
   const nearbyGroundItems = world.items.filter((candidateGroundItem) => {
     if (candidateGroundItem.location.type !== 'ground') return false;
     return isPositionInSquareRadius(center, candidateGroundItem.location.position, radius);
@@ -202,6 +232,7 @@ export function getVisibleWorldContext({
     center: npc.position,
     nearbyNpcs,
     nearbyTrees,
+    nearbyBushes,
     nearbyGroundItems,
   };
 }

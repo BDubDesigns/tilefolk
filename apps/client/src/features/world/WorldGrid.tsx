@@ -1,4 +1,4 @@
-import type { TileGrid, Npc, Item, Tree } from '@tilefolk/shared';
+import type { TileGrid, Npc, Item, Tree, Bush } from '@tilefolk/shared';
 import './WorldGrid.css';
 
 type WorldGridProps = {
@@ -6,9 +6,10 @@ type WorldGridProps = {
   npcs: Npc[];
   items: Item[];
   trees: Tree[];
+  bushes: Bush[];
 };
 
-export const WorldGrid = ({ tiles, npcs, items, trees }: WorldGridProps) => {
+export const WorldGrid = ({ tiles, npcs, items, trees, bushes }: WorldGridProps) => {
   // guard against empty tiles
   const firstRow = tiles[0];
   if (!firstRow || firstRow.length === 0) {
@@ -72,6 +73,18 @@ export const WorldGrid = ({ tiles, npcs, items, trees }: WorldGridProps) => {
             >
               T
             </div>
+          ))}
+
+          {/* wrapper for bush entities */}
+          {bushes.map((bush) => (
+            <div
+              key={bush.id}
+              className="entity-marker entity-marker--bush"
+              style={{
+                left: `${bush.position.x * cellStride}px`,
+                top: `${bush.position.y * cellStride}px`,
+              }}
+            />
           ))}
 
           {/* wrapper for item entities */}

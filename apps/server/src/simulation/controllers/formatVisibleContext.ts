@@ -30,6 +30,15 @@ export function formatVisibleContext(context: VisibleWorldContext): string {
         )}`,
     )
     .join('\n');
+  const nearbyBushes = context.nearbyBushes
+    .map(
+      (bush) =>
+        `${bush.id}: berry bush, ${bush.berries}/${bush.maxBerries} berries (${bush.position.x}, ${bush.position.y}) - ${formatRelativePosition(
+          context.center,
+          bush.position,
+        )}`,
+    )
+    .join('\n');
   const nearbyGroundItems = context.nearbyGroundItems
     .map((item) =>
       item.location.type === 'ground'
@@ -41,11 +50,14 @@ export function formatVisibleContext(context: VisibleWorldContext): string {
     .filter(Boolean)
     .join('\n');
 
-  return `You can see in a ${context.radius} square radius, including diagonals.
+  return `You can see in a ${context.radius} square radius, including diagonals. Most direct interactions, such as picking up items, chopping trees, and picking berries, work from an adjacent tile, including diagonals.
+
   Nearby NPCs:
   ${nearbyNpcs || 'None'}
   Nearby trees:
   ${nearbyTrees || 'None'}
+  Nearby bushes:
+  ${nearbyBushes || 'None'}
   Nearby ground items:
   ${nearbyGroundItems || 'None'}
 `;

@@ -43,16 +43,39 @@ Completed recently:
 - Provider Test Panel MVP can run admin-protected decision-contract probes for configured Cerebras, OpenCode Go, OpenRouter, and Google AI models from the client.
 - World state now tracks both `turn` and `round`, with rounds advancing after each full fixed-roster NPC cycle.
 
-## Current Goal: Simulation Timekeeping
+## Current Goal: Berry Bushes And First Food Loop
 
-Round tracking is the first small step toward world-level ticks such as hunger, tiredness, growth, sleep, weather, and seasons.
+Berry bushes are the first renewable food source and the bridge from hunger ticking to meaningful food-seeking behavior.
 
-Keep the current slice focused and engine-owned:
+Current slice:
 
-- `turn` advances once per NPC action.
-- `round` advances only after each NPC in the current fixed roster has acted once.
-- The client displays server-owned `round` and `turn` values without deriving timing state.
-- Turn/round selection has a small helper seam so future turn-order logic is localized.
+- Keep `world.bushes` as the general world category, with `BerryBush` as the first concrete subtype.
+- Generate berry bushes into worlds and render them as temporary green markers.
+- Let NPCs carefully pick one berry from an adjacent berry bush.
+- Careful picking should decrease the bush's visible berry count by 1 and put a temporary `Berry` item directly into the NPC inventory.
+- Use temporary per-turn berry item IDs until the inventory model is reworked.
+- Bushes occupy map tiles and block movement like trees.
+
+Next food-loop slices:
+
+1. Add berry bushes to server-owned visible context.
+   - Extend `VisibleWorldContext` with nearby bushes.
+   - Format berry bushes with position, relative direction, and `berries/maxBerries`.
+   - Keep the client from inventing a separate version of what NPCs can see.
+
+2. Add a small eating seam.
+   - Eating should be a separate action from picking.
+   - Eating consumes food and reduces hunger.
+   - Do not reduce hunger directly from harvesting.
+
+3. Add berry regrowth.
+   - Use round/world ticks rather than controller-authored behavior.
+   - Keep regrowth server-owned and deterministic enough to test.
+
+4. Consider a later destructive bush action.
+   - Possible action: `stripBerryBush` or `destroyBerryBush`.
+   - It may remove the bush and drop visible berries plus hidden berries.
+   - Defer until stackable ground/inventory resources exist so it does not create a pile of one-off item IDs.
 
 Future timing design before birth/death/sleep:
 
@@ -213,6 +236,36 @@ Goal: modernize Tilefolk's internal admin-token header before more admin-only to
    - mention the new header shape in deployment/admin-token notes
    - remove stale `x-` header references from tests or examples
 
+## Follow-up Slice: NPC Prompt Inspector
+
+Goal: make the real server-owned NPC decision context inspectable from the client.
+
+1. Add an admin-only endpoint that builds the exact prompt an NPC would receive.
+   - Reuse `getValidActions`, `getActionOptions`, `getVisibleWorldContext`, `getRecentMemoriesForNpc`, and `buildControllerPrompt`.
+   - Do not duplicate prompt/context construction on the client.
+   - Return the rendered prompt plus useful structured pieces such as action options, visible context, and recent memories.
+
+2. Add a client debug panel for selecting an NPC and viewing the prompt.
+   - This should replace or clearly supersede any client-side approximation of NPC context.
+   - Keep it explicitly diagnostic/admin-only.
+
+## Follow-up Slice: Stackable Inventory / Resources
+
+Goal: stop modeling naturally stackable resources as many one-off item IDs.
+
+1. Introduce a small stackable inventory/resource seam.
+   - Empty inventories should not list every possible resource at quantity `0`.
+   - Prefer only showing stacks/resources that actually exist.
+   - Berries are the first pressure point; wood can migrate later if needed.
+
+2. Migrate temporary berry item IDs.
+   - Current berry items use per-turn IDs as a short-term bridge.
+   - Replace with a stack/count model before adding larger food, gathering, or destructive-harvest systems.
+
+3. Keep eating behind a clear seam.
+   - Eating should consume from inventory/resource state.
+   - Hunger changes should happen through the eating action/application path, not harvesting.
+
 ## Follow-up Slice: Tooling Cleanup
 
 Goal: remove dependency drift and keep local validation quiet/reliable.
@@ -238,6 +291,7 @@ Goal: remove dependency drift and keep local validation quiet/reliable.
 
 ## Later Ideas
 
+- Replace temporary entity markers with real tile art/sprites.
 - UI for changing an NPC controller live.
 - UI for changing an NPC model live.
 - Add provider/model experiments and latency comparison.

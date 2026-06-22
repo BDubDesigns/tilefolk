@@ -32,6 +32,7 @@ const createTestWorld = (): World => ({
   ],
   items: [],
   trees: [],
+  bushes: [],
   events: [],
   turn: 0,
   round: 0,

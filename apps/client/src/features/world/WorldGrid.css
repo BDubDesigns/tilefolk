@@ -50,6 +50,13 @@
   color: transparent;
 }
 
+.entity-marker--bush {
+  border-radius: 999px;
+  background: green;
+  transform: scale(0.75);
+  border: black solid 1px;
+}
+
 .entity-marker--item {
   background: #facc15;
   transform: rotate(45deg) scale(0.72);

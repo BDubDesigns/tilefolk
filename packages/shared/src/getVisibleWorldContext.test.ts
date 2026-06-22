@@ -44,6 +44,7 @@ const createTestWorld = (): World => ({
       hitPoints: 3,
     },
   ],
+  bushes: [],
   items: [
     {
       id: 'item_near',

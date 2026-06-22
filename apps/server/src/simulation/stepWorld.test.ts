@@ -7,6 +7,7 @@ function createWorldWithNpcAt(position: Position): World {
   const world = createWorld();
   world.npcs = world.npcs.filter((npc) => npc.id === 'npc_0');
   world.trees = [];
+  world.bushes = [];
   world.items = [];
 
   const npc = getNpcOrThrow(world, 0);
@@ -195,6 +196,82 @@ describe('stepWorld', () => {
       expect(event.turn).toBe(0);
       expect(event.actorId).toBe('npc_0');
       expect(event.message).toBe('npc_0 picked up item_0');
+    });
+  });
+
+  describe('carefully pick berry application', () => {
+    it('decrements the target bush berries and adds a berry to the active NPC inventory', async () => {
+      const world = createWorldWithNpcAt({ x: 2, y: 2 });
+      world.bushes = [
+        {
+          id: 'bush_0',
+          type: 'berry',
+          position: { x: 3, y: 2 },
+          berries: 3,
+          maxBerries: 3,
+        },
+      ];
+
+      const stepResult = await stepWorld(world);
+      const bush = stepResult.world.bushes.find((bush) => bush.id === 'bush_0');
+      const berry = getItemOrThrow(stepResult.world, 'item_berry_turn_0');
+
+      expect(stepResult.actionResult.success).toBe(true);
+      expect(stepResult.actionResult.action).toEqual({
+        type: 'carefullyPickBerry',
+        npcId: 'npc_0',
+        berryBushId: 'bush_0',
+      });
+      expect(bush?.berries).toBe(2);
+      expect(berry).toEqual({
+        id: 'item_berry_turn_0',
+        name: 'Berry',
+        type: 'berry',
+        location: { type: 'inventory', npcId: 'npc_0' },
+      });
+    });
+
+    it('does not mutate the original world bush or items', async () => {
+      const world = createWorldWithNpcAt({ x: 2, y: 2 });
+      world.bushes = [
+        {
+          id: 'bush_0',
+          type: 'berry',
+          position: { x: 3, y: 2 },
+          berries: 3,
+          maxBerries: 3,
+        },
+      ];
+
+      const stepResult = await stepWorld(world);
+      const steppedBush = stepResult.world.bushes.find((bush) => bush.id === 'bush_0');
+      const originalBush = world.bushes.find((bush) => bush.id === 'bush_0');
+
+      expect(steppedBush?.berries).toBe(2);
+      expect(originalBush?.berries).toBe(3);
+      expect(world.items).toEqual([]);
+    });
+
+    it('records a carefully pick berry event', async () => {
+      const world = createWorldWithNpcAt({ x: 2, y: 2 });
+      world.bushes = [
+        {
+          id: 'bush_0',
+          type: 'berry',
+          position: { x: 3, y: 2 },
+          berries: 3,
+          maxBerries: 3,
+        },
+      ];
+
+      const stepResult = await stepWorld(world);
+      const event = getEventOrThrow(stepResult.world, 0);
+
+      expect(event.id).toBe('event_0');
+      expect(event.turn).toBe(0);
+      expect(event.actorId).toBe('npc_0');
+      expect(event.message).toBe('npc_0 carefully picked berry from bush bush_0');
+      expect(event.position).toEqual({ x: 2, y: 2 });
     });
   });
 

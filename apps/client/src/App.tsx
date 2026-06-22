@@ -246,6 +246,7 @@ export function App() {
             npcs={world.npcs}
             items={world.items}
             trees={world.trees}
+            bushes={world.bushes}
           />
         </section>
 

@@ -64,6 +64,7 @@ describe('getActionOptions', () => {
       tiles: [],
       npcs: [testNpc],
       trees: [],
+      bushes: [],
       items: [
         {
           id: 'item_0',
@@ -103,6 +104,7 @@ describe('getActionOptions', () => {
           hitPoints: 2,
         },
       ],
+      bushes: [],
       items: [],
       events: [],
     };

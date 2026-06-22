@@ -34,6 +34,10 @@ export function getValidMovementActions({
     blockedPositions.add(positionKey(tree.position));
   }
 
+  for (const bush of world.bushes) {
+    blockedPositions.add(positionKey(bush.position));
+  }
+
   for (const otherNpc of world.npcs) {
     if (otherNpc.id !== npcId) {
       blockedPositions.add(positionKey(otherNpc.position));
