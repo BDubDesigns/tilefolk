@@ -187,6 +187,7 @@ export interface VisibleWorldContext {
   center: Position;
   nearbyNpcs: Npc[];
   nearbyTrees: Tree[];
+  nearbyBushes: Bush[];
   nearbyGroundItems: Item[];
 }
 
@@ -217,6 +218,10 @@ export function getVisibleWorldContext({
     return isPositionInSquareRadius(center, candidateTree.position, radius);
   });
 
+  const nearbyBushes = world.bushes.filter((candidateBush) => {
+    return isPositionInSquareRadius(center, candidateBush.position, radius);
+  });
+
   const nearbyGroundItems = world.items.filter((candidateGroundItem) => {
     if (candidateGroundItem.location.type !== 'ground') return false;
     return isPositionInSquareRadius(center, candidateGroundItem.location.position, radius);
@@ -227,6 +232,7 @@ export function getVisibleWorldContext({
     center: npc.position,
     nearbyNpcs,
     nearbyTrees,
+    nearbyBushes,
     nearbyGroundItems,
   };
 }

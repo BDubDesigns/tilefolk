@@ -34,6 +34,7 @@ export function createProviderTestScenario(): ProviderTestScenario {
       radius: 1,
       nearbyNpcs: [],
       nearbyTrees: [],
+      nearbyBushes: [],
       nearbyGroundItems: [],
     },
     expectedOptionId: testOptionId,
