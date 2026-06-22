@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createWorld } from '../worldGenerator.js';
 import { resolveControllerDecision } from './resolveControllerDecision.js';
 import { requestOpenRouterDecision } from './openRouterDecisionClient.js';
-import type { ActionOption } from './types.js';
+import { buildNpcDecisionInput } from './buildNpcDecisionInput.js';
 
 vi.mock('./openRouterDecisionClient.js', () => ({
   requestOpenRouterDecision: vi.fn(),
@@ -30,15 +30,9 @@ describe('resolveControllerDecision', () => {
   });
 
   it('returns the provider decision when the provider selects an option', async () => {
-    const world = createWorld({ numNpcs: 1, numItems: 0, numTrees: 0 });
+    const world = createWorld({ numNpcs: 1, numItems: 0, numTrees: 0, numBushes: 0 });
     const npc = getNpcOrThrow(world);
-    const actionOptions: ActionOption[] = [
-      {
-        id: 'wait',
-        description: 'Wait for this turn',
-        action: { type: 'wait', npcId: npc.id },
-      },
-    ];
+    const decisionInput = buildNpcDecisionInput({ world, npc });
 
     mockedRequestOpenRouterDecision.mockResolvedValue({
       selectedOptionId: 'wait',
@@ -47,8 +41,7 @@ describe('resolveControllerDecision', () => {
 
     const decision = await resolveControllerDecision({
       world,
-      npc,
-      actionOptions,
+      decisionInput,
       controllerAssignment: { type: 'llm', provider: 'openrouter' },
     });
 
@@ -56,30 +49,23 @@ describe('resolveControllerDecision', () => {
       selectedOptionId: 'wait',
       reason: 'Provider chose to wait.',
     });
+    expect(mockedRequestOpenRouterDecision).toHaveBeenCalledWith({
+      decisionInput,
+      model: undefined,
+    });
   });
 
   it('falls back to deterministic selection when the provider returns null', async () => {
-    const world = createWorld({ numNpcs: 1, numItems: 0, numTrees: 0 });
+    const world = createWorld({ numNpcs: 1, numItems: 0, numTrees: 0, numBushes: 0 });
     const npc = getNpcOrThrow(world);
-    const actionOptions: ActionOption[] = [
-      {
-        id: 'move:n',
-        description: 'Move 1 tile north to (2, 1)',
-        action: { type: 'move', npcId: npc.id, direction: 'n' },
-      },
-      {
-        id: 'wait',
-        description: 'Wait for this turn',
-        action: { type: 'wait', npcId: npc.id },
-      },
-    ];
+    npc.position = { x: 2, y: 2 };
+    const decisionInput = buildNpcDecisionInput({ world, npc });
 
     mockedRequestOpenRouterDecision.mockResolvedValue(null);
 
     const decision = await resolveControllerDecision({
       world,
-      npc,
-      actionOptions,
+      decisionInput,
       controllerAssignment: { type: 'llm', provider: 'openrouter' },
     });
 

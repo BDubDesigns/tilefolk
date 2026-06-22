@@ -1,14 +1,13 @@
 import { createProviderTestScenario } from './providerTestScenario.js';
+import { buildControllerPrompt } from '../simulation/controllers/buildControllerPrompt.js';
 
+import type { NpcDecisionInput } from '../simulation/controllers/buildNpcDecisionInput.js';
 import type { ControllerDecision } from '../simulation/controllers/types.js';
 import type { ProviderTestProbeResult } from './executeProviderTests.js';
 import type { ProviderTestTarget } from './providerTestTargets.js';
 
 export type DecisionRequester = (options: {
-  npc: ReturnType<typeof createProviderTestScenario>['npc'];
-  recentMemories: ReturnType<typeof createProviderTestScenario>['recentMemories'];
-  actionOptions: ReturnType<typeof createProviderTestScenario>['actionOptions'];
-  visibleContext: ReturnType<typeof createProviderTestScenario>['visibleContext'];
+  decisionInput: NpcDecisionInput;
   model?: string;
   onFailure?: (message: string) => void;
 }) => Promise<ControllerDecision | null>;
@@ -25,12 +24,23 @@ export async function runDecisionProviderProbe({
   requestDecision,
 }: RunDecisionProviderProbeOptions): Promise<ProviderTestProbeResult> {
   const scenario = createProviderTestScenario();
-  let failureMessage: string | null = null;
-  const decision = await requestDecision({
+  const decisionInput: NpcDecisionInput = {
     npc: scenario.npc,
+    turn: 0,
+    round: 0,
     recentMemories: scenario.recentMemories,
     actionOptions: scenario.actionOptions,
     visibleContext: scenario.visibleContext,
+    prompt: buildControllerPrompt({
+      npc: scenario.npc,
+      recentMemories: scenario.recentMemories,
+      actionOptions: scenario.actionOptions,
+      visibleContext: scenario.visibleContext,
+    }),
+  };
+  let failureMessage: string | null = null;
+  const decision = await requestDecision({
+    decisionInput,
     model: target.model,
     onFailure: (message) => {
       failureMessage = message;

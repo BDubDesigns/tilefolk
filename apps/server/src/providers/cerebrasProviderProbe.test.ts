@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { runCerebrasProviderProbe, type CerebrasDecisionRequester } from './cerebrasProviderProbe.js';
+import {
+  runCerebrasProviderProbe,
+  type CerebrasDecisionRequester,
+} from './cerebrasProviderProbe.js';
 
 import type { ProviderTestTarget } from './providerTestTargets.js';
 
@@ -25,11 +28,14 @@ describe('runCerebrasProviderProbe', () => {
     expect(requestDecision).toHaveBeenCalledWith(
       expect.objectContaining({
         model: 'gpt-oss-120b',
-        actionOptions: [
-          expect.objectContaining({
-            id: 'provider-test-wait',
-          }),
-        ],
+        decisionInput: expect.objectContaining({
+          actionOptions: [
+            expect.objectContaining({
+              id: 'provider-test-wait',
+            }),
+          ],
+          prompt: expect.stringContaining('provider-test-wait: Wait in place'),
+        }),
       }),
     );
   });

@@ -1,18 +1,14 @@
-import type { Memory, Npc, VisibleWorldContext } from '@tilefolk/shared';
-import type { ActionOption, ControllerDecision } from './types.js';
+import type { ControllerDecision } from './types.js';
 import { serverEnv } from '../../config/env.js';
-import { buildControllerPrompt } from './buildControllerPrompt.js';
 import { controllerDecisionSystemInstruction } from './controllerInstructions.js';
 import { parseControllerDecision } from './parseControllerDecision.js';
+import type { NpcDecisionInput } from './buildNpcDecisionInput.js';
 
 const CEREBRAS_CHAT_COMPLETIONS_URL = 'https://api.cerebras.ai/v1/chat/completions';
 
 interface RequestCerebrasDecisionOptions {
-  npc: Npc;
-  recentMemories: Memory[];
-  actionOptions: ActionOption[];
+  decisionInput: NpcDecisionInput;
   model?: string;
-  visibleContext: VisibleWorldContext;
 }
 
 type CerebrasChatCompletionResponse = {
@@ -30,14 +26,9 @@ export async function requestCerebrasDecision(
 
   const model = options.model ?? cerebrasModel;
 
-  if (options.actionOptions.length === 0 || !cerebrasApiKey || !model) return null;
+  const { actionOptions, prompt } = options.decisionInput;
 
-  const promptText = buildControllerPrompt({
-    npc: options.npc,
-    recentMemories: options.recentMemories,
-    actionOptions: options.actionOptions,
-    visibleContext: options.visibleContext,
-  });
+  if (actionOptions.length === 0 || !cerebrasApiKey || !model) return null;
 
   let response: Response;
   try {
@@ -56,7 +47,7 @@ export async function requestCerebrasDecision(
           },
           {
             role: 'user',
-            content: promptText,
+            content: prompt,
           },
         ],
         // Be explicit that we want a normal one-shot response, not streaming chunks.
@@ -93,6 +84,6 @@ export async function requestCerebrasDecision(
 
   return parseControllerDecision({
     text,
-    actionOptions: options.actionOptions,
+    actionOptions,
   });
 }

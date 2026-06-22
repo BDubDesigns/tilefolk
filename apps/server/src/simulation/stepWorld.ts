@@ -10,12 +10,11 @@ import type {
 } from '@tilefolk/shared';
 import { directionDeltas } from './directionDeltas.js';
 import type { StepWorldResponse, ItemId } from '@tilefolk/shared';
-import { getValidActions } from './getValidActions.js';
-import { getActionOptions } from './getActionOptions.js';
 import {
   getControllerAssignment,
   getControllerLabel,
 } from './controllers/controllerAssignments.js';
+import { buildNpcDecisionInput } from './controllers/buildNpcDecisionInput.js';
 import { resolveControllerDecision } from './controllers/resolveControllerDecision.js';
 import { addMemoriesForWitnesses } from './addMemoriesForWitnesses.js';
 import { applyRoundTicks } from './applyRoundTicks.js';
@@ -185,12 +184,8 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
     };
   }
 
-  const validActions = getValidActions({
-    world: newWorld,
-    npcId: npc.id,
-  });
-
-  const actionOptions = getActionOptions(validActions, { npc, world: newWorld });
+  const decisionInput = buildNpcDecisionInput({ world: newWorld, npc });
+  const actionOptions = decisionInput.actionOptions;
 
   const controllerAssignment = getControllerAssignment(npc.id);
   const controllerLabel = getControllerLabel(controllerAssignment);
@@ -198,8 +193,7 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
   const controllerStartedAt = performance.now();
   const controllerDecision = await resolveControllerDecision({
     world: newWorld,
-    npc,
-    actionOptions,
+    decisionInput,
     controllerAssignment,
   });
   const controllerDurationMs = Math.round(performance.now() - controllerStartedAt);

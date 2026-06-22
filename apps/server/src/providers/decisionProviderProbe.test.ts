@@ -29,11 +29,14 @@ describe('runDecisionProviderProbe', () => {
     expect(requestDecision).toHaveBeenCalledWith(
       expect.objectContaining({
         model: 'test-model',
-        actionOptions: [
-          expect.objectContaining({
-            id: 'provider-test-wait',
-          }),
-        ],
+        decisionInput: expect.objectContaining({
+          actionOptions: [
+            expect.objectContaining({
+              id: 'provider-test-wait',
+            }),
+          ],
+          prompt: expect.stringContaining('provider-test-wait: Wait in place'),
+        }),
       }),
     );
   });

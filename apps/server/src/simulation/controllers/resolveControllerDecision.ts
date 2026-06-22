@@ -1,27 +1,25 @@
-import type { Npc, World } from '@tilefolk/shared';
-import type { ActionOption, ControllerDecision } from './types.js';
+import type { World } from '@tilefolk/shared';
+import type { ControllerDecision } from './types.js';
 import type { ControllerAssignment } from './controllerAssignments.js';
 import { deterministicController } from './deterministicController.js';
 import { requestGoogleAiDecision } from './googleAiDecisionClient.js';
 import { requestOpenCodeGoDecision } from './openCodeGoDecisionClient.js';
 import { requestOpenRouterDecision } from './openRouterDecisionClient.js';
 import { requestCerebrasDecision } from './cerebrasDecisionClient.js';
-import { getVisibleWorldContext } from '@tilefolk/shared';
-import { getRecentMemoriesForNpc } from '../getRecentMemoriesForNpc.js';
+import type { NpcDecisionInput } from './buildNpcDecisionInput.js';
 
 interface ResolveControllerDecisionOptions {
   world: World;
-  npc: Npc;
-  actionOptions: ActionOption[];
+  decisionInput: NpcDecisionInput;
   controllerAssignment: ControllerAssignment;
 }
 
 export async function resolveControllerDecision({
   world,
-  npc,
-  actionOptions,
+  decisionInput,
   controllerAssignment,
 }: ResolveControllerDecisionOptions): Promise<ControllerDecision | null> {
+  const { npc, actionOptions } = decisionInput;
   const deterministicDecision = async (
     reason = 'Chose the first option in the list of valid options, deterministically.',
   ): Promise<ControllerDecision | null> => {
@@ -38,46 +36,31 @@ export async function resolveControllerDecision({
     return deterministicDecision();
   }
 
-  const recentMemories = getRecentMemoriesForNpc({ npc });
-  const visibleContext = getVisibleWorldContext({ world, npc });
-
   let providerDecision: ControllerDecision | null;
 
   switch (controllerAssignment.provider) {
     case 'opencode-go':
       providerDecision = await requestOpenCodeGoDecision({
-        recentMemories,
-        npc,
-        actionOptions,
+        decisionInput,
         model: controllerAssignment.model,
-        visibleContext,
       });
       break;
     case 'google-ai':
       providerDecision = await requestGoogleAiDecision({
-        recentMemories,
-        npc,
-        actionOptions,
+        decisionInput,
         model: controllerAssignment.model,
-        visibleContext,
       });
       break;
     case 'openrouter':
       providerDecision = await requestOpenRouterDecision({
-        recentMemories,
-        npc,
-        actionOptions,
+        decisionInput,
         model: controllerAssignment.model,
-        visibleContext,
       });
       break;
     case 'cerebras':
       providerDecision = await requestCerebrasDecision({
-        recentMemories,
-        npc,
-        actionOptions,
+        decisionInput,
         model: controllerAssignment.model,
-        visibleContext,
       });
       break;
     default:

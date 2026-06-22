@@ -1,19 +1,15 @@
-import type { Memory, Npc, VisibleWorldContext } from '@tilefolk/shared';
-import type { ActionOption, ControllerDecision } from './types.js';
+import type { ControllerDecision } from './types.js';
 import { serverEnv } from '../../config/env.js';
 import { GoogleGenAI } from '@google/genai';
-import { buildControllerPrompt } from './buildControllerPrompt.js';
 import { controllerDecisionSystemInstruction } from './controllerInstructions.js';
 import { parseControllerDecision } from './parseControllerDecision.js';
+import type { NpcDecisionInput } from './buildNpcDecisionInput.js';
 
 let googleAiClient: GoogleGenAI | null = null;
 
 interface RequestGoogleAiDecisionOptions {
-  npc: Npc;
-  recentMemories: Memory[];
-  actionOptions: ActionOption[];
+  decisionInput: NpcDecisionInput;
   model?: string;
-  visibleContext: VisibleWorldContext;
   onFailure?: (message: string) => void;
 }
 
@@ -44,24 +40,19 @@ export async function requestGoogleAiDecision(
 
   const model = options.model ?? googleAiModel;
 
-  if (options.actionOptions.length === 0 || !googleAiApiKey || !model) {
+  const { actionOptions, prompt } = options.decisionInput;
+
+  if (actionOptions.length === 0 || !googleAiApiKey || !model) {
     return null;
   }
 
   const ai = getGoogleAiClient(googleAiApiKey);
 
-  const promptText = buildControllerPrompt({
-    npc: options.npc,
-    recentMemories: options.recentMemories,
-    actionOptions: options.actionOptions,
-    visibleContext: options.visibleContext,
-  });
-
   let response;
   try {
     response = await ai.models.generateContent({
       model,
-      contents: `${controllerDecisionSystemInstruction}\n\n${promptText}`,
+      contents: `${controllerDecisionSystemInstruction}\n\n${prompt}`,
     });
   } catch (error) {
     console.error('Google AI decision request failed:', error);
@@ -76,6 +67,6 @@ export async function requestGoogleAiDecision(
 
   return parseControllerDecision({
     text: response.text,
-    actionOptions: options.actionOptions,
+    actionOptions,
   });
 }

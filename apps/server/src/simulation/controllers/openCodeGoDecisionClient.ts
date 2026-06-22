@@ -1,18 +1,14 @@
-import type { Memory, Npc, VisibleWorldContext } from '@tilefolk/shared';
-import type { ActionOption, ControllerDecision } from './types.js';
+import type { ControllerDecision } from './types.js';
 import { serverEnv } from '../../config/env.js';
-import { buildControllerPrompt } from './buildControllerPrompt.js';
 import { controllerDecisionSystemInstruction } from './controllerInstructions.js';
 import { parseControllerDecision } from './parseControllerDecision.js';
+import type { NpcDecisionInput } from './buildNpcDecisionInput.js';
 
 const OPENCODE_GO_CHAT_COMPLETIONS_URL = 'https://opencode.ai/zen/go/v1/chat/completions';
 
 interface RequestOpenCodeGoDecisionOptions {
-  npc: Npc;
-  recentMemories: Memory[];
-  actionOptions: ActionOption[];
+  decisionInput: NpcDecisionInput;
   model?: string;
-  visibleContext: VisibleWorldContext;
 }
 
 type OpenCodeGoChatCompletionResponse = {
@@ -30,16 +26,11 @@ export async function requestOpenCodeGoDecision(
 
   const model = options.model ?? openCodeGoModel;
 
-  if (options.actionOptions.length === 0 || !openCodeGoApiKey || !model) {
+  const { actionOptions, prompt } = options.decisionInput;
+
+  if (actionOptions.length === 0 || !openCodeGoApiKey || !model) {
     return null;
   }
-
-  const promptText = buildControllerPrompt({
-    npc: options.npc,
-    recentMemories: options.recentMemories,
-    actionOptions: options.actionOptions,
-    visibleContext: options.visibleContext,
-  });
 
   let response: Response;
   try {
@@ -58,7 +49,7 @@ export async function requestOpenCodeGoDecision(
           },
           {
             role: 'user',
-            content: promptText,
+            content: prompt,
           },
         ],
         // Be explicit that we want a normal one-shot response, not streaming chunks.
@@ -100,6 +91,6 @@ export async function requestOpenCodeGoDecision(
 
   return parseControllerDecision({
     text,
-    actionOptions: options.actionOptions,
+    actionOptions,
   });
 }
