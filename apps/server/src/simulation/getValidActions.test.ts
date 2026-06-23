@@ -27,6 +27,7 @@ function createKnownWorld(): World {
 
   world.items = [];
   world.trees = [];
+  world.bushes = [];
   world.events = [];
   world.turn = 0;
 

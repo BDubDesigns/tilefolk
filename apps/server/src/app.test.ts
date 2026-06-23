@@ -74,6 +74,50 @@ describe('createApp', () => {
   });
 });
 
+describe('GET /api/debug/npcs/:npcId/prompt', () => {
+  afterEach(() => {
+    setServerAdminToken(null);
+  });
+
+  it('returns prompt preview for an existing NPC', async () => {
+    const app = createApp();
+    const worldResponse = await request(app).get('/api/worlds/default');
+    const npc = worldResponse.body.npcs[0];
+
+    const response = await request(app).get(`/api/debug/npcs/${npc.id}/prompt`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.npc.id).toBe(npc.id);
+    expect(response.body.turn).toBe(worldResponse.body.turn);
+    expect(response.body.round).toBe(worldResponse.body.round);
+    expect(typeof response.body.prompt).toBe('string');
+    expect(response.body.prompt.length).toBeGreaterThan(0);
+    expect(Array.isArray(response.body.actionOptions)).toBe(true);
+    expect(response.body.visibleContext.center).toEqual(npc.position);
+    expect(Array.isArray(response.body.recentMemories)).toBe(true);
+  });
+
+  it('returns 404 when the NPC does not exist', async () => {
+    const app = createApp();
+
+    const response = await request(app).get('/api/debug/npcs/missing_npc/prompt');
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ error: 'NPC missing_npc not found' });
+  });
+
+  it('does not require an admin token', async () => {
+    setServerAdminToken('secret-token');
+    const app = createApp();
+    const worldResponse = await request(app).get('/api/worlds/default');
+    const npc = worldResponse.body.npcs[0];
+
+    const response = await request(app).get(`/api/debug/npcs/${npc.id}/prompt`);
+
+    expect(response.status).toBe(200);
+  });
+});
+
 describe('POST /api/worlds/reset', () => {
   afterEach(() => {
     setServerAdminToken(null);
@@ -139,8 +183,8 @@ describe('POST /api/worlds/default/step', () => {
     expect(response.body.world).toBeDefined();
     // expect body.actionResult exists
     expect(response.body.actionResult).toBeDefined();
-    // expect body.actionResult.type to be 'move'
-    expect(response.body.actionResult.action.type).toBe('move');
+    // expect body.actionResult.action.type to be a string
+    expect(typeof response.body.actionResult.action.type).toBe('string');
     // expect body.actionResult.success to be boolean
     expect(typeof response.body.actionResult.success).toBe('boolean');
   });

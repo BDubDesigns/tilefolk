@@ -8,6 +8,7 @@ import { appMetadata } from './config/appMetadata.js';
 import { getActiveWorld, resetWorld, stepActiveWorld } from './simulation/worldStore.js';
 import { requireAdminToken } from './auth/requireAdminToken.js';
 import { executeProviderTests } from './providers/executeProviderTests.js';
+import { buildNpcDecisionInput } from './simulation/controllers/buildNpcDecisionInput.js';
 
 const serverDistDirectory = dirname(fileURLToPath(import.meta.url));
 const clientDistDirectory = resolve(serverDistDirectory, '../../client/dist');
@@ -59,6 +60,22 @@ export function createApp({ runProviderTests = executeProviderTests }: CreateApp
     const world = resetWorld();
 
     response.json(world);
+  });
+
+  // server prompt preview endpoint
+  app.get('/api/debug/npcs/:npcId/prompt', (request, response) => {
+    const world = getActiveWorld();
+    const npcId = request.params.npcId;
+
+    if (!npcId) return response.status(400).json({ error: 'npcId is required' });
+
+    const npc = world.npcs.find((npc) => npc.id === npcId);
+    if (!npc) {
+      return response.status(404).json({ error: `NPC ${npcId} not found` });
+    }
+
+    const decisionInput = buildNpcDecisionInput({ world, npc });
+    return response.json(decisionInput);
   });
 
   // step world

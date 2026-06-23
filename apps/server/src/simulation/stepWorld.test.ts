@@ -563,6 +563,7 @@ describe('stepWorld', () => {
       const world = createWorld();
       world.trees = [];
       world.items = [];
+      world.bushes = [];
       world.turn = 1;
 
       const npc0 = getNpcOrThrow(world, 0);
