@@ -1,4 +1,5 @@
 import { getVisibleWorldContext, NEEDS_MAX_VALUES, type World } from '@tilefolk/shared';
+import { PromptDebugPreview } from './PromptDebugPreview';
 
 interface NpcSummaryProps {
   world: World;
@@ -95,6 +96,7 @@ export const NpcSummary = ({ world }: NpcSummaryProps) => {
             })
           )}
         </ul>
+        <PromptDebugPreview npcId={npc.id} />
       </details>
     );
   });

@@ -309,6 +309,67 @@ h1 {
   color: #435047;
 }
 
+.promptDebugPreview {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 0 10px 10px;
+}
+
+.promptDebugPreview__button {
+  justify-self: start;
+  padding: 7px 10px;
+  border: 1px solid rgba(55, 85, 61, 0.2);
+  border-radius: 6px;
+  background: #eef6eb;
+  color: #1f2c25;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.promptDebugPreview__button:disabled {
+  opacity: 0.68;
+  cursor: not-allowed;
+}
+
+.promptDebugPreview__error {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #fff1f1;
+  color: #8c2525;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.promptDebugPreview__details {
+  min-width: 0;
+  border: 1px solid rgba(55, 85, 61, 0.12);
+  border-radius: 6px;
+  background: #f7faf5;
+}
+
+.promptDebugPreview__details summary {
+  padding: 8px 10px;
+  color: #435047;
+  font-size: 0.86rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.promptDebugPreview__prompt {
+  max-height: 20rem;
+  overflow: auto;
+  margin: 0;
+  padding: 10px;
+  border-top: 1px solid rgba(55, 85, 61, 0.12);
+  color: #22302a;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 @media (min-width: 768px) {
   .appShell {
     padding: 24px;
