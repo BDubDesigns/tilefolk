@@ -283,6 +283,32 @@ h1 {
   font-size: 0.9rem;
 }
 
+.decisionTracePanel__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: end;
+}
+
+.decisionTracePanel__controls label {
+  display: grid;
+  gap: 4px;
+  color: #607067;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.decisionTracePanel__controls select {
+  padding: 6px 8px;
+  border: 1px solid rgba(55, 85, 61, 0.2);
+  border-radius: 6px;
+  background: #f7faf5;
+  color: #1f2c25;
+  font: inherit;
+  text-transform: none;
+}
+
 .decisionTracePanel__copyButton {
   justify-self: start;
   padding: 7px 10px;
@@ -292,6 +318,12 @@ h1 {
   color: #1f2c25;
   font-weight: 800;
   cursor: pointer;
+}
+
+.decisionTracePanel__copyButton--small {
+  margin-top: 10px;
+  padding: 5px 8px;
+  font-size: 0.78rem;
 }
 
 .decisionTracePanel__copyMessage {

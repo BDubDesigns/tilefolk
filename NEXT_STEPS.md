@@ -42,37 +42,58 @@ Completed recently:
 - NPCs can pick up axes, chop adjacent trees, deplete tree durability, drop wood, and pick up that wood.
 - Provider Test Panel MVP can run admin-protected decision-contract probes for configured Cerebras, OpenCode Go, OpenRouter, and Google AI models from the client.
 - World state now tracks both `turn` and `round`, with rounds advancing after each full fixed-roster NPC cycle.
+- Berry bushes exist as `world.bushes`, render on the map, block movement, appear in server-owned visible context, and can be carefully picked into temporary berry inventory items.
+- NPC prompt preview and decision tracing are available for debugging controller behavior.
 
-## Current Goal: Berry Bushes And First Food Loop
+## Current Goal: Finish NPC Prompt Inspector And Decision Tracing MVP
+
+Issue #20 is the active debugging/observability milestone.
+
+Done:
+
+- `buildNpcDecisionInput` is the server-owned prompt/action/context/memory bundle.
+- `GET /api/debug/npcs/:npcId/prompt` returns the live current-state prompt preview.
+- NPC summary includes a `View Prompt` debug affordance.
+- Actual NPC decisions append run-owned traces to `world.debug.decisionTraces`.
+- Decision traces snapshot `decisionInput` before action mutation, avoiding mixed pre/post-action state.
+- `GET /api/debug/decision-traces` exposes chronological traces for direct debugging.
+- The client decision trace panel shows newest traces first, supports NPC filtering, expandable trace details, prompt/raw JSON inspection, and copy buttons for all traces or a single trace.
+
+Before PR:
+
+1. Run final validation.
+   - `npm run typecheck`
+   - `npm run lint`
+   - `npm test`
+
+2. Manually smoke-test the debug UI.
+   - step several turns
+   - inspect prompt previews
+   - expand traces
+   - filter by NPC
+   - copy trace JSON
+
+Follow-up cleanup after the MVP:
+
+- Refactor `ActionController.chooseAction` to consume the shared `NpcDecisionInput` bundle directly instead of the server-only `ChooseActionOptions` shape.
+- Goal: keep `decisionInput` as the single bundle used by controllers, prompt preview, and decision traces.
+
+## Next Gameplay Goal: Continue Berry Bushes And First Food Loop
 
 Berry bushes are the first renewable food source and the bridge from hunger ticking to meaningful food-seeking behavior.
 
-Current slice:
-
-- Keep `world.bushes` as the general world category, with `BerryBush` as the first concrete subtype.
-- Generate berry bushes into worlds and render them as temporary green markers.
-- Let NPCs carefully pick one berry from an adjacent berry bush.
-- Careful picking should decrease the bush's visible berry count by 1 and put a temporary `Berry` item directly into the NPC inventory.
-- Use temporary per-turn berry item IDs until the inventory model is reworked.
-- Bushes occupy map tiles and block movement like trees.
-
 Next food-loop slices:
 
-1. Add berry bushes to server-owned visible context.
-   - Extend `VisibleWorldContext` with nearby bushes.
-   - Format berry bushes with position, relative direction, and `berries/maxBerries`.
-   - Keep the client from inventing a separate version of what NPCs can see.
-
-2. Add a small eating seam.
+1. Add a small eating seam.
    - Eating should be a separate action from picking.
    - Eating consumes food and reduces hunger.
    - Do not reduce hunger directly from harvesting.
 
-3. Add berry regrowth.
+2. Add berry regrowth.
    - Use round/world ticks rather than controller-authored behavior.
    - Keep regrowth server-owned and deterministic enough to test.
 
-4. Consider a later destructive bush action.
+3. Consider a later destructive bush action.
    - Possible action: `stripBerryBush` or `destroyBerryBush`.
    - It may remove the bush and drop visible berries plus hidden berries.
    - Defer until stackable ground/inventory resources exist so it does not create a pile of one-off item IDs.
@@ -235,34 +256,6 @@ Goal: modernize Tilefolk's internal admin-token header before more admin-only to
 2. Update operator-facing docs.
    - mention the new header shape in deployment/admin-token notes
    - remove stale `x-` header references from tests or examples
-
-## Follow-up Slice: NPC Prompt Inspector And Decision Tracing
-
-Goal: make the real server-owned NPC decision context inspectable and preserve actual decision history for the current run.
-
-Done:
-
-- Added `buildNpcDecisionInput` as the server-owned prompt/action/context/memory bundle.
-- Added `GET /api/debug/npcs/:npcId/prompt` for live current-state prompt preview.
-- Added a client `View Prompt` debug affordance in the NPC summary.
-
-Current trace slice:
-
-1. Add run-owned decision traces.
-   - Store traces under `world.debug.decisionTraces`.
-   - Capture the actual `decisionInput` produced during `stepWorld`; do not rebuild it later.
-   - Store controller choice and resolved simulation result as separate facts.
-   - Include `selectedOptionId`, `controllerReason`, `controllerDecisionStatus`, `controllerDurationMs`, and `actionResult`.
-   - Append traces before advancing the turn/round clock.
-
-2. Add a chronological debug endpoint for traces.
-   - Likely `GET /api/debug/decision-traces`.
-   - Client UI can come after the server/test slice.
-
-Cleanup slice after tracing baseline:
-
-- Refactor `ActionController.chooseAction` to consume the shared `NpcDecisionInput` bundle directly instead of the server-only `ChooseActionOptions` shape.
-- Goal: keep `decisionInput` as the single bundle used by controllers, prompt preview, and decision traces.
 
 ## Follow-up Slice: Stackable Inventory / Resources
 
