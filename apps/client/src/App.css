@@ -283,11 +283,34 @@ h1 {
   font-size: 0.9rem;
 }
 
-.decisionTracePanel__details {
+.decisionTracePanel__copyButton {
+  justify-self: start;
+  padding: 7px 10px;
+  border: 1px solid rgba(55, 85, 61, 0.2);
+  border-radius: 6px;
+  background: #eef6eb;
+  color: #1f2c25;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.decisionTracePanel__copyMessage {
+  margin: 0;
+  color: #607067;
+  font-size: 0.86rem;
+}
+
+.decisionTracePanel__details,
+.decisionTracePanel__trace details,
+.decisionTracePanel__promptDetails,
+.decisionTracePanel__rawDetails {
   min-width: 0;
 }
 
-.decisionTracePanel__details summary {
+.decisionTracePanel__details summary,
+.decisionTracePanel__trace summary,
+.decisionTracePanel__promptDetails summary,
+.decisionTracePanel__rawDetails summary {
   color: #435047;
   font-size: 0.9rem;
   font-weight: 800;
@@ -312,6 +335,50 @@ h1 {
   color: #435047;
   font-size: 0.9rem;
   font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.decisionTracePanel__traceDetails {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.decisionTracePanel__traceDetails div {
+  display: grid;
+  gap: 2px;
+}
+
+.decisionTracePanel__traceDetails dt {
+  color: #607067;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.decisionTracePanel__traceDetails dd {
+  margin: 0;
+  color: #1f2c25;
+  overflow-wrap: anywhere;
+}
+
+.decisionTracePanel__promptDetails,
+.decisionTracePanel__rawDetails {
+  margin-top: 8px;
+}
+
+.decisionTracePanel__pre {
+  max-height: 20rem;
+  overflow: auto;
+  margin: 8px 0 0;
+  padding: 10px;
+  border: 1px solid rgba(55, 85, 61, 0.12);
+  border-radius: 6px;
+  background: #f7faf5;
+  color: #22302a;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 

@@ -152,6 +152,9 @@ function finishNpcAttempt({
     position,
   });
 
+  const decisionInputSnapshot = structuredClone(decisionInput);
+  const actionResultSnapshot = structuredClone(actionResult);
+
   world.debug.decisionTraces.push({
     id: `decision_trace_${world.debug.decisionTraces.length}`,
     turn: world.turn,
@@ -161,12 +164,12 @@ function finishNpcAttempt({
     controllerLabel,
     ...(provider ? { provider } : {}),
     ...(model ? { model } : {}),
-    decisionInput,
+    decisionInput: decisionInputSnapshot,
     ...(selectedOptionId ? { selectedOptionId } : {}),
     ...(controllerReason ? { controllerReason } : {}),
     controllerDecisionStatus,
     ...(controllerDurationMs !== undefined ? { controllerDurationMs } : {}),
-    actionResult,
+    actionResult: actionResultSnapshot,
   });
 
   addMemoriesForWitnesses({ world, event });
@@ -218,7 +221,7 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
     };
   }
 
-  const decisionInput = buildNpcDecisionInput({ world: newWorld, npc });
+  const decisionInput = structuredClone(buildNpcDecisionInput({ world: newWorld, npc }));
   const actionOptions = decisionInput.actionOptions;
 
   const controllerAssignment = getControllerAssignment(npc.id);

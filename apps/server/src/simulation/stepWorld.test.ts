@@ -748,6 +748,9 @@ describe('stepWorld', () => {
       expect(trace.round).toBe(world.round);
       expect(trace.npcId).toBe(world.npcs[0].id);
       expect(trace.decisionInput).toBeDefined();
+      expect(trace.decisionInput.npc.position).toEqual({ x: 2, y: 2 });
+      expect(trace.decisionInput.prompt).toContain('Current Location: X:2, Y:2');
+      expect(stepResult.world.npcs[0]?.position).toEqual({ x: 2, y: 1 });
       expect(trace.actionResult).toEqual(stepResult.actionResult);
       expect(trace.controllerDecisionStatus).toBe('selected');
     });
