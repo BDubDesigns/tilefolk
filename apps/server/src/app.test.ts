@@ -118,6 +118,43 @@ describe('GET /api/debug/npcs/:npcId/prompt', () => {
   });
 });
 
+describe('GET /api/debug/decision-traces', () => {
+  afterEach(() => {
+    setServerAdminToken(null);
+  });
+
+  it('returns an array of decision traces', async () => {
+    const app = createApp();
+
+    const response = await request(app).get('/api/debug/decision-traces');
+
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.body)).toBe(true);
+  });
+
+  it('returns traces recorded by stepping the active world', async () => {
+    const app = createApp();
+    await request(app).post('/api/worlds/reset');
+    const stepResponse = await request(app).post('/api/worlds/default/step');
+
+    const response = await request(app).get('/api/debug/decision-traces');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveLength(1);
+    expect(response.body[0].actionResult).toEqual(stepResponse.body.actionResult);
+    expect(response.body[0].decisionInput).toBeDefined();
+  });
+
+  it('does not require an admin token', async () => {
+    setServerAdminToken('secret-token');
+    const app = createApp();
+
+    const response = await request(app).get('/api/debug/decision-traces');
+
+    expect(response.status).toBe(200);
+  });
+});
+
 describe('POST /api/worlds/reset', () => {
   afterEach(() => {
     setServerAdminToken(null);

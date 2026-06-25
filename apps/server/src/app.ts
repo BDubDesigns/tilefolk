@@ -62,6 +62,11 @@ export function createApp({ runProviderTests = executeProviderTests }: CreateApp
     response.json(world);
   });
 
+  // decision traces endpoint
+  app.get('/api/debug/decision-traces', (_request, response) => {
+    response.json(getActiveWorld().debug.decisionTraces);
+  });
+
   // server prompt preview endpoint
   app.get('/api/debug/npcs/:npcId/prompt', (request, response) => {
     const world = getActiveWorld();
