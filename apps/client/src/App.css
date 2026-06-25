@@ -145,7 +145,8 @@ h1 {
 .simulationControls,
 .providerTestPanel,
 .eventLog,
-.npcSummary {
+.npcSummary,
+.decisionTracePanel {
   min-width: 0;
 }
 
@@ -267,6 +268,51 @@ h1 {
   margin: 0;
   color: #435047;
   font-size: 0.86rem;
+}
+
+.decisionTracePanel {
+  display: grid;
+  gap: 10px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(55, 85, 61, 0.12);
+}
+
+.decisionTracePanel__empty {
+  margin: 0;
+  color: #607067;
+  font-size: 0.9rem;
+}
+
+.decisionTracePanel__details {
+  min-width: 0;
+}
+
+.decisionTracePanel__details summary {
+  color: #435047;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.decisionTracePanel__list {
+  display: grid;
+  gap: 8px;
+  max-height: 20rem;
+  overflow: auto;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.decisionTracePanel__trace {
+  padding: 9px 10px;
+  border: 1px solid rgba(55, 85, 61, 0.12);
+  border-radius: 6px;
+  background: #fbfdf9;
+  color: #435047;
+  font-size: 0.9rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 .npcSummary {

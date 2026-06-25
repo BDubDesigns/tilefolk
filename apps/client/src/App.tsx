@@ -5,6 +5,7 @@ import { WorldSummary } from './features/world/WorldSummary';
 import { SimulationControls } from './features/simulation/SimulationControls';
 import { EventLog } from './features/simulation/EventLog';
 import { NpcSummary } from './features/world/NpcSummary';
+import { DecisionTracePanel } from './features/debug/DecisionTracePanel';
 
 import type {
   StepWorldResponse,
@@ -251,6 +252,7 @@ export function App() {
         </section>
 
         <div className="sidebarPanel sidebarPanel--right">
+          <DecisionTracePanel traces={world.debug.decisionTraces} />
           <EventLog events={world.events} />
           <NpcSummary world={world} />
         </div>
