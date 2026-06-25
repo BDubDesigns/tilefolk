@@ -74,6 +74,7 @@ describe('getActionOptions', () => {
         },
       ],
       events: [],
+      debug: { decisionTraces: [] },
     };
 
     const options = getActionOptions([pickupAction], { world });
@@ -107,6 +108,7 @@ describe('getActionOptions', () => {
       bushes: [],
       items: [],
       events: [],
+      debug: { decisionTraces: [] },
     };
 
     const options = getActionOptions([chopAction], { world });

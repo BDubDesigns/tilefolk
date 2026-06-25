@@ -236,18 +236,33 @@ Goal: modernize Tilefolk's internal admin-token header before more admin-only to
    - mention the new header shape in deployment/admin-token notes
    - remove stale `x-` header references from tests or examples
 
-## Follow-up Slice: NPC Prompt Inspector
+## Follow-up Slice: NPC Prompt Inspector And Decision Tracing
 
-Goal: make the real server-owned NPC decision context inspectable from the client.
+Goal: make the real server-owned NPC decision context inspectable and preserve actual decision history for the current run.
 
-1. Add an admin-only endpoint that builds the exact prompt an NPC would receive.
-   - Reuse `getValidActions`, `getActionOptions`, `getVisibleWorldContext`, `getRecentMemoriesForNpc`, and `buildControllerPrompt`.
-   - Do not duplicate prompt/context construction on the client.
-   - Return the rendered prompt plus useful structured pieces such as action options, visible context, and recent memories.
+Done:
 
-2. Add a client debug panel for selecting an NPC and viewing the prompt.
-   - This should replace or clearly supersede any client-side approximation of NPC context.
-   - Keep it explicitly diagnostic/admin-only.
+- Added `buildNpcDecisionInput` as the server-owned prompt/action/context/memory bundle.
+- Added `GET /api/debug/npcs/:npcId/prompt` for live current-state prompt preview.
+- Added a client `View Prompt` debug affordance in the NPC summary.
+
+Current trace slice:
+
+1. Add run-owned decision traces.
+   - Store traces under `world.debug.decisionTraces`.
+   - Capture the actual `decisionInput` produced during `stepWorld`; do not rebuild it later.
+   - Store controller choice and resolved simulation result as separate facts.
+   - Include `selectedOptionId`, `controllerReason`, `controllerDecisionStatus`, `controllerDurationMs`, and `actionResult`.
+   - Append traces before advancing the turn/round clock.
+
+2. Add a chronological debug endpoint for traces.
+   - Likely `GET /api/debug/decision-traces`.
+   - Client UI can come after the server/test slice.
+
+Cleanup slice after tracing baseline:
+
+- Refactor `ActionController.chooseAction` to consume the shared `NpcDecisionInput` bundle directly instead of the server-only `ChooseActionOptions` shape.
+- Goal: keep `decisionInput` as the single bundle used by controllers, prompt preview, and decision traces.
 
 ## Follow-up Slice: Stackable Inventory / Resources
 

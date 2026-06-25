@@ -74,6 +74,7 @@ const createTestWorld = (): World => ({
       },
     },
   ],
+  debug: { decisionTraces: [] },
 });
 
 const getViewer = (world: World) => {

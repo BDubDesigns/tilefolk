@@ -1,5 +1,4 @@
-import type { NpcAction, Direction, Npc, World } from '@tilefolk/shared';
-import type { ActionOption } from './controllers/types.js';
+import type { ActionOption, NpcAction, Direction, Npc, World } from '@tilefolk/shared';
 import { directionDeltas } from './directionDeltas.js';
 
 // Maps direction to human-readable descriptions

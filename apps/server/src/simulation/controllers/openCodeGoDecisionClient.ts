@@ -1,8 +1,7 @@
-import type { ControllerDecision } from './types.js';
+import type { ControllerDecision, NpcDecisionInput } from '@tilefolk/shared';
 import { serverEnv } from '../../config/env.js';
 import { controllerDecisionSystemInstruction } from './controllerInstructions.js';
 import { parseControllerDecision } from './parseControllerDecision.js';
-import type { NpcDecisionInput } from './buildNpcDecisionInput.js';
 
 const OPENCODE_GO_CHAT_COMPLETIONS_URL = 'https://opencode.ai/zen/go/v1/chat/completions';
 

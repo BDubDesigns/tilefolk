@@ -1,15 +1,4 @@
-import type { NpcAction, Npc, World } from '@tilefolk/shared';
-
-export interface ActionOption {
-  id: string;
-  description: string;
-  action: NpcAction;
-}
-
-export interface ControllerDecision {
-  selectedOptionId: string;
-  reason: string;
-}
+import type { ActionOption, ControllerDecision, Npc, World } from '@tilefolk/shared';
 
 export interface ChooseActionOptions {
   world: World;

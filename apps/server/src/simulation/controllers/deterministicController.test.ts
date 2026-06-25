@@ -1,7 +1,7 @@
 import { deterministicController } from './deterministicController.js';
 import { expect, it, describe } from 'vitest';
 import { createWorld } from '../worldGenerator.js';
-import type { ActionOption } from './types.js';
+import type { ActionOption } from '@tilefolk/shared';
 
 describe('deterministicController', () => {
   it('returns a decision for the first option when options exist', async () => {

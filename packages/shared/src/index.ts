@@ -48,6 +48,54 @@ export type MemoryId = string;
 
 export type WorldEventId = string;
 
+export type DecisionTraceId = string;
+
+export type ControllerDecisionStatus = 'selected' | 'noDecision' | 'invalidOption';
+
+export type ControllerType = 'deterministic' | 'llm';
+
+export type ActionOption = {
+  id: string;
+  description: string;
+  action: NpcAction;
+};
+
+export type ControllerDecision = {
+  selectedOptionId: string;
+  reason: string;
+};
+
+export type NpcDecisionInput = {
+  npc: Npc;
+  turn: number;
+  round: number;
+  actionOptions: ActionOption[];
+  visibleContext: VisibleWorldContext;
+  recentMemories: Memory[];
+  prompt: string;
+};
+
+export type DecisionTrace = {
+  id: DecisionTraceId;
+  turn: number;
+  round: number;
+  npcId: NpcId;
+
+  controllerType: ControllerType;
+  controllerLabel: string;
+  provider?: string;
+  model?: string;
+
+  decisionInput: NpcDecisionInput;
+
+  selectedOptionId?: string;
+  controllerReason?: string;
+  controllerDecisionStatus: ControllerDecisionStatus;
+  controllerDurationMs?: number;
+
+  actionResult: ActionResult;
+};
+
 export type World = {
   id: WorldId;
   width: number;
@@ -60,6 +108,7 @@ export type World = {
   turn: number;
   round: number;
   events: WorldEvent[];
+  debug: { decisionTraces: DecisionTrace[] };
 };
 
 export type Tile = {

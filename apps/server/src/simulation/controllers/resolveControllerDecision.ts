@@ -1,12 +1,10 @@
-import type { World } from '@tilefolk/shared';
-import type { ControllerDecision } from './types.js';
+import type { ControllerDecision, NpcDecisionInput, World } from '@tilefolk/shared';
 import type { ControllerAssignment } from './controllerAssignments.js';
 import { deterministicController } from './deterministicController.js';
 import { requestGoogleAiDecision } from './googleAiDecisionClient.js';
 import { requestOpenCodeGoDecision } from './openCodeGoDecisionClient.js';
 import { requestOpenRouterDecision } from './openRouterDecisionClient.js';
 import { requestCerebrasDecision } from './cerebrasDecisionClient.js';
-import type { NpcDecisionInput } from './buildNpcDecisionInput.js';
 
 interface ResolveControllerDecisionOptions {
   world: World;

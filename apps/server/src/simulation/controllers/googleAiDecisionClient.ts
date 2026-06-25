@@ -1,9 +1,8 @@
-import type { ControllerDecision } from './types.js';
+import type { ControllerDecision, NpcDecisionInput } from '@tilefolk/shared';
 import { serverEnv } from '../../config/env.js';
 import { GoogleGenAI } from '@google/genai';
 import { controllerDecisionSystemInstruction } from './controllerInstructions.js';
 import { parseControllerDecision } from './parseControllerDecision.js';
-import type { NpcDecisionInput } from './buildNpcDecisionInput.js';
 
 let googleAiClient: GoogleGenAI | null = null;
 

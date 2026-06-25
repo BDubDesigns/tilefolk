@@ -1,5 +1,4 @@
-import type { Memory, Npc, VisibleWorldContext } from '@tilefolk/shared';
-import type { ActionOption } from '../simulation/controllers/types.js';
+import type { ActionOption, Memory, Npc, VisibleWorldContext } from '@tilefolk/shared';
 
 export type ProviderTestScenario = {
   npc: Npc;

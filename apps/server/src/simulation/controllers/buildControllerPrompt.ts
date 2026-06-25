@@ -1,5 +1,4 @@
-import type { Npc, VisibleWorldContext, Memory } from '@tilefolk/shared';
-import type { ActionOption } from './types.js';
+import type { ActionOption, Npc, VisibleWorldContext, Memory } from '@tilefolk/shared';
 import { formatVisibleContext } from './formatVisibleContext.js';
 
 interface BuildControllerPromptOptions {

@@ -1,4 +1,4 @@
-import type { ActionOption, ControllerDecision } from './types.js';
+import type { ActionOption, ControllerDecision } from '@tilefolk/shared';
 
 interface ParseControllerDecisionOptions {
   text: string;

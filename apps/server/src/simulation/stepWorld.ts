@@ -1,8 +1,11 @@
 import type {
   ActionResult,
   BushId,
+  ControllerDecisionStatus,
+  ControllerType,
   Direction,
   Npc,
+  NpcDecisionInput,
   Position,
   TreeId,
   World,
@@ -110,21 +113,35 @@ function createCarefullyPickBerryResult(
   };
 }
 
+type FinishNpcAttemptOptions = {
+  world: World;
+  actionResult: ActionResult;
+  decisionInput: NpcDecisionInput;
+  controllerDecisionStatus: ControllerDecisionStatus;
+  selectedOptionId?: string;
+  controllerReason?: string;
+  controllerDurationMs?: number;
+  controllerLabel: string;
+  controllerType: ControllerType;
+  provider?: string;
+  model?: string;
+  position?: Position;
+};
+
 function finishNpcAttempt({
   world,
   actionResult,
+  decisionInput,
+  controllerDecisionStatus,
+  selectedOptionId,
   controllerReason,
   controllerDurationMs,
   controllerLabel,
+  controllerType,
+  provider,
+  model,
   position,
-}: {
-  world: World;
-  actionResult: ActionResult;
-  controllerReason?: string;
-  controllerDurationMs?: number;
-  controllerLabel?: string;
-  position?: Position;
-}): StepWorldResponse {
+}: FinishNpcAttemptOptions): StepWorldResponse {
   const event = appendActionEvent({
     world,
     actionResult,
@@ -133,6 +150,23 @@ function finishNpcAttempt({
     controllerDurationMs,
     controllerLabel,
     position,
+  });
+
+  world.debug.decisionTraces.push({
+    id: `decision_trace_${world.debug.decisionTraces.length}`,
+    turn: world.turn,
+    round: world.round,
+    npcId: actionResult.action.npcId,
+    controllerType,
+    controllerLabel,
+    ...(provider ? { provider } : {}),
+    ...(model ? { model } : {}),
+    decisionInput,
+    ...(selectedOptionId ? { selectedOptionId } : {}),
+    ...(controllerReason ? { controllerReason } : {}),
+    controllerDecisionStatus,
+    ...(controllerDurationMs !== undefined ? { controllerDurationMs } : {}),
+    actionResult,
   });
 
   addMemoriesForWitnesses({ world, event });
@@ -190,6 +224,20 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
   const controllerAssignment = getControllerAssignment(npc.id);
   const controllerLabel = getControllerLabel(controllerAssignment);
 
+  // Capture basic metadata about the controller responsible for this NPC's decision.
+  const controllerTraceInfo = {
+    controllerType: controllerAssignment.type,
+    controllerLabel,
+    // Include provider/model details only for LLM-backed controllers, since other
+    // controller types do not have that metadata.
+    ...(controllerAssignment.type === 'llm'
+      ? {
+          provider: controllerAssignment.provider,
+          model: controllerAssignment.model,
+        }
+      : {}),
+  };
+
   const controllerStartedAt = performance.now();
   const controllerDecision = await resolveControllerDecision({
     world: newWorld,
@@ -204,8 +252,10 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
       actionResult: createWaitResult(npc, `${npc.id} waited`),
       controllerReason: 'Controller did not select an option.',
       controllerDurationMs,
-      controllerLabel,
       position: npc.position,
+      ...controllerTraceInfo,
+      decisionInput,
+      controllerDecisionStatus: 'noDecision',
     });
   }
   const selectedOption = actionOptions.find(
@@ -218,8 +268,11 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
       actionResult: createWaitResult(npc, `${npc.id} waited`),
       controllerReason: 'Controller selected an invalid option.',
       controllerDurationMs,
-      controllerLabel,
       position: npc.position,
+      ...controllerTraceInfo,
+      decisionInput,
+      controllerDecisionStatus: 'invalidOption',
+      selectedOptionId: controllerDecision.selectedOptionId,
     });
   }
 
@@ -232,8 +285,11 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
         actionResult: createWaitResult(npc, `${npc.id} waited`),
         controllerReason: controllerDecision.reason,
         controllerDurationMs,
-        controllerLabel,
         position: npc.position,
+        ...controllerTraceInfo,
+        decisionInput,
+        controllerDecisionStatus: 'selected',
+        selectedOptionId: controllerDecision.selectedOptionId,
       });
     case 'move': {
       const direction = selectedAction.direction;
@@ -251,8 +307,11 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
         actionResult: createMoveResult(npc, direction, true, `${npc.id} moved ${direction}`),
         controllerReason: controllerDecision.reason,
         controllerDurationMs,
-        controllerLabel,
         position: npc.position,
+        ...controllerTraceInfo,
+        decisionInput,
+        controllerDecisionStatus: 'selected',
+        selectedOptionId: controllerDecision.selectedOptionId,
       });
     }
 
@@ -282,8 +341,11 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
           ),
           controllerReason: controllerDecision.reason,
           controllerDurationMs,
-          controllerLabel,
           position: npc.position,
+          ...controllerTraceInfo,
+          decisionInput,
+          controllerDecisionStatus: 'selected',
+          selectedOptionId: controllerDecision.selectedOptionId,
         });
       }
       return finishNpcAttempt({
@@ -291,8 +353,11 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
         actionResult: createChopTreeResult(npc, treeId, true, `${npc.id} chopped tree ${treeId}`),
         controllerReason: controllerDecision.reason,
         controllerDurationMs,
-        controllerLabel,
         position: npc.position,
+        ...controllerTraceInfo,
+        decisionInput,
+        controllerDecisionStatus: 'selected',
+        selectedOptionId: controllerDecision.selectedOptionId,
       });
     }
     case 'pickup': {
@@ -306,8 +371,11 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
           actionResult: createPickupResult(npc, itemId, true, `${npc.id} picked up ${itemId}`),
           controllerReason: controllerDecision.reason,
           controllerDurationMs,
-          controllerLabel,
           position: npc.position,
+          ...controllerTraceInfo,
+          decisionInput,
+          controllerDecisionStatus: 'selected',
+          selectedOptionId: controllerDecision.selectedOptionId,
         });
       } else {
         return finishNpcAttempt({
@@ -320,8 +388,11 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
           ),
           controllerReason: controllerDecision.reason,
           controllerDurationMs,
-          controllerLabel,
           position: npc.position,
+          ...controllerTraceInfo,
+          decisionInput,
+          controllerDecisionStatus: 'selected',
+          selectedOptionId: controllerDecision.selectedOptionId,
         });
       }
     }
@@ -340,8 +411,11 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
           ),
           controllerReason: controllerDecision.reason,
           controllerDurationMs,
-          controllerLabel,
           position: npc.position,
+          ...controllerTraceInfo,
+          decisionInput,
+          controllerDecisionStatus: 'selected',
+          selectedOptionId: controllerDecision.selectedOptionId,
         });
       }
 
@@ -356,8 +430,11 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
           ),
           controllerReason: controllerDecision.reason,
           controllerDurationMs,
-          controllerLabel,
           position: npc.position,
+          ...controllerTraceInfo,
+          decisionInput,
+          controllerDecisionStatus: 'selected',
+          selectedOptionId: controllerDecision.selectedOptionId,
         });
       }
 
@@ -380,8 +457,11 @@ export const stepWorld = async (world: World): Promise<StepWorldResponse> => {
         ),
         controllerReason: controllerDecision.reason,
         controllerDurationMs,
-        controllerLabel,
         position: npc.position,
+        ...controllerTraceInfo,
+        decisionInput,
+        controllerDecisionStatus: 'selected',
+        selectedOptionId: controllerDecision.selectedOptionId,
       });
     }
   }

@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { stepWorld } from './stepWorld.js';
+import * as resolveControllerDecisionModule from './controllers/resolveControllerDecision.js';
 import { createWorld } from './worldGenerator.js';
 import { NEEDS_MAX_VALUES, type Position, type World, type WorldEvent } from '@tilefolk/shared';
 
@@ -726,6 +727,64 @@ describe('stepWorld', () => {
 
       expect(getNpcOrThrow(stepResult.world, 0).memories).toHaveLength(1);
       expect(getNpcOrThrow(world, 0).memories).toEqual([]);
+    });
+  });
+
+  describe('debug', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('records a decision trace for the NPC attempt', async () => {
+      const world = createWorldWithNpcAt({ x: 2, y: 2 });
+
+      const stepResult = await stepWorld(world);
+      const trace = stepResult.world.debug.decisionTraces[0];
+      if (!trace) throw new Error('trace not found');
+      if (!world.npcs[0]) throw new Error('npc not found');
+
+      expect(stepResult.world.debug.decisionTraces).toHaveLength(1);
+      expect(trace.turn).toBe(world.turn);
+      expect(trace.round).toBe(world.round);
+      expect(trace.npcId).toBe(world.npcs[0].id);
+      expect(trace.decisionInput).toBeDefined();
+      expect(trace.actionResult).toEqual(stepResult.actionResult);
+      expect(trace.controllerDecisionStatus).toBe('selected');
+    });
+
+    it('preserves an invalid selected option id in the decision trace', async () => {
+      vi.spyOn(resolveControllerDecisionModule, 'resolveControllerDecision').mockResolvedValueOnce({
+        selectedOptionId: 'not-a-real-option',
+        reason: 'Tried to choose an invalid option.',
+      });
+      const world = createWorldWithNpcAt({ x: 2, y: 2 });
+
+      const stepResult = await stepWorld(world);
+      const trace = stepResult.world.debug.decisionTraces[0];
+      if (!trace) throw new Error('trace not found');
+
+      expect(stepResult.world.debug.decisionTraces).toHaveLength(1);
+      expect(trace.controllerDecisionStatus).toBe('invalidOption');
+      expect(trace.selectedOptionId).toBe('not-a-real-option');
+      expect(trace.actionResult).toEqual(stepResult.actionResult);
+      expect(trace.actionResult.action).toEqual({ type: 'wait', npcId: 'npc_0' });
+    });
+
+    it('records noDecision when the controller does not return a decision', async () => {
+      vi.spyOn(resolveControllerDecisionModule, 'resolveControllerDecision').mockResolvedValueOnce(
+        null,
+      );
+      const world = createWorldWithNpcAt({ x: 2, y: 2 });
+
+      const stepResult = await stepWorld(world);
+      const trace = stepResult.world.debug.decisionTraces[0];
+      if (!trace) throw new Error('trace not found');
+
+      expect(stepResult.world.debug.decisionTraces).toHaveLength(1);
+      expect(trace.controllerDecisionStatus).toBe('noDecision');
+      expect(trace.selectedOptionId).toBeUndefined();
+      expect(trace.actionResult).toEqual(stepResult.actionResult);
+      expect(trace.actionResult.action).toEqual({ type: 'wait', npcId: 'npc_0' });
     });
   });
 });

@@ -34,6 +34,7 @@ const createTestWorld = (): World => ({
   trees: [],
   bushes: [],
   events: [],
+  debug: { decisionTraces: [] },
   turn: 0,
   round: 0,
 });

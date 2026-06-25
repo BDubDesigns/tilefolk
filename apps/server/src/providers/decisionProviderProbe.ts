@@ -1,8 +1,7 @@
 import { createProviderTestScenario } from './providerTestScenario.js';
 import { buildControllerPrompt } from '../simulation/controllers/buildControllerPrompt.js';
 
-import type { NpcDecisionInput } from '../simulation/controllers/buildNpcDecisionInput.js';
-import type { ControllerDecision } from '../simulation/controllers/types.js';
+import type { ControllerDecision, NpcDecisionInput } from '@tilefolk/shared';
 import type { ProviderTestProbeResult } from './executeProviderTests.js';
 import type { ProviderTestTarget } from './providerTestTargets.js';
 
